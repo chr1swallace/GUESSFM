@@ -38,42 +38,130 @@ variants.  The are particular challenges for fine mapping, mostly
 related to the density of SNP markers.  Nonetheless, this vignette
 will at first focus on an example dataset that comes with R2GUESS.
 
-* Preparing to run GUESS
+* R2GUESS Strategy 
 
-#+BEGIN_SRC 
-## load datasets from R2GUESS
-library(R2GUESS)
-data(data.X, package="R2GUESS")
-data(data.Y.Hopx, package="R2GUESS")
+Although GUESS uses g-priors, which inhibits visiting models with SNPs
+in high LD, we have found that running GUESS with SNPs in complete LD
+can lead to instability.  R2GUESS was created purely to allow running
+GUESS on a tagged set of SNPs to approximate the posterior model
+space, and then expand the most interesting models to include their tags.  It is perhaps useful to give an example of expanding a model.
 
-## make into SnpMatrix format
+Suppose we begin tagging, and determine a couple of /tag groups/ as follows:
+
+| Tag | SNPs in tag group |
+| $A$ | $A_1$, $A_2$      |
+| $B$ | $B_1$             | 
+
+R2GUESS will remove SNPs A1, A2 and B1, and will save a file
+containing an object of class =tags= containting the information in
+the above table.  Then, suppose after GUESS has run on the set of tag
+SNPs, model $(A,B)$ is one of the most interesting.  GUESS FM will
+`expand' this model to the set of models ${(A,B), (A_1,B), (A_2,B),
+(A,B_1), (A_1,B_1), (A_2,B_1)}$.  
+
+We assess each model using Bayes Factors.  The Bayes Factor for model
+$M_i$ is 
+
+$$BF_{i0} = \frac{P(M_i | \text{data} )}{P(M_0 | \text{data})}.$$
+
+In a fully Bayesian analysis, the individual model
+probabilities are calculated by integrating over prior distributions
+for the model parameters (regression coefficients, for example).  This
+is what GUESS does.  However, it assumes a linear model when often we
+will want to fine map a disease trait and therefore use a logistic
+model.  Further, we cannot go back and run the expanded models through
+GUESS.  Instead, we use Approximate Bayes Factors, based on the BIC:
+
+$$-2 \log{ABF_{i0}} = BIC(M_i) - BIC(M_0).$$
+
+These are calculated within R via the =glm= and =BIC= functions.  
+
+At what threshold should you tag?  Probably, as high as you can go
+without inducing instability in GUESS.  We have found $r^2=0.99$ to
+work in some large datasets, but your mileage may vary.  In the
+examples below we use a lower threshold purely for demonstration.
+
+* Simulate some data
+
+We start with using some sample data from the snpStats package
+including 20 SNPs, and simulating a quantitative trait that depends
+on 3 causal SNPs.
+
+#+begin_src R :ravel label=sim
 library(snpStats)
-X <- new("SnpMatrix",matrix(as.raw(as.matrix(data.X)+1),nrow=nrow(data.X),dimnames=dimnames(data.X)))
-Y <- data.Y.Hopx[,3]
+data(for.exercise, package="snpStats")
+set.seed(12346)
+X <- snps.10[,101:120]
+n <- nrow(X)
+causal <- c("rs1555897","rs7069505")
+Y <- rnorm(n,mean=as.numeric(X[,causal[1]]))*sqrt(0.2) +
+  rnorm(n,mean=as.numeric(X[,causal[2]]))*sqrt(0.2) +
+  rnorm(n)*sqrt(0.6)
+#+end_src
+
+=X= contains some missing genotypes, but no SNPs with such a low call
+rate we would worry in a large study. Still, the rest of the analysis
+is easier to interpret for the purposes of a vignette if we fill in
+the missing values.
+
+#+BEGIN_SRC R :label=descsim
+summary(col.summary(X))
 #+END_SRC
 
+Looking at the LD, we see this is a region in which D' (above the
+diagonal) is very high, whilst $r^2$ can be high between some SNPs,
+and with moderately strong $r^2 \simeq 0.7$ between two of our causal
+SNPs:
+#+begin_src R :ravel fig=TRUE :label=ldfig
+ld <- show.ld(X=X)
+#+end_src
 
-* Run GUESS via GUESSFM's wrapper
+
+* Running GUESS and reading output
+
+First, via GUESSFM's wrapper, tagging at $r^2=0.8$.  This is
+considerably lower than suggested above, and is used here purely for
+demonstration as there is limited strong LD in this dataset.
 
 #+BEGIN_SRC 
-## run GUESS via run.bvs()
-mydir <- tempfile()
-run.bvs(X,Y,gdir=mydir,backend="guess",tag.r2=NA)
+## THIS DIRECTORY WILL HOLD ALL THE GUESS INPUT AND OUTPUT 
+## AND WILL BE CREATED IF IT DOESN'T ALREADY EXIST
+mydir <- tempfile() 
+run.bvs(X,Y,gdir=mydir,backend="guess",tag.r2=0.8) ## THIS CAN TAKE A WHILE...
+## what files were created?
 list.files(mydir)
 
 ## read output with GUESSFM
-gfm <- read.snpmod(mydir)
-best.models(gfm)
-"V616" %in% rownames(best.snps(gfm))
+d <- read.snpmod(mydir)
+
+## examine the best models and SNPs with greatest marginal support within the tagged data.
+best.models(d)
+best.snps(d)
 #+END_SRC
 
-* Conversion
+
+Note that both =best.models= and =best.snps= allow you to specify thresholds for
+how to determine "best".  See their help pages for details.
+
+The tags created within the =run.bvs= function are saved to a
+=tags.RData= file under =mydir= and can be examined.
+
+#+BEGIN_SRC R
+(load(file.path(mydir,"tags.RData")))
+tags
+
+#+END_SRC
+
+**** TODO Which SNPs were selected as tags, esp in relation to causal variants?  Which SNPs come up in the GUESS results?
+
+* TODO run via R2GUESS and read output
+
 
 You can convert a run from R2GUESS into a snpmod object with:
 
 #+BEGIN_SRC 
 ## read output using a convenience wrapper for as.ESS.object()
-## this returns an object of class ESS, used by R2GUES
+## this returns an object of class ESS, used by R2GUESS
 ess <- read.ess(mydir)
 str(ess)
 
@@ -83,5 +171,11 @@ decode <- structure(colnames(X),names=as.numeric(1:length(X)))
 ## create a snpmod
 gfm2 <- ess2snpmod(ess)
 best.models(gfm2)
-"V616" %in% rownames(best.snps(gfm2))
+#+END_SRC
+
+* Expanding
+
+#+BEGIN_SRC R
+dx<-expand.tags(d,tags)
+
 #+END_SRC
