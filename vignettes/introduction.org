@@ -35,3 +35,53 @@ functions.
 This package, GUESSFM, aims to extend GUESS for fine mapping, defined
 here as the task of identifying the most likely set of causal
 variants.  The are particular challenges for fine mapping, mostly
+related to the density of SNP markers.  Nonetheless, this vignette
+will at first focus on an example dataset that comes with R2GUESS.
+
+* Preparing to run GUESS
+
+#+BEGIN_SRC 
+## load datasets from R2GUESS
+library(R2GUESS)
+data(data.X, package="R2GUESS")
+data(data.Y.Hopx, package="R2GUESS")
+
+## make into SnpMatrix format
+library(snpStats)
+X <- new("SnpMatrix",matrix(as.raw(as.matrix(data.X)+1),nrow=nrow(data.X),dimnames=dimnames(data.X)))
+Y <- data.Y.Hopx[,3]
+#+END_SRC
+
+
+* Run GUESS via GUESSFM's wrapper
+
+#+BEGIN_SRC 
+## run GUESS via run.bvs()
+mydir <- tempfile()
+run.bvs(X,Y,gdir=mydir,backend="guess",tag.r2=NA)
+list.files(mydir)
+
+## read output with GUESSFM
+gfm <- read.snpmod(mydir)
+best.models(gfm)
+"V616" %in% rownames(best.snps(gfm))
+#+END_SRC
+
+* Conversion
+
+You can convert a run from R2GUESS into a snpmod object with:
+
+#+BEGIN_SRC 
+## read output using a convenience wrapper for as.ESS.object()
+## this returns an object of class ESS, used by R2GUES
+ess <- read.ess(mydir)
+str(ess)
+
+## GUESSFM maps snp numbers to names via a decode vector
+decode <- structure(colnames(X),names=as.numeric(1:length(X)))
+
+## create a snpmod
+gfm2 <- ess2snpmod(ess)
+best.models(gfm2)
+"V616" %in% rownames(best.snps(gfm2))
+#+END_SRC
