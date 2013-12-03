@@ -1,0 +1,37 @@
+#+TITLE: GUESSFM: using GUESS for Fine Mapping
+#+AUTHOR: Chris Wallace
+#+EMAIL: chris.wallace@cimr.cam.ac.uk
+#+DATE: 2013-12-03 Tue
+#+DESCRIPTION:
+#+KEYWORDS:
+#+LANGUAGE: en
+#+OPTIONS: H:3 num:t toc:t \n:nil @:t ::t |:t ^:t -:t f:t *:t <:t
+#+OPTIONS: TeX:t LaTeX:t skip:nil d:(not LOGBOOK) todo:t pri:nil tags:t
+
+#+EXPORT_SELECT_TAGS: export
+#+EXPORT_EXCLUDE_TAGS: noexport
+#+LINK_UP:
+#+LINK_HOME:
+#+XSLT:
+
+#+latex_header: \usepackage{fullpage}
+#+latex: %\VignetteIndexEntry{GUESSFM Introduction}
+
+#+begin_html
+<!--
+%\VignetteEngine{knitr}
+%\VignetteIndexEntry{GUESSFM Introduction}
+-->
+#+end_html
+
+* Introduction
+
+[[http://www.bgx.org.uk/software/guess.html][GUESS]] is software for Bayesian variable selection and model averaging
+using a stochastic search algorithm to visit the most likely models
+via MCMC.  There also exists an R package, [[http://cran.r-project.org/web/packages/R2GUESS/index.html][R2GUESS]], which is a wrapper
+for running GUESS, and provides useful diagnostic and summary
+functions.
+
+This package, GUESSFM, aims to extend GUESS for fine mapping, defined
+here as the task of identifying the most likely set of causal
+variants.  The are particular challenges for fine mapping, mostly

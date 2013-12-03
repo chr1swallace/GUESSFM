@@ -1,0 +1,4 @@
+export(snpprior)
+export(tag)
+import(Matrix)
+importFrom(VGAM,dbetabinom)
