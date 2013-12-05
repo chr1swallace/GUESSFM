@@ -106,6 +106,8 @@ the missing values.
 
 #+BEGIN_SRC R :label=descsim
 summary(col.summary(X))
+X <- impute.missing(X)
+summary(col.summary(X))
 #+END_SRC
 
 Looking at the LD, we see this is a region in which D' (above the
@@ -179,3 +181,29 @@ best.models(gfm2)
 dx<-expand.tags(d,tags)
 
 #+END_SRC
+* Plotting
+It is useful to assess the steps of any analysis by looking at the data.  With such
+a large number of models, the best way to look is to plot.  For that
+reason, GUESSFM contains lots of plotting functions.
+
+?? separate vignette, including vagaries of ggplot?
+
+
+* Parallelism
+
+Looping over many, many models can be made quicker by parallel
+processing.  GUESSFM does this by means of calls to the =mclapply=
+function in the =parallel= package.  By default, 
+the =parallel= package sets itself up to use two cores.  You can
+change this by setting the option =mc.cores=.  Eg, if you have 20
+cores on your machine, you might set
+: options(mc.cores=16)
+to use 16 of this for R, and leave the remainder free to run other
+processes.
+
+Functions which make use of this (and over which you might then not to
+use =mclapply= are: 
+
+=expand.tags=
+
+

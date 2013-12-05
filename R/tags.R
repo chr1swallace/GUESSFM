@@ -28,9 +28,9 @@ expand.tags <- function(d, tags) {
 
     ## tie these to their index models
     npm <- sapply(pm,length)
-    tmp <- d@models[rep(i,each=npm),]
+    tmp <- d@models[rep(1:length(pm),times=npm),]
     colnames(tmp) <- sub("str","index.str",colnames(tmp))
-    neighb <- cbind(data.frame(str=unlist(pm.str),
+    neighb <- cbind(data.frame(str=unlist(pm),
                             stringsAsFactors=FALSE),
                  tmp)
         

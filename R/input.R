@@ -132,12 +132,12 @@ reader <- function(f,decode,offset) {
 
 ##' Read in the output files and create an object of class snpmod
 ##'
-##' .. content for \details{} ..
-##' @title 
-##' @param f 
-##' @param offset 
-##' @return 
+##' @title read.snpmod
+##' @param f filename
+##' @param offset number of covariates
+##' @return object of class snpmod
 ##' @author Chris Wallace
+##' @export
 read.snpmod <- function(f,offset=0) {
     f <- basefile(f)
     decode <- read.decode(sub("out_","decode_",f))

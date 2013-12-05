@@ -1,17 +1,16 @@
-##' .. content for \description{} (no empty lines) ..
+##' guess.summ
 ##'
-##' .. content for \details{} ..
 ##' @title Summarise a snpmod object 
-##' @param results 
-##' @param groups 
-##' @param snp.data 
-##' @param snps 
-##' @param pp.thr 
-##' @param tag.thr 
-##' @param method 
-##' @return 
+##' @param results an object of class snpmod, or a named list of such objects
+##' @param groups object of class groups.  If supplied, all SNPs here will be summarised, and grouped according to this structure
+##' @param snps data.frame giving details of the SNPs
+##' @param snp.data if groups is missing, tag groups are determined from this object of class SnpMatrix
+##' @param tag.thr if groups is missing, threshold at which to tag
+##' @param pp.thr if groups is missing, threshold above which SNPs are selected for summary.  
+##' @param method if groups is missing, method to determine tag groups using heirarchical clustering, default is "complete"
+##' @return data.frame
 ##' @author Chris Wallace
-guess.summ <- function(results, groups=NULL, snp.data=NULL, snps=NULL, pp.thr=0.01, tag.thr=0.8, method="complete") {
+guess.summ <- function(results, groups=NULL, snps=NULL, snp.data=NULL, tag.thr=0.8, pp.thr=0.01, method="complete") {
   if(is.null(groups) && is.null(snp.data))
     stop("must supply either SNP groups or snp.data for fixed LD threshold groups")
   if(!is.list(results))
@@ -128,8 +127,14 @@ best.snps <- function(d,pp.thr=0.1) {
   tmp <- subset(d@snps, Marg_Prob_Incl>pp.thr)
   return(tmp[order(tmp$Marg_Prob_Incl,decreasing=TRUE),])
 }
-best.models <- function(d,pp.thr=0.01) {
-  wh <- which(d@models$PP>pp.thr)
-  wh <- wh[ order(d@models$PP[wh],decreasing=TRUE) ]
+best.models <- function(d,pp.thr=0.01,cpp.thr=NA) {
+  if(!is.na(cpp.thr)) {
+    d@models <- d@models[ order(d@models$PP,decreasing=TRUE),] # just in case
+    cpp <- cumsum(d@models$PP)
+    wh <- which(cpp<=cpp.thr)
+  } else {
+    wh <- which(d@models$PP>pp.thr)
+    wh <- wh[ order(d@models$PP[wh],decreasing=TRUE) ]
+  }
   return(cbind(d@models[wh,], snps=unlist(lapply(d@model.snps[wh],makestr))))
 }

@@ -50,7 +50,7 @@ plot.fdr <- function(summ,causal) {
 ##' @param maxrank truncate the x axis at this value
 ##' @return no return value
 ##' @author Chris Wallace
-plot.diffuse <- function(results, maxrank=1000) {
+plot.diffuse <- function(results, maxrank=1000, thin=500) {
   if(!is.list(results))
     results <- list(trait=results)
   df <- lapply(results, function(x) x@models)
@@ -60,8 +60,10 @@ plot.diffuse <- function(results, maxrank=1000) {
   }
   df <- do.call("rbind",df)
   df <- subset(df, rank<=maxrank)
-  cat(levels(df$phenotype <- factor(df$phenotype)))
-  ggplot(df, aes(x=rank,y=cPP, col=phenotype)) + geom_path()
+  np <- levels(df$phenotype <- factor(df$phenotype))
+  use <- unlist(tapply(1:nrow(df), df$phenotype, function(x) x[ seq(1,length(x), length.out=thin) ],simplify=FALSE)) ## WORKS
+  
+  ggplot(df[use,], aes(x=rank,y=cPP, col=phenotype)) + geom_path()
 }
 
 ggld <- function(data, df.snps) {
@@ -103,6 +105,9 @@ ggld <- function(data, df.snps) {
 }  
 
 signal.plot <- function(summ,w=0.2,highlight=NULL) {
+  if(!("x" %in% colnames(summ)) || any(is.na(summ$x))) {
+    stop("Missing x co-ordinates.  Do you need to run scalepos or fix some missing values?")
+  }
   summ$xmin <- summ$xmin.scale - w
   summ$xmax <- summ$xmax.scale + w
   summ$x <- summ$x.scale

@@ -1,0 +1,32 @@
+\name{impute.missing}
+\alias{impute.missing}
+\title{Fill in missing values in SnpMatrix object}
+\usage{
+  impute.missing(X, bp = 1:ncol(X), strata = NULL,
+    numeric = FALSE, ...)
+}
+\arguments{
+  \item{X}{SnpMatrix object}
+
+  \item{bp}{optional vector of base pair positions, length
+  == number of SNPs}
+
+  \item{strata}{optional vector, length == number of
+  samples, as.factor(strata) defines distinct strata of
+  samples, eg by geography}
+
+  \item{numeric}{default FALSE}
+
+  \item{...}{arguments passed on to \code{impute.snps}}
+}
+\value{
+  matrix, either numeric (if numeric=TRUE) or SnpMatrix (if
+  numeric=FALSE)
+}
+\description{
+  Uses snpStats' snp.imputation function
+}
+\author{
+  Chris Wallace
+}
+

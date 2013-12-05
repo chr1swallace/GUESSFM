@@ -1,0 +1,35 @@
+\name{show.ld}
+\alias{show.ld}
+\title{show.ld}
+\usage{
+  show.ld(X, snps = colnames(X), samples = rownames(X),
+    lines.limit = 20)
+}
+\arguments{
+  \item{X}{a SnpMatrix object}
+
+  \item{snps}{optional character vector of column names of
+  X (SNPs) for which LD should be calculated}
+
+  \item{samples}{optional character vector of row names of
+  X (Samples) for which LD should be calculated}
+
+  \item{lines.limit}{draw faint lines to make separation
+  between SNPs clearer if the number of SNPs is <
+  lines.limit}
+}
+\value{
+  invisibly returns matrix with D' in upper.tri() entries
+  and R^2 in lower.tri() entries
+}
+\description{
+  Calculate D' and R^2 for a SnpMatrix object and display
+  as a heatmap
+}
+\details{
+  Side effect: displays plot on current graphics device
+}
+\author{
+  Chris Wallace
+}
+

@@ -1,0 +1,22 @@
+\name{read.snpmod}
+\alias{read.snpmod}
+\title{read.snpmod}
+\usage{
+  read.snpmod(f, offset = 0)
+}
+\arguments{
+  \item{f}{filename}
+
+  \item{offset}{number of covariates}
+}
+\value{
+  object of class snpmod
+}
+\description{
+  Read in the output files and create an object of class
+  snpmod
+}
+\author{
+  Chris Wallace
+}
+

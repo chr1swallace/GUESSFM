@@ -18,7 +18,7 @@ setMethod("show", signature="snpmod",
 setMethod("show", signature="snppicker",
           function(object) {
             ngroup <- length(object@groups)
-            nsnps <- sapply(object@groups,nrow)
+            nsnps <- if(ngroup==0) { 0 } else { sapply(object@groups,nrow) }
             message("snppicker object, containing ",sum(nsnps)," SNPs grouped into ",ngroup," groups.")
           })
 
@@ -43,20 +43,25 @@ setMethod("show", signature="groups",
 ######################################################################
 
 setMethod("plot", signature(x="snppicker",y="missing"),
-          function(x) {            
+          function(x, do.plot=TRUE) {
+            index <- unlist(lapply(x@groups, function(z) rownames(z)[1]))
             plots <- lapply(seq_along(x@plotsdata), function(i) {
               pdata <- x@plotsdata[[i]]
               nsel <- which(pdata$changepoint==TRUE)
-              cmpi <- sum(pdata[1:nsel,"mpi"])
-              ggplot(pdata, aes(x=r2,y=cumsum(mpi))) + 
+              tmpi <- sum(pdata[1:nsel,"mpi"])
+              pdata$cmpi <- cumsum(pdata$mpi)
+              ggplot(pdata, aes(x=r2,y=cmpi)) + 
 #                geom_hline(yintercept=thr,col="lightblue",linetype="dashed") +
                   geom_vline(mapping=aes(xintercept=r2), data=subset(pdata,changepoint==TRUE),col="red",linetype="dashed") +
+                  geom_hline(mapping=aes(yintercept=cmpi), data=subset(pdata,changepoint==TRUE),col="red",width=0.2) +
                     geom_point() + geom_path() +
                       geom_point(aes(y=mpi),col="blue") + geom_path(aes(y=mpi),col="blue") +
                         ylim(0,1.2) + xlab("rsq with index SNP") + ylab("MPI/cum.MPI") +
-                          ggtitle(paste(nsel,"SNPs; cum.MPI =",signif(cmpi,2)))
+                          ggtitle(paste(nsel,"SNPs; cum.MPI =",signif(tmpi,2))) + theme_bw()
             })
-            print(do.call("tracks",plots))
+            names(plots) <- index
+            if(do.plot)
+              print(do.call("tracks",c(plots,label.text.cex=0.5)))
             invisible(plots)            
           })
 
@@ -66,22 +71,30 @@ setMethod("plot", signature(x="snppicker",y="missing"),
 
 ################################################################################
 
-setAs("groups", "tags",
+setAs("groups", "tags",      
       def=function(from) {
+        if(!length(from@groups))
+          return(new("tags")) # return empty object
         new("tags",tags=rep(from@tags,times=sapply(from@groups,length)),snps=unlist(from@groups))
       })
 setAs("tags", "groups",
       def=function(from) {
+        if(!length(tags@tags))
+          return(new("groups"))
         new("groups",tags=unique(from@tags),groups=split(from@snps,from@tags))
       })
 setAs("snppicker","groups",
       def=function(from) {
+        if(!length(from@groups))
+          return(new("groups")) # return empty object
         new("groups",
             tags=unlist(lapply(from@groups,function(x) x[1,"var"])),
             groups=lapply(from@groups, "[[", "var"))
       })
 setAs("snppicker","tags",
       def=function(from) {
+        if(!length(from@groups))
+          return(new("tags")) # return empty object
         g <- new("groups",
             tags=unlist(lapply(from@groups,function(x) x[1,"var"])),
             groups=lapply(from@groups, "[[", "var"))
@@ -99,6 +112,10 @@ setMethod("union",signature(x="snppicker",y="snppicker"),definition=function(x,y
 setMethod("union",signature(x="tags",y="tags"),definition=function(x,y) {
   as(union(as(x,"groups"),as(y,"groups")),"tags") })
 setMethod("union",signature(x="groups",y="groups"),definition=function(x,y) {
+  if(!length(x@groups))
+    return(y)
+  if(!length(y@groups))
+    return(x)
   ## find intersecting groups, and make unions
   int <- matrix(FALSE,length(x@groups),length(y@groups))
   for(i in seq_along(x@groups)) {
@@ -108,11 +125,31 @@ setMethod("union",signature(x="groups",y="groups"),definition=function(x,y) {
   }
   wh <- which(int,arr.ind=TRUE)
   if(nrow(wh)) {
+    ## merge y into x
     for(i in 1:nrow(wh)) {
       xi <- wh[i,1]
       yi <- wh[i,2]
       x@groups[[xi]] <- unique(c(x@groups[[xi]],y@groups[[yi]]))
     }
+    ## check - duplicate y's mean x groups must be merged
+    dups <- wh[,2][ duplicated(wh[,2]) ]
+    if(length(dups)) {
+      ## do the merge
+      for(ydup in dups) {
+        xi <- wh[ wh[,2]==ydup, 1]
+        x@groups[[ xi[1] ]] <- unique(unlist(x@groups[xi]))
+      }
+      ## drop NULLs now we don't need wh any more
+      to.drop <- vector("list",length(dups))
+      for(i in seq_along(dups)) {
+        yi <- dups[[i]]
+        to.drop[[i]] <- (wh[ wh[,2]==ydup, 1])[-1]
+      }
+      to.drop <- unique(unlist(to.drop))
+      x@groups <- x@groups[ -to.drop ]
+      x@tags <- x@tags[ -to.drop ]
+    }
+    
     add <- setdiff(seq_along(y@groups),unique(wh[,2]))
     if(!length(add))
       return(x)
