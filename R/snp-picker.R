@@ -1,6 +1,6 @@
 
 library(gridExtra)
-snp.picker <- function(d,data,pp.thr=0.01,nochange.thr=0.001,nochange.run=3) {
+snp.picker <- function(d,data,pp.thr=0.01,nochange.thr=0.001,nochange.run=3,r2.gap=0.1) {
   groups <- plotsdata <- list()
   i <- 0
   a <- d@snps
@@ -48,9 +48,15 @@ snp.picker <- function(d,data,pp.thr=0.01,nochange.thr=0.001,nochange.run=3) {
         for(k in wh) { ## find break point
           ## k is candidate for first position beyond snp group
           if(all(df2$mpibin[k+seq(0,min(nochange.run-1, nrow(df2)-k))] < nochange.thr)) {
+            ## have hit our run of low change, stop
             r2lim <- df2$r2bin[ k-1 ]
             break
           }
+          if((df2$r2bin[k+1] - df2$r2bin[k])>r2.gap && df2$mpi[k+1]>pp.thr) {
+            ## k is low, then big gap to next SNP, which has a high enough mpi to be a new hit in its own right
+            r2lim <- df2$r2bin[ k-1 ]
+            break
+          }                          
         }
       }
     }

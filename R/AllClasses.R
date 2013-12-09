@@ -1,6 +1,21 @@
 ################################################################################
 ## Models
 
+#' Class to hold data relating to multiple models fitted to SNP data
+#'
+#' @title The snpmod class
+#' @section Slots: 
+#'  \describe{
+#'    \item{\code{snps}:}{data.frame containing marginal probabilities of inclusion for the SNPs}
+#'    \item{\code{models}:}{data.frame containing summaries for each model}
+#'    \item{\code{model.snps}:}{list containing the SNPs for each model. May be removed.}
+#'  }
+#'
+#' @name snpmod
+#' @rdname snpmod-class
+#' @aliases snpmod-class
+#' @export
+#' @author Chris Wallace
 setClass("snpmod",
          representation(snps="data.frame",
                         models="data.frame",

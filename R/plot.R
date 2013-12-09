@@ -105,7 +105,7 @@ ggld <- function(data, df.snps) {
 }  
 
 signal.plot <- function(summ,w=0.2,highlight=NULL) {
-  if(!("x" %in% colnames(summ)) || any(is.na(summ$x))) {
+  if(!("x.scale" %in% colnames(summ)) || any(is.na(summ$x.scale))) {
     stop("Missing x co-ordinates.  Do you need to run scalepos or fix some missing values?")
   }
   summ$xmin <- summ$xmin.scale - w
