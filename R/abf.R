@@ -40,10 +40,10 @@ abf.calc <- function(y,x,models,family="binomial",
   ## prepare data.frame
   if(is(x,"SnpMatrix"))
     x <- matrix(as(x,"numeric"),nrow=nrow(x),dimnames=dimnames(x))
-  if(is(x,"data.frame"))
-    x <- as.matrix(x)
 
   if(method=="glm.fit") {
+    if(is(x,"data.frame"))
+      x <- as.matrix(x)
     x2<-cbind(one=1,x[,intersect(unique(unlist(snps)),colnames(x))])
     comp <- complete.cases(x2) & !is.na(y)
     if(!all(comp)) {
@@ -78,7 +78,9 @@ abf.calc <- function(y,x,models,family="binomial",
       if(verbose && i %% 100 == 0)
         cat(i,"\t")
       k=length(snps[[i]])+1
-      glm.fit(x2[,c("one",snps[[i]])], y2, family=family)$deviance + k*logn
+      model <- glm.fit(x2[,c("one",snps[[i]])], y2, family=family)
+      class(model) <- c(class(model),"glm")
+      BIC(model)
     })
   }
   if(method=="glm") {
