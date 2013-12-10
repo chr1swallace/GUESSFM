@@ -25,84 +25,18 @@ abf.calc <- function(y,x,models,family="binomial",
 
   ## add a base model
   models.orig <- models
-  models <- c("1",models)
   snps <- strsplit(models,"%")
 
-  ## restrict to models that can be fitted
+  ## models that can be fitted directly
   cols.ok <- c("1",colnames(x))
   use <- sapply(snps, function(snp.names) all(snp.names %in% cols.ok))
-  message(sum(use)-1," of ", length(models)-1, " models can be attempted")
+  message(sum(use)," of ", length(models), " models can be evaluated directly")
   if(!all(use)) {
     snps <- snps[use]
     models <- models[use]
   }  
-  
-  ## prepare data.frame
-  if(is(x,"SnpMatrix"))
-    x <- matrix(as(x,"numeric"),nrow=nrow(x),dimnames=dimnames(x))
 
-  if(method=="glm.fit") {
-    if(is(x,"data.frame"))
-      x <- as.matrix(x)
-    x2<-cbind(one=1,x[,intersect(unique(unlist(snps)),colnames(x))])
-    comp <- complete.cases(x2) & !is.na(y)
-    if(!all(comp)) {
-      x2 <- x2[comp,]
-      y2 <- y[comp]
-    } else {
-      y2 <- y
-    }
-    logn <- log(nrow(x))
-    family <- switch(family,
-                     "gaussian"=gaussian(link="identity"),
-                     "binomial"=binomial(link="logit"))
-    print(family)
-    snps <- lapply(snps,setdiff,"1")
-  }
-  
-  if(method=="glm") {
-    df <- as.data.frame(x[,intersect(unique(unlist(snps)),colnames(x))])
-    df$y <- y                      
-    comp <- complete.cases(df)
-    if(!all(comp)) {
-      df2 <- df[comp,]
-    } else {
-      df2 <- df
-    }
-  }
-  
-  ## generate bics
-  message("calculating ABFs")
-  if(method=="glm.fit") {
-    bics <- mclapply(seq_along(models), function(i) {
-      if(verbose && i %% 100 == 0)
-        cat(i,"\t")
-      k=length(snps[[i]])+1
-      model <- glm.fit(x2[,c("one",snps[[i]])], y2, family=family)
-      class(model) <- c(class(model),"glm")
-      BIC(model)
-    })
-  }
-  if(method=="glm") {
-    ## is baseline already included?
-  l <- sapply(snps,length)
-  for(wh in which(l==0))
-    snps[[wh]] <- "1"
-  
-  bics <- mclapply(seq_along(models), function(i) {
-      if(verbose && i %% 100 == 0)
-        cat(i,"\t")
-      f <- as.formula(paste("y ~",paste(snps[[i]],collapse="+")))
-      BIC(glm(f, data=df2, family=family))
-    })
-  }
-  
-  bics <- unlist(bics)
-  use <- use[-1] # drop base model
-  models <- models[-1]
-  cat("use: ",sum(use),", bics: ",length(bics)-1,"\n")
-  lBF[use] <- (bics[-1] - bics[1]) / (-2)
-
+  ## models that need to be assessed through tagging
   if(!all(use) && (!is.null(snp.data) || !is.null(R2))) {
     message("attempting to find tag models for those with missing SNPs")    
     models.missing <- setdiff(models.orig,models)
@@ -118,62 +52,86 @@ abf.calc <- function(y,x,models,family="binomial",
     for(snp in snps.missing) {
       models.alt <- sub(paste0("(%|^)",snp,"(%|$)"), paste0("\\1",snps.tags[snp],"\\2"), models.alt)
     }
+    names(models.alt) <- models.missing
+    models <- unique(c(models.alt,models))
+    message("including tags, a total of ",length(models)," need evaluation")
+}
 
-    ## have any of these been done already?
-    wh <- which(models.alt %in% models)
-    if(length(wh)) {
-      message(length(wh)," tagged by models already evaluated")
-      lBF[ models.missing[wh] ] <- lBF[ models.alt[wh] ]                                       
+  ## do the fitting
+  models <- c("1",models)
+  snps <- strsplit(models,"%")
+  
+  ## prepare data
+  if(is(x,"SnpMatrix"))
+    x <- matrix(as(x,"numeric"),nrow=nrow(x),dimnames=dimnames(x))
+
+  if(method=="glm.fit") {
+    if(is(x,"data.frame"))
+      x <- as.matrix(x)
+    x2<-cbind(one=1,x[,intersect(unique(unlist(snps)),colnames(x))])
+    comp <- complete.cases(x2) & !is.na(y)
+    if(!all(comp)) {
+        message("Dropping ",sum(!comp)," samples due to incompleteness. ",sum(comp)," remain.")
+      x2 <- x2[comp,]
+      y2 <- y[comp]
+    } else {
+      y2 <- y
     }
-
-    ## do any need to be run fresh?
-    models.todo <- unique(setdiff(models.alt,models))
-    message("remainder can be tagged by ",length(models.todo)," needing evaluation")
-    snps <- strsplit(models.todo,"%")
-
-    if(method=="glm.fit") {
-      snps <- lapply(snps,setdiff,"1")
-      x2<-cbind(one=1,x[,intersect(unique(unlist(snps)),colnames(x))])
-      comp2 <- complete.cases(x2) & !is.na(y)
-      if(!all(comp2) || !all(comp)) {
-        keep <- sample(which(comp2),size=sum(comp),replace=sum(comp) > sum(comp2))
-        x2 <- x2[comp,]
-        y2 <- y[comp]
-      } # otherwise existing y2 and this x2 both ok
-      bics.todo <- mclapply(seq_along(models.todo), function(i) {
-        k=length(snps[[i]])+1
-        glm.fit(x2[,c("one",snps[[i]])], y2, family=family)$deviance + k*logn
-      })
+    logn <- log(nrow(x))
+    family <- switch(family,
+                     "gaussian"=gaussian(link="identity"),
+                     "binomial"=binomial(link="logit"))
+    print(family)
+    snps <- lapply(snps,setdiff,"1")
+       bics <- mclapply(seq_along(models), function(i) {
+      if(verbose && i %% 100 == 0)
+        cat(i,"\t")
+      k=length(snps[[i]])+1
+      model <- glm.fit(x2[,c("one",snps[[i]])], y2, family=family)
+      class(model) <- c(class(model),"glm")
+      BIC(model)
+    })    
+  }
+  
+  if(method=="glm") {
+    df <- as.data.frame(x[,intersect(unique(unlist(snps)),colnames(x))])
+    df$y <- y                      
+    comp <- complete.cases(df)
+    if(!all(comp)) {
+         message("dropping ",sum(!comp)," SNPs due to incompleteness")
+     df2 <- df[comp,]
+    } else {
+      df2 <- df
     }
-    if(method=="glm") {
-     ## is baseline already included?
+    ## is baseline already included?
   l <- sapply(snps,length)
   for(wh in which(l==0))
     snps[[wh]] <- "1"
   
-   df <- as.data.frame(x[,intersect(unique(unlist(snps)),colnames(x))])
-      df$y <- y                      
-      comp2 <- complete.cases(df)
-      if(!all(comp2) || !all(comp)) {
-        keep <- sample(which(comp2),size=sum(comp),replace=sum(comp) > sum(comp2))
-        df2 <- df[keep,]
-      } # otherwise existing y2 and this x2 both ok
-      bics.todo <- mclapply(seq_along(models.todo), function(i) {
+    bics <- mclapply(seq_along(models), function(i) {
+        if(verbose && i %% 100 == 0)
+            cat(i,"\t")
         f <- as.formula(paste("y ~",paste(snps[[i]],collapse="+")))
         BIC(glm(f, data=df2, family=family))
-      })
-    }
-
-    
-    lbf.todo <- (unlist(bics.todo) - bics[1]) / (-2)
-    names(lbf.todo) <- models.todo
-    
-    m <- match(models.alt,models.todo)
-    lBF[ models.missing[ !is.na(m) ] ] <- lbf.todo[ m[!is.na(m)]  ]    
-    
+    })
   }
+  
+  ## calculate ABF
+  bics <- unlist(bics)
+  ##  use <- use[-1] # drop base model
+  models <- models[-1]
+  lBF.fits <- (bics[-1] - bics[1]) / (-2)
+  names(lBF.fits) <- models
 
-  lBF <- data.frame(model=models.orig,tag=models.orig %in% models,lBF=lBF,stringsAsFactors=FALSE)
+  ## remap to original model ids
+  ## direct
+  mint <- intersect(names(lBF),models)
+  lBF[ mint ] <- lBF.fits[ mint ]
+  ## tags
+  mint <- intersect(names(lBF),models.missing)
+  lBF[ mint ] <- lBF.fits[ models.alt[ mint ] ]
+
+  lBF <- data.frame(model=names(lBF),tag=!(models.orig %in% names(lBF)),lBF=lBF,stringsAsFactors=FALSE)
   if(return.R2 && exists("R2"))
     return(list(lBF=lBF,R2=R2))
   return(lBF)
