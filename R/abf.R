@@ -23,7 +23,8 @@ abf.calc <- function(y,x,models,family="binomial",
   ## initialize return object
   models.orig <- models
   lBF <- structure(rep(as.numeric(NA),length(models)),names=models.orig)
-
+  coeff <- structure(vector("list",length(models)),names=models.orig)
+  
   ## models that can be fitted directly
   snps <- strsplit(models,"%")
   cols.ok <- c("1",colnames(x))
@@ -87,7 +88,7 @@ abf.calc <- function(y,x,models,family="binomial",
                      "binomial"=binomial(link="logit"))
     print(family)
     snps <- lapply(snps,setdiff,"1")
-       bics <- mclapply(seq_along(models), function(i) {
+    results <- mclapply(seq_along(models), function(i) {
       if(verbose && i %% 100 == 0)
         cat(i,"\t")
       k=length(snps[[i]])+1
@@ -97,7 +98,9 @@ abf.calc <- function(y,x,models,family="binomial",
           model <- glm.fit(x2[,c("one",snps[[i]])], y2, family=family)
       }
       class(model) <- c(class(model),"glm")
-      BIC(model)
+      list(BIC=BIC(model),
+           coeff=cbind(beta=model$coefficients,
+             se=sqrt(diag(vcov(model)))))
     })    
   }
   
@@ -118,36 +121,43 @@ abf.calc <- function(y,x,models,family="binomial",
     for(wh in which(l==0))
         snps[[wh]] <- "1"
   
-    bics <- mclapply(seq_along(models), function(i) {
+    results <- mclapply(seq_along(models), function(i) {
         if(verbose && i %% 100 == 0)
             cat(i,"\t")
         if(!is.null(q)) 
             f <- as.formula(paste("y ~ q +",paste(snps[[i]],collapse="+")))
         else
             f <- as.formula(paste("y ~",paste(snps[[i]],collapse="+")))
-        BIC(glm(f, data=df2, family=family))
+        model <- glm(f, data=df2, family=family)
+        list(BIC=BIC(model),
+             coeff=cbind(beta=model$coefficients,
+               se=sqrt(diag(vcov(model)))))
     })
   }
   
   ## calculate ABF
-  bics <- unlist(bics)
+  bics <- unlist(lapply(results, "[[", "BIC"))
   ##  use <- use[-1] # drop base model
   models <- models[-1]
   lBF.fits <- (bics[-1] - bics[1]) / (-2)
   names(lBF.fits) <- models
-
+  results <- results[-1]
+  names(results) <- models
+  
   ## remap to original model ids
   ## direct
   mint <- intersect(names(lBF),models)
   lBF[ mint ] <- lBF.fits[ mint ]
+  coeff[ mint ] <- lapply(results[ mint ], "[[", "coeff")
   ## tags
   mint <- intersect(names(lBF),models.missing)
   lBF[ mint ] <- lBF.fits[ models.alt[ mint ] ]
+  coeff[ mint ] <- lapply(results[ models.alt[ mint ] ], "[[", "coeff")
 
   lBF <- data.frame(model=models.orig,tag=!(models.orig %in% names(lBF)),lBF=lBF[models.orig],stringsAsFactors=FALSE)
   if(return.R2 && exists("R2"))
-    return(list(lBF=lBF,R2=R2))
-  return(lBF)
+    return(list(lBF=lBF,coeff=coeff,R2=R2))
+  return(list(lBF=lBF,coeff=coeff))
   
 ##   tmp <- new("snpmod")
 ##   tmp@models=data.frame(str=models[-1],
