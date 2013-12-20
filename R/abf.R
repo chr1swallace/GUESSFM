@@ -95,7 +95,7 @@ abf.calc <- function(y,x,models,family="binomial",
       if(!is.null(q)) {
           model <- glm.fit(cbind(x2[, snps[[i]] ],qm), y2, family=family)
       } else {
-          model <- glm.fit(x2[,c("one",snps[[i]])], y2, family=family)
+          model <- glm.fit(x2[,c(snps[[i]],"one")], y2, family=family)
       }
       class(model) <- c(class(model),"glm")
       list(BIC=BIC(model),
@@ -125,7 +125,7 @@ abf.calc <- function(y,x,models,family="binomial",
         if(verbose && i %% 100 == 0)
             cat(i,"\t")
         if(!is.null(q)) 
-            f <- as.formula(paste("y ~ q +",paste(snps[[i]],collapse="+")))
+            f <- as.formula(paste("y ~ ",paste(snps[[i]],collapse="+"), "+ q"))
         else
             f <- as.formula(paste("y ~",paste(snps[[i]],collapse="+")))
         model <- glm(f, data=df2, family=family)
