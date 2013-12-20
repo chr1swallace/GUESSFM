@@ -100,7 +100,16 @@ setAs("snppicker","tags",
             groups=lapply(from@groups, "[[", "var"))
         as(g,"tags")
       })
-          
+setMethod("[",signature=c(x="groups",i="character",j="missing",drop="missing"),
+          function(x,i) {
+            wh <- which(x@tags %in% i)
+            structure(x@groups[wh],names=x@tags[wh])
+          })
+setMethod("[",signature=c(x="groups",i="numeric",j="missing",drop="missing"),
+          function(x,i) {
+            structure(x@groups[i],names=x@tags[i])
+          })
+
 ######################################################################
 
 ##                        concatenate                               ##
@@ -161,8 +170,20 @@ setMethod("union",signature(x="groups",y="groups"),definition=function(x,y) {
 
 ######################################################################
 
-##                      add two snpmods                             ##
+##                      manipulate snpmods                             ##
 
 ######################################################################
+
+## setMethod("snpdrop",signature(x="snpmod",y="character"),
+##           function(x,y) {
+##             wh <- which(sapply(x@model.snps,function(x) any(x %in% y)))
+##             message(length(wh), " / ", length(x@model.snps), " models (",
+##                     format.pval(100*length(wh)/length(x@model.snps)), "%) will be dropped.")
+##             if(!length(wh))
+##               return(d)
+##             x@models <- x@models[-wh,]
+##             x@model.snps <- x@model.snps[-wh]  
+##             return(marg.snps(x))  
+##           })
 
 ## setMethod("+",signature(e1="snpmod",e2="snpmod"), function(e1,e2) snpmod.add(e1,e2))

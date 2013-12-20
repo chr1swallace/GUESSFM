@@ -14,20 +14,18 @@
 ##' @return a data.frame containing model name, ABF, and an indicator of whether the ABF was calculating directly or via a tag SNP
 ##' @author Chris Wallace
 abf.calc <- function(y,x,models,family="binomial",
-                     method=c("glm.fit","glm"),
+                     q=NULL,method=c("glm.fit","glm"),
                      R2=NULL,snp.data=NULL,return.R2=FALSE,verbose=FALSE) { # raftery, wen
 
   method <- match.arg(method)
   message("Calculating BICs using ",method)
   
   ## initialize return object
-  lBF <- structure(rep(as.numeric(NA),length(models)),names=models)
-
-  ## add a base model
   models.orig <- models
-  snps <- strsplit(models,"%")
+  lBF <- structure(rep(as.numeric(NA),length(models)),names=models.orig)
 
   ## models that can be fitted directly
+  snps <- strsplit(models,"%")
   cols.ok <- c("1",colnames(x))
   use <- sapply(snps, function(snp.names) all(snp.names %in% cols.ok))
   message(sum(use)," of ", length(models), " models can be evaluated directly")
@@ -64,16 +62,22 @@ abf.calc <- function(y,x,models,family="binomial",
   ## prepare data
   if(is(x,"SnpMatrix"))
     x <- matrix(as(x,"numeric"),nrow=nrow(x),dimnames=dimnames(x))
-
+  if(!is.null(q))
+      qm <- model.matrix(~q)
+  
   if(method=="glm.fit") {
     if(is(x,"data.frame"))
       x <- as.matrix(x)
     x2<-cbind(one=1,x[,intersect(unique(unlist(snps)),colnames(x))])
     comp <- complete.cases(x2) & !is.na(y)
+    if(!is.null(q))
+        comp <- comp & complete.cases(qm)
     if(!all(comp)) {
         message("Dropping ",sum(!comp)," samples due to incompleteness. ",sum(comp)," remain.")
       x2 <- x2[comp,]
       y2 <- y[comp]
+        if(!is.null(q)) 
+            qm <- qm[use,drop=FALSE]
     } else {
       y2 <- y
     }
@@ -87,7 +91,11 @@ abf.calc <- function(y,x,models,family="binomial",
       if(verbose && i %% 100 == 0)
         cat(i,"\t")
       k=length(snps[[i]])+1
-      model <- glm.fit(x2[,c("one",snps[[i]])], y2, family=family)
+      if(!is.null(q)) {
+          model <- glm.fit(cbind(x2[, snps[[i]] ],qm), y2, family=family)
+      } else {
+          model <- glm.fit(x2[,c("one",snps[[i]])], y2, family=family)
+      }
       class(model) <- c(class(model),"glm")
       BIC(model)
     })    
@@ -95,6 +103,8 @@ abf.calc <- function(y,x,models,family="binomial",
   
   if(method=="glm") {
     df <- as.data.frame(x[,intersect(unique(unlist(snps)),colnames(x))])
+    if(!is.null(q))
+        df$q <- q
     df$y <- y                      
     comp <- complete.cases(df)
     if(!all(comp)) {
@@ -104,14 +114,17 @@ abf.calc <- function(y,x,models,family="binomial",
       df2 <- df
     }
     ## is baseline already included?
-  l <- sapply(snps,length)
-  for(wh in which(l==0))
-    snps[[wh]] <- "1"
+    l <- sapply(snps,length)
+    for(wh in which(l==0))
+        snps[[wh]] <- "1"
   
     bics <- mclapply(seq_along(models), function(i) {
         if(verbose && i %% 100 == 0)
             cat(i,"\t")
-        f <- as.formula(paste("y ~",paste(snps[[i]],collapse="+")))
+        if(!is.null(q)) 
+            f <- as.formula(paste("y ~ q +",paste(snps[[i]],collapse="+")))
+        else
+            f <- as.formula(paste("y ~",paste(snps[[i]],collapse="+")))
         BIC(glm(f, data=df2, family=family))
     })
   }
@@ -131,7 +144,7 @@ abf.calc <- function(y,x,models,family="binomial",
   mint <- intersect(names(lBF),models.missing)
   lBF[ mint ] <- lBF.fits[ models.alt[ mint ] ]
 
-  lBF <- data.frame(model=names(lBF),tag=!(models.orig %in% names(lBF)),lBF=lBF,stringsAsFactors=FALSE)
+  lBF <- data.frame(model=models.orig,tag=!(models.orig %in% names(lBF)),lBF=lBF[models.orig],stringsAsFactors=FALSE)
   if(return.R2 && exists("R2"))
     return(list(lBF=lBF,R2=R2))
   return(lBF)

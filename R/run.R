@@ -24,7 +24,7 @@ run.bvs <- function(X,Y,gdir="test",
                     nexp=3,boot=0,tag.r2=0.99, nsave=1000, as.is=TRUE,dominance=FALSE,
                     backend=c("guess","dummy")) { 
 
-  print(backend <- match.arg(backend))
+  backend <- match.arg(backend)
   if(!file.exists(gdir))
     dir.create(gdir,recursive=TRUE)
   
@@ -42,26 +42,28 @@ run.bvs <- function(X,Y,gdir="test",
   ## format snp data  
   N <- as(X,"numeric")
   p <- 0
-  if(!is.null(strat)) {
-    if(is.numeric(strat)) {
-      N <- cbind(covar=strat,N)
-      p <- 1
-    } else {
-      N <- cbind(model.matrix(~strat)[,-1],N)
-      p <- length(levels(strat))-1
-    }
-  }
   
-  use <- which(complete.cases(N) & complete.cases(Y))
+  use <- complete.cases(N) & complete.cases(Y)
+  if(!is.null(strat))
+      use <- use & complete.cases(strat)
+  use <- which(use)
   if(!is.na(sub))
     use <- use[1:sub]
   gX <- N[use,]
   gY <- Y[use]
   n <- length(use)
   v <- apply(gX,2,var)
-  use <- which(v>0)
-  gX <- gX[,use]
-  m <- length(use) - p
+  use.cols <- which(v>0)
+  gX <- gX[,use.cols]
+  m <- length(use.cols)
+
+
+  if(!is.null(strat)) {
+      strat <- strat[use]
+      m0 <- glm(gY ~ strat, family=family)
+      gY <- residuals(m0)
+  }
+      
   message("using ",n," samples ",m," SNPs, ",p," confounders.")
   
   ## IF GUESS: what are the best regressors? (95,220?)
@@ -116,7 +118,8 @@ run.bvs <- function(X,Y,gdir="test",
     }
       
     switch(backend,
-           guess=backend.guess(gX=gX[use,], gY=gY[use], gdir=gdir2, nsweep, nchains, best, nsave, nexp, nexp.sd, grid),
+           guess=backend.guess(gX=gX[use,], gY=gY[use], gdir=gdir2,
+               nsweep, nchains, best, nsave, nexp, nexp.sd, grid),
            dummy=NULL,
            sbams=backend.sbams(X=gX[use,],Y=gY[use],gdir=gdir2))
   }
@@ -199,12 +202,13 @@ backend.guess <- function(gX, gY, gdir, nsweep, nchains, best, nsave, nexp, nexp
   
   com <- sprintf("/home/chrisw/GUESS_v1.1/Main/GUESS -history -X %s -Y %s -nsweep %s -burn_in %s -out %s/out -par %s/par.xml -top %s -init %s -Egam %s -Sgam %s -n_chain %s",
                  x.file,y.file,nsweep,round(nsweep/11),gdir,gdir,nsave,init.file,nexp,nexp.sd,nchains)
-  message(com)
   if(grid) {
-    message("running GUESS on Q")
+    message("running GUESS on Q with command")
+    message(com)
     system(paste("/home/chrisw/local/bin/qCom.sh -N GUESS",com))
   } else {
-    message("running GUESS locally")
+    message("running GUESS locally with command")
+    message(com)
     system(sprintf("%s > %s/log",com,gdir), wait=FALSE)
   }
 }

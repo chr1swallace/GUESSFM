@@ -1,4 +1,27 @@
+modelMatrix <- function(d) {
+  allsnps <- rownames(d@snps)
+  M <- Matrix(0,length(d@model.snps),length(allsnps))
+  colnames(M) <- allsnps
 
+  ## option 1 - faster 0.14
+##   NN <- 1000
+##   system.time({S <- lapply(d@model.snps[1:NN], match, allsnps)
+##                M[cbind(rep(1:length(d@model.snps[1:NN]),times=sapply(d@model.snps[1:NN],length)),unlist(S))] <- 1})
+
+
+  ## option 2 - SLOW 0.331
+##   system.time({for(i in 1:length(d@model.snps[1:100]))
+##                  M[i,d@model.snps[[i]]] <- 1})
+ 
+   ## option 3 - slower 0.052
+##   system.time({lookup <- structure(1:length(allsnps),names=allsnps)
+##                S <- lapply(d@model.snps[1:NN], function(x) lookup[x])
+##                M[cbind(rep(1:length(d@model.snps[1:NN]),times=sapply(d@model.snps[1:NN],length)),unlist(S))] <- 1})
+  lookup <- structure(1:length(allsnps),names=allsnps)
+  S <- lapply(d@model.snps, function(x) lookup[x])
+  M[cbind(rep(1:length(d@model.snps),times=sapply(d@model.snps,length)),unlist(S))] <- 1
+  return(M)
+}
 logsum <- function(x) {
   my.max <- max(x) ##take out the maximum value in log form
   my.res <- my.max + log(sum(exp(x - my.max )))
