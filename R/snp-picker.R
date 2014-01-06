@@ -51,7 +51,7 @@ snp.picker <- function(d,data,start.thr=0.01,nochange.thr=0.001,nochange.run=3,r
   }
   
   while(any(a$Marg_Prob_Incl>start.thr)) {
-
+    
     (i <- i+1)
     ## best snp
     wh <- which.max(a$Marg_Prob_Incl)
@@ -99,7 +99,15 @@ snp.picker <- function(d,data,start.thr=0.01,nochange.thr=0.001,nochange.run=3,r
             r2lim <- df2$r2bin[ k-1 ]
             break
           }                          
+          if((df2$r2bin[k+1] - df2$r2bin[k])>r2.gap && df2$mpi[k+1]<nochange.thr*3) {
+           ## k is low, then big gap to next SNP, which is nearly low enough to be ignored
+            r2lim <- df2$r2bin[ k-1 ]
+            break
+          }
         }
+        message("outside given rules! Stopping on row ",wh[1]-1)
+        print(df2)
+        r2lim <- df2$r2bin[ wh[1]-1 ]    
       }
     }
     ## store
@@ -109,9 +117,10 @@ snp.picker <- function(d,data,start.thr=0.01,nochange.thr=0.001,nochange.run=3,r
     cat(i,snp,length(snp.group),max(groups[[i]]$cmpi),"\n")
     a <- a[!(a$var %in% snp.group),]
     dfp$changepoint <- 1:nrow(dfp)==max(wh)
-    plotsdata[[i]] <- dfp
-    
+    plotsdata[[i]] <- dfp    
+
   }
+  
   return(new("snppicker",groups=groups,plotsdata=plotsdata))
 }
 
