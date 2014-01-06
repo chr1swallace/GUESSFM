@@ -19,12 +19,10 @@ abf.calc <- function(y,x,models,family="binomial",
 
   method <- match.arg(method)
   message("Calculating BICs using ",method)
-  
-  ## initialize return object
+
+  models[ models=="" ] <- "1"
   models.orig <- models
-  lBF <- structure(rep(as.numeric(NA),length(models)),names=models.orig)
-  coeff <- structure(vector("list",length(models)),names=models.orig)
-  
+ 
   ## models that can be fitted directly
   snps <- strsplit(models,"%")
   cols.ok <- c("1",colnames(x))
@@ -72,13 +70,13 @@ abf.calc <- function(y,x,models,family="binomial",
     x2<-cbind(one=1,x[,intersect(unique(unlist(snps)),colnames(x))])
     comp <- complete.cases(x2) & !is.na(y)
     if(!is.null(q))
-        comp <- comp & complete.cases(qm)
+      comp <- comp & complete.cases(qm)
     if(!all(comp)) {
-        message("Dropping ",sum(!comp)," samples due to incompleteness. ",sum(comp)," remain.")
+      message("Dropping ",sum(!comp)," samples due to incompleteness. ",sum(comp)," remain.")
       x2 <- x2[comp,]
       y2 <- y[comp]
-        if(!is.null(q)) 
-            qm <- qm[use,drop=FALSE]
+      if(!is.null(q)) 
+        qm <- qm[comp,drop=FALSE]
     } else {
       y2 <- y
     }
@@ -88,6 +86,12 @@ abf.calc <- function(y,x,models,family="binomial",
                      "binomial"=binomial(link="logit"))
     print(family)
     snps <- lapply(snps,setdiff,"1")
+
+    ## check
+    allsnps <- unique(unlist(snps))
+    if(!all(allsnps %in% colnames(x2)))
+      stop("Not all SNPs found")
+    
     results <- mclapply(seq_along(models), function(i) {
       if(verbose && i %% 100 == 0)
         cat(i,"\t")
@@ -111,8 +115,8 @@ abf.calc <- function(y,x,models,family="binomial",
     df$y <- y                      
     comp <- complete.cases(df)
     if(!all(comp)) {
-         message("dropping ",sum(!comp)," SNPs due to incompleteness")
-     df2 <- df[comp,]
+      message("dropping ",sum(!comp)," SNPs due to incompleteness")
+      df2 <- df[comp,]
     } else {
       df2 <- df
     }
@@ -124,10 +128,11 @@ abf.calc <- function(y,x,models,family="binomial",
     results <- mclapply(seq_along(models), function(i) {
         if(verbose && i %% 100 == 0)
             cat(i,"\t")
-        if(!is.null(q)) 
-            f <- as.formula(paste("y ~ ",paste(snps[[i]],collapse="+"), "+ q"))
-        else
-            f <- as.formula(paste("y ~",paste(snps[[i]],collapse="+")))
+        if(!is.null(q)) {
+          f <- as.formula(paste("y ~ ",paste(snps[[i]],collapse="+"), "+ q"))
+        } else {
+          f <- as.formula(paste("y ~",paste(snps[[i]],collapse="+")))
+        }
         model <- glm(f, data=df2, family=family)
         list(BIC=BIC(model),
              coeff=cbind(beta=model$coefficients,
@@ -144,20 +149,29 @@ abf.calc <- function(y,x,models,family="binomial",
   results <- results[-1]
   names(results) <- models
   
-  ## remap to original model ids
-  ## direct
-  mint <- intersect(names(lBF),models)
+  ## initialize return object
+  lBF <- structure(rep(as.numeric(NA),length(models.orig)),names=models.orig)
+  coeff <- structure(vector("list",length(models.orig)),names=models.orig)
+
+  ## directly fitted
+  length(mint <- intersect(names(lBF),models))
   lBF[ mint ] <- lBF.fits[ mint ]
   coeff[ mint ] <- lapply(results[ mint ], "[[", "coeff")
   ## tags
-  mint <- intersect(names(lBF),models.missing)
-  lBF[ mint ] <- lBF.fits[ models.alt[ mint ] ]
-  coeff[ mint ] <- lapply(results[ models.alt[ mint ] ], "[[", "coeff")
-
-  lBF <- data.frame(model=models.orig,tag=!(models.orig %in% names(lBF)),lBF=lBF[models.orig],stringsAsFactors=FALSE)
+  mint <- intersect(names(lBF.fits),models.alt[models.missing])
+  if(length(mint)) {
+    m0 <- models.missing[match(mint,models.alt)]
+    lBF[ m0 ] <- lBF.fits[ mint  ]
+    coeff[ m0 ] <- lapply(results[ mint ], "[[", "coeff")
+  }
+  
+  lBF.df <- data.frame(model=models.orig,
+                    tag=!(models.orig %in% names(lBF)),
+                    lBF=lBF[models.orig],
+                    stringsAsFactors=FALSE)
   if(return.R2 && exists("R2"))
-    return(list(lBF=lBF,coeff=coeff,R2=R2))
-  return(list(lBF=lBF,coeff=coeff))
+    return(list(lBF=lBF.df,coeff=coeff,R2=R2))
+  return(list(lBF=lBF.df,coeff=coeff))
   
 ##   tmp <- new("snpmod")
 ##   tmp@models=data.frame(str=models[-1],
