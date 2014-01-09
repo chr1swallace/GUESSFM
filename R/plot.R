@@ -44,12 +44,21 @@ plot.fdr <- function(summ,causal) {
 }
 ##' A summary plot to indicate how diffuse the posterior is.
 ##'
-##' This is measured by how rapidly the cumulative posterior probability increases with number of models.  For one dataset, this may be informative in an absolute sense, but comparing different datasets, by supplying a list of results, can be useful too.
+##' This is measured by how rapidly the cumulative posterior
+##' probability increases with number of models.  For one dataset,
+##' this may be informative in an absolute sense, but comparing
+##' different datasets, by supplying a list of results, can be useful
+##' too.
+##'
+##' If a list of snpmod objects are given, multiple diffusion plots
+##' are overlaid, with colours indicating labels.
 ##' @title Diffusion plot
-##' @param results an object of class snpmod, or a list of such objects
+##' @param results an object of class snpmod, or a named list of such objects
 ##' @param maxrank truncate the x axis at this value
+##' @param thin thin data to display only \code{thin} points per line
 ##' @return no return value
 ##' @author Chris Wallace
+##' @export
 plot.diffuse <- function(results, maxrank=1000, thin=500) {
   if(!is.list(results))
     results <- list(trait=results)
