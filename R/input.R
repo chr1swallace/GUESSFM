@@ -106,6 +106,11 @@ reader <- function(f,decode,offset) {
                            col.names=c("rank","visits","size","logPP","PP","jeffreys",paste0("s",1:maxsize)))
       models <- subset(models, !is.na(size))
   }
+  ## force numerics
+  models$logPP <- as.numeric(models$logPP)
+  models$PP <- as.numeric(models$PP)
+  models$jeffreys <- as.numeric(models$jeffreys)
+
   maxsize <- max(models$size)
   models <- models[, 1:(6+max(models$size))]
   message(nrow(models), " models, covering all models with pp > ",signif(models[nrow(models), "PP"],3),
@@ -142,7 +147,7 @@ read.snpmod <- function(f,offset=0) {
     f <- basefile(f)
     decode <- read.decode(sub("out_","decode_",f))
 
-    reader(f,decode,offset=offset)
+    reader(f=f,decode=decode,offset=offset)
 }
 
 ##' guess.read, for backwards compatability
