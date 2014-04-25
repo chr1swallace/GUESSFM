@@ -2,8 +2,8 @@
 \alias{snpprior}
 \title{snpprior}
 \usage{
-  snpprior(x = 0:10, n, expected, overdispersion = 1,
-    pi0 = NA, truncate = NA)
+snpprior(x = 0:10, n, expected, overdispersion = 1, pi0 = NA,
+  truncate = NA)
 }
 \arguments{
   \item{x}{number of SNPs in a model (defaults to
@@ -28,26 +28,26 @@
   \item{pi0}{prior probability that no SNP is associated}
 }
 \value{
-  prior probabilities as a numeric vector
+prior probabilities as a numeric vector
 }
 \description{
-  (Beta) Binomial prior for number of SNPs in a model
+(Beta) Binomial prior for number of SNPs in a model
 }
 \details{
-  A binomial prior for the number of SNPs in a model may be
-  considered too peaked if there is relatively little prior
-  information about the number of causal SNPs, and,
-  particularly if the posterior model choice is sensitive
-  to this prior, it can be useful to consider a prior with
-  greater spread.  One such choice is the beta binomial
-  model, implemented here, under which the number of SNPs
-  follows a binomial distribution with parameters n, p
-  while p follows a beta distribution with parameters
-  chosen so that the mean and the overdispersion (relative
-  to a binomial distribution) of the number of SNPs is as
-  specified by \code{expected} and \code{overdispersion},
-  respectively.  An overdispersion of 1 corresponds to a
-  binomial prior.
+A binomial prior for the number of SNPs in a model may be
+considered too peaked if there is relatively little prior
+information about the number of causal SNPs, and,
+particularly if the posterior model choice is sensitive to
+this prior, it can be useful to consider a prior with
+greater spread.  One such choice is the beta binomial
+model, implemented here, under which the number of SNPs
+follows a binomial distribution with parameters n, p while
+p follows a beta distribution with parameters chosen so
+that the mean and the overdispersion (relative to a
+binomial distribution) of the number of SNPs is as
+specified by \code{expected} and \code{overdispersion},
+respectively.  An overdispersion of 1 corresponds to a
+binomial prior.
 }
 \examples{
 n<-100 # 100 SNPs in region
@@ -71,6 +71,6 @@ points(x, y1.5, col="pink")
 points(x, y2.0, col="green")
 }
 \author{
-  Chris Wallace
+Chris Wallace
 }
 

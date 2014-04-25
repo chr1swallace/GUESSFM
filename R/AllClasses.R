@@ -3,47 +3,59 @@
 
 #' Class to hold data relating to multiple models fitted to SNP data
 #'
-#' @title The snpmod class
 #' @section Slots: 
-#'  \describe{
-#'    \item{\code{snps}:}{data.frame containing marginal probabilities of inclusion for the SNPs}
-#'    \item{\code{models}:}{data.frame containing summaries for each model}
-#'    \item{\code{model.snps}:}{list containing the SNPs for each model. May be removed.}
-#'  }
+#' @slot snps data.frame containing marginal probabilities of inclusion for the SNPs
+#' @slot models data.frame containing summaries for each model
+#' @slot model.snps list containing the SNPs for each model. May be removed.
 #'
-#' @name snpmod
-#' @rdname snpmod-class
-#' @aliases snpmod-class
 #' @export
-#' @author Chris Wallace
 setClass("snpmod",
-         representation(snps="data.frame",
+         slots=c(snps="data.frame",
                         models="data.frame",
                         model.snps="list"),
          validity=function(object) {
            if(nrow(object@models)!=length(object@model.snps))
              stop("Model summary should contain same number of models as model.snps decodes")
          })
-
-setClass("snppicker",
-         representation(groups="list",
-                        plotsdata="list"),
-         validity=function(object) {
-           if(length(object@groups)!=length(object@plotsdata))
-             stop("groups and plotsdata should be lists of equal length")
-         })
-
+#' groups class
+#'
+#' @section Slots:
+#' @slot tags character vector giving tag SNPs.  Each tag indexes one group of SNPs
+#' @slot .Data list of character vectors giving the SNP membership of each group
 setClass("groups",
-         representation(tags="character",groups="list"),
+         slots=c(tags="character"),
+         contains="list",
          validity=function(object) {
-           if(length(object@tags)!=length(object@groups)) {
+           if(length(object@tags)!=length(object@.Data)) {
              stop("groups must be named by their tag")
            }
          })
+#' tags class
+#'
+#' @section Slots:
+#' @slot tags character vector giving tag SNPs, one per SNP in \code{snps}, repeated as necessary
+#' @slot .Data character vector giving SNPs included in this tags object
 setClass("tags",
-         representation(tags="character",snps="character"),
+         slots=c(tags="character"),
+         contains="character",
          validity=function(object) {
-           if(length(object@tags)!=length(object@snps))
+           if(length(object@tags)!=length(object@.Data))
              stop("tags must be in tags vector, tagging themselves")
          })
 
+#' Class to hold results of snp.picker algorithm
+#'
+#' \code{snp.picker} groups SNPs according to LD and model inclusion
+#' and outputs objects of class snppicker.
+#'
+#' @section Slots:
+#' @slot groups list of data.frames describing SNPs in each group
+#' @slot plotsdata list of additional data relating to the snp.picker
+#' process that allows a summary of that process to be plotted via
+#' \code{plot}.
+setClass("snppicker",
+         slots=c(plotsdata="list",groups="list"),
+         validity=function(object) {
+           if(length(object@.Data)!=length(object@plotsdata))
+             stop("groups and plotsdata should be lists of equal length")
+         })

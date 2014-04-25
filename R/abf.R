@@ -15,15 +15,18 @@
 ##' @author Chris Wallace
 abf.calc <- function(y,x,models,family="binomial",
                      q=NULL,method=c("glm.fit","glm"),
-                     R2=NULL,snp.data=NULL,return.R2=FALSE,verbose=FALSE) { # raftery, wen
-
+                     R2=NULL,snp.data=NULL,return.R2=FALSE,verbose=FALSE,
+                     parallel.file=NULL) { # raftery, wen
+  
   method <- match.arg(method)
   message("Calculating BICs using ",method)
-
+  
   models[ models=="" ] <- "1"
   models.orig <- models
- 
+  
   ## models that can be fitted directly
+  if(verbose)
+    message("Finding models which can be evaluated directly...")
   snps <- strsplit(models,"%")
   cols.ok <- c("1",colnames(x))
   use <- sapply(snps, function(snp.names) all(snp.names %in% cols.ok))
@@ -32,10 +35,10 @@ abf.calc <- function(y,x,models,family="binomial",
     snps <- snps[use]
     models <- models[use]
   }  
-
+  
   ## models that need to be assessed through tagging
   if(!all(use) && (!is.null(snp.data) || !is.null(R2))) {
-    message("attempting to find tag models for those with missing SNPs")    
+    message("Attempting to find tag models for those with missing SNPs...")    
     models.missing <- setdiff(models.orig,models)
     snps.missing <- setdiff(unlist(strsplit(models.missing,"%")),colnames(x))
     allsnps <- c(snps.missing,colnames(x))
@@ -51,145 +54,91 @@ abf.calc <- function(y,x,models,family="binomial",
     }
     names(models.alt) <- models.missing
     models <- unique(c(models.alt,models))
-    message("including tags, a total of ",length(models)," need evaluation")
-}
-
-  ## do the fitting
+    message("Including tags, a total of ",length(models)," need evaluation")
+  }
+  
   models <- c("1",models)
   snps <- strsplit(models,"%")
   
-  ## prepare data
-  if(is(x,"SnpMatrix"))
-    x <- matrix(as(x,"numeric"),nrow=nrow(x),dimnames=dimnames(x))
-  if(!is.null(q))
-      qm <- model.matrix(~q)
-  
-  if(method=="glm.fit") {
-    if(is(x,"data.frame"))
-      x <- as.matrix(x)
-    x2<-cbind(one=1,x[,intersect(unique(unlist(snps)),colnames(x))])
-    comp <- complete.cases(x2) & !is.na(y)
-    if(!is.null(q))
-      comp <- comp & complete.cases(qm)
-    if(!all(comp)) {
-      message("Dropping ",sum(!comp)," samples due to incompleteness. ",sum(comp)," remain.")
-      x2 <- x2[comp,]
-      y2 <- y[comp]
-      if(!is.null(q)) 
-        qm <- qm[comp,drop=FALSE]
-    } else {
-      y2 <- y
-    }
-    logn <- log(nrow(x))
-    family <- switch(family,
-                     "gaussian"=gaussian(link="identity"),
-                     "binomial"=binomial(link="logit"))
-    print(family)
-    snps <- lapply(snps,setdiff,"1")
-
-    ## check
-    allsnps <- unique(unlist(snps))
-    if(!all(allsnps %in% colnames(x2)))
-      stop("Not all SNPs found")
-    
-    results <- mclapply(seq_along(models), function(i) {
-      if(verbose && i %% 100 == 0)
-        cat(i,"\t")
-      k=length(snps[[i]])+1
-      if(!is.null(q)) {
-          model <- glm.fit(cbind(x2[, snps[[i]] ],qm), y2, family=family)
+  ## load prepared results?
+  if(!is.null(parallel.file) && file.exists(parallel.file)) {
+    message("Found ",parallel.file,", loading results")
+    (load(parallel.file))
+  } else { ## prepare models
+    results <- switch(method,
+                      glm.fit=abf.glm.fit(x,y,q,family,snps,parallel.file),
+                      glm=abf.glm(x,y,q,family,snps))
+    if(is.null(results))
+      if(return.R2 && !is.null(R2)) {
+        return(R2)
       } else {
-          model <- glm.fit(x2[,c(snps[[i]],"one")], y2, family=family)
+        return(NULL)
       }
-      class(model) <- c(class(model),"glm")
-      list(BIC=BIC(model),
-           coeff=cbind(beta=model$coefficients,
-             se=sqrt(diag(vcov(model)))))
-    })    
   }
   
-  if(method=="glm") {
-    df <- as.data.frame(x[,intersect(unique(unlist(snps)),colnames(x))])
-    if(!is.null(q))
-        df$q <- q
-    df$y <- y                      
-    comp <- complete.cases(df)
-    if(!all(comp)) {
-      message("dropping ",sum(!comp)," SNPs due to incompleteness")
-      df2 <- df[comp,]
-    } else {
-      df2 <- df
-    }
-    ## is baseline already included?
-    l <- sapply(snps,length)
-    for(wh in which(l==0))
-        snps[[wh]] <- "1"
-  
-    results <- mclapply(seq_along(models), function(i) {
-        if(verbose && i %% 100 == 0)
-            cat(i,"\t")
-        if(!is.null(q)) {
-          f <- as.formula(paste("y ~ ",paste(snps[[i]],collapse="+"), "+ q"))
-        } else {
-          f <- as.formula(paste("y ~",paste(snps[[i]],collapse="+")))
-        }
-        model <- glm(f, data=df2, family=family)
-        list(BIC=BIC(model),
-             coeff=cbind(beta=model$coefficients,
-               se=sqrt(diag(vcov(model)))))
-    })
-  }
-  
-  ## calculate ABF
-  bics <- unlist(lapply(results, "[[", "BIC"))
+  ## summarize ABF
   ##  use <- use[-1] # drop base model
+  message("calculating ABF")
   models <- models[-1]
-  lBF.fits <- (bics[-1] - bics[1]) / (-2)
+  lBF.fits <- (results$bics[-1] - results$bics[1]) / (-2)
   names(lBF.fits) <- models
-  results <- results[-1]
-  names(results) <- models
+  names(results$coeff) <- c("one",models)
+##   results <- results[-1]
+##   names(results) <- models
   
   ## initialize return object
   lBF <- structure(rep(as.numeric(NA),length(models.orig)),names=models.orig)
   coeff <- structure(vector("list",length(models.orig)),names=models.orig)
-
+  
   ## directly fitted
-  length(mint <- intersect(names(lBF),models))
-  lBF[ mint ] <- lBF.fits[ mint ]
-  coeff[ mint ] <- lapply(results[ mint ], "[[", "coeff")
-  ## tags
-  mint <- intersect(names(lBF.fits),models.alt[models.missing])
+  mint <- intersect(names(lBF),models)
+  message("evaluating direct models, ",length(mint)," found.")
   if(length(mint)) {
-    m0 <- models.missing[match(mint,models.alt)]
-    lBF[ m0 ] <- lBF.fits[ mint  ]
-    coeff[ m0 ] <- lapply(results[ mint ], "[[", "coeff")
+    lBF[ mint ] <- lBF.fits[ mint ]
+    coeff[ mint ] <- results$coeff[ mint ]
+  }
+  ## tags
+  models.alt.missing <- models.alt[models.missing]
+  message("evaluating tag models: ",length(models.missing)," can be found through ",length(unique(models.alt.missing))," models.")
+  if(length(models.alt.missing)) {
+    lBF[ models.missing ] <- lBF.fits[ models.alt.missing ]
+    coeff[ models.missing ] <- results$coeff[ models.alt.missing ]
   }
   
+  ## mint <- intersect(names(lBF.fits),models.alt[models.missing])
+  ## if(length(mint)) {
+  ##   m0 <- models.missing[match(mint,models.alt)]
+  ##   lBF[ m0 ] <- lBF.fits[ mint  ]
+  ##   coeff[ m0 ] <- results$coeff[ mint ]
+  ## }
+  
   lBF.df <- data.frame(model=models.orig,
-                    tag=!(models.orig %in% names(lBF)),
-                    lBF=lBF[models.orig],
-                    stringsAsFactors=FALSE)
+                       tag=!(models.orig %in% names(lBF)),
+                       lBF=lBF[models.orig],
+                       stringsAsFactors=FALSE)
   if(return.R2 && exists("R2"))
     return(list(lBF=lBF.df,coeff=coeff,R2=R2))
   return(list(lBF=lBF.df,coeff=coeff))
   
-##   tmp <- new("snpmod")
-##   tmp@models=data.frame(str=models[-1],
-##     size=sapply(snps,length)[-1],
-##     logABF=lBF)
-##   tmp@model.snps <- snps[-1]
-##   return(marg.snps(tmp))
+  ##   tmp <- new("snpmod")
+  ##   tmp@models=data.frame(str=models[-1],
+  ##     size=sapply(snps,length)[-1],
+  ##     logABF=lBF)
+  ##   tmp@model.snps <- snps[-1]
+  ##   return(marg.snps(tmp))
 }
 
-abf.tag.notworking <- function(models,sm,BFcolumn="jeffreys",xR2=NULL,snp.data=NULL,return.R2=FALSE,verbose=FALSE) { # raftery, wen
 
+
+abf.tag.notworking <- function(models,sm,BFcolumn="jeffreys",xR2=NULL,snp.data=NULL,return.R2=FALSE,verbose=FALSE) { # raftery, wen
+  
   ## initialize return object
   lBF <- matrix(NA,nrow=length(models),ncol=4,dimnames=list(models,c(BFcolumn,"r2.min","r2.mean","r2.max")))
-
+  
   ## models that have been fitted
   Mint <- intersect(models,sm@models$str)
   lBF[Mint,BFcolumn] <- sm@models[ match(Mint,sm@models$str), BFcolumn ]
-
+  
   ## find tags for remainder
   Mdiff <- setdiff(models,sm@models$str)
   snps.missing <- strsplit(Mdiff,"%")
@@ -198,23 +147,23 @@ abf.tag.notworking <- function(models,sm,BFcolumn="jeffreys",xR2=NULL,snp.data=N
   usnps.eval <- unique(unlist(snps.eval))
   if(is.null(R2))
     R2 <- ld(snp.data[,usnps.missing],snp.data[,usnps.eval],stat="R.squared")
-
   
-      snps.tags <- colnames(R2)[ apply(R2,1,which.max) ]
-    names(snps.tags) <- snps.missing
-    models.alt <- models.missing
-    for(snp in snps.missing) {
-      models.alt <- sub(paste0("(%|^)",snp,"(%|$)"), paste0("\\1",snps.tags[snp],"\\2"), models.alt)
-    }
-
+  
+  snps.tags <- colnames(R2)[ apply(R2,1,which.max) ]
+  names(snps.tags) <- snps.missing
+  models.alt <- models.missing
+  for(snp in snps.missing) {
+    models.alt <- sub(paste0("(%|^)",snp,"(%|$)"), paste0("\\1",snps.tags[snp],"\\2"), models.alt)
+  }
+  
   snps.missing <- setdiff(unlist(strsplit(models.missing,"%")),colnames(x))
-
+  
   ## prepare data.frame
   if(is(x,"SnpMatrix"))
     x <- matrix(as(x,"numeric"),nrow=nrow(x),dimnames=dimnames(x))
   if(is(x,"data.frame"))
     x <- as.matrix(x)
-
+  
   if(method=="glm.fit") {
     x2<-cbind(one=1,x[,intersect(unique(unlist(snps)),colnames(x))])
     comp <- complete.cases(x2) & !is.na(y)
@@ -255,11 +204,11 @@ abf.tag.notworking <- function(models,sm,BFcolumn="jeffreys",xR2=NULL,snp.data=N
   }
   if(method=="glm") {
     ## is baseline already included?
-  l <- sapply(snps,length)
-  for(wh in which(l==0))
-    snps[[wh]] <- "1"
-  
-  bics <- mclapply(seq_along(models), function(i) {
+    l <- sapply(snps,length)
+    for(wh in which(l==0))
+      snps[[wh]] <- "1"
+    
+    bics <- mclapply(seq_along(models), function(i) {
       if(verbose && i %% 100 == 0)
         cat(i,"\t")
       f <- as.formula(paste("y ~",paste(snps[[i]],collapse="+")))
@@ -272,7 +221,7 @@ abf.tag.notworking <- function(models,sm,BFcolumn="jeffreys",xR2=NULL,snp.data=N
   models <- models[-1]
   cat("use: ",sum(use),", bics: ",length(bics)-1,"\n")
   lBF[use] <- (bics[-1] - bics[1]) / (-2)
-
+  
   if(!all(use) && (!is.null(snp.data) || !is.null(R2))) {
     message("attempting to find tag models for those with missing SNPs")    
     models.missing <- setdiff(models.orig,models)
@@ -288,19 +237,19 @@ abf.tag.notworking <- function(models,sm,BFcolumn="jeffreys",xR2=NULL,snp.data=N
     for(snp in snps.missing) {
       models.alt <- sub(paste0("(%|^)",snp,"(%|$)"), paste0("\\1",snps.tags[snp],"\\2"), models.alt)
     }
-
+    
     ## have any of these been done already?
     wh <- which(models.alt %in% models)
     if(length(wh)) {
       message(length(wh)," tagged by models already evaluated")
       lBF[ models.missing[wh] ] <- lBF[ models.alt[wh] ]                                       
     }
-
+    
     ## do any need to be run fresh?
     models.todo <- unique(setdiff(models.alt,models))
     message("remainder can be tagged by ",length(models.todo)," needing evaluation")
     snps <- strsplit(models.todo,"%")
-
+    
     if(method=="glm.fit") {
       snps <- lapply(snps,setdiff,"1")
       x2<-cbind(one=1,x[,intersect(unique(unlist(snps)),colnames(x))])
@@ -316,12 +265,12 @@ abf.tag.notworking <- function(models,sm,BFcolumn="jeffreys",xR2=NULL,snp.data=N
       })
     }
     if(method=="glm") {
-     ## is baseline already included?
-  l <- sapply(snps,length)
-  for(wh in which(l==0))
-    snps[[wh]] <- "1"
-  
-   df <- as.data.frame(x[,intersect(unique(unlist(snps)),colnames(x))])
+      ## is baseline already included?
+      l <- sapply(snps,length)
+      for(wh in which(l==0))
+        snps[[wh]] <- "1"
+      
+      df <- as.data.frame(x[,intersect(unique(unlist(snps)),colnames(x))])
       df$y <- y                      
       comp2 <- complete.cases(df)
       if(!all(comp2) || !all(comp)) {
@@ -333,7 +282,7 @@ abf.tag.notworking <- function(models,sm,BFcolumn="jeffreys",xR2=NULL,snp.data=N
         BIC(glm(f, data=df2, family=family))
       })
     }
-
+    
     
     lbf.todo <- (unlist(bics.todo) - bics[1]) / (-2)
     names(lbf.todo) <- models.todo
@@ -342,18 +291,18 @@ abf.tag.notworking <- function(models,sm,BFcolumn="jeffreys",xR2=NULL,snp.data=N
     lBF[ models.missing[ !is.na(m) ] ] <- lbf.todo[ m[!is.na(m)]  ]    
     
   }
-
+  
   lBF <- data.frame(model=models.orig,tag=models.orig %in% models,lBF=lBF,stringsAsFactors=FALSE)
   if(return.R2 && exists("R2"))
     return(list(lBF=lBF,R2=R2))
   return(lBF)
   
-##   tmp <- new("snpmod")
-##   tmp@models=data.frame(str=models[-1],
-##     size=sapply(snps,length)[-1],
-##     logABF=lBF)
-##   tmp@model.snps <- snps[-1]
-##   return(marg.snps(tmp))
+  ##   tmp <- new("snpmod")
+  ##   tmp@models=data.frame(str=models[-1],
+  ##     size=sapply(snps,length)[-1],
+  ##     logABF=lBF)
+  ##   tmp@model.snps <- snps[-1]
+  ##   return(marg.snps(tmp))
 }
 
 abf2snpmod <- function(abf,prior=snpprior(x=0:20,expected=3,n=932,truncate=20,overdispersion=2)) {
@@ -362,6 +311,7 @@ abf2snpmod <- function(abf,prior=snpprior(x=0:20,expected=3,n=932,truncate=20,ov
   mprior <- prior[as.character(msize)]
   mpp <- log(mprior) + abf$lBF
   mpp <- mpp - logsum(mpp)
+  message("creating data.frame")
   tmp@models <- data.frame(str=abf$model,
                            logABF=abf$lBF,
                            by.tagging=abf$tag,
@@ -370,6 +320,140 @@ abf2snpmod <- function(abf,prior=snpprior(x=0:20,expected=3,n=932,truncate=20,ov
                            lPP=mpp,
                            PP=exp(mpp),
                            stringsAsFactors=FALSE)
-  tmp@model.snps <- strsplit(tmp@models$str,"%")  
+  tmp@model.snps <- strsplit(tmp@models$str,"%")
+  message("calculating marginal SNP inclusion probabilities")
   marg.snps(tmp)                      
+}
+
+abf.manual.join <- function(parallel.file, ...) {
+  (load(parallel.file))
+  L <- as.list(...)
+  for(results.file in L) {
+    (load(results.file))    
+  }
+  
+}
+
+abf.manual <- function(parallel.file,targets,bic.file,coeff.file,verbose=TRUE) {
+  
+  if(!is.numeric(targets))
+    stop("targets must be a numeric vector indexing which models to fit")
+  message("Loading data from ",parallel.file)
+  (load(parallel.file))
+##  snps <- snps[targets]
+##   l <- sapply(snps,length)
+##   snps[[which(l==0)]] <- "one"
+  message("Fitting ",length(targets)," models")
+  results <- abf.glm.fit(x=x2,y=y2,q=q,family=family,snps=snps[targets])
+  bics <- results$bics
+  coeff <- results$coeff
+  message("Saving results to ",bic.file," and ",coeff.file)
+  save(targets,bics,file=bic.file)
+  save(targets,coeff,file=coeff.file)
+  
+}
+
+abf.glm.fit <- function(x,y,q,family,snps,parallel.file=NULL,verbose=TRUE) {
+  
+  if(is(x,"SnpMatrix"))
+    x <- matrix(as(x,"numeric"),nrow=nrow(x),dimnames=dimnames(x))
+  if(is(x,"data.frame"))
+    x <- as.matrix(x)
+  if(!is.null(q)) {
+    qm <- model.matrix(~q)
+  } else {
+    qm <- matrix(1,nrow=nrow(x),ncol=1,dimnames=list(NULL,"one"))
+  }
+  x2<-x[,intersect(unique(unlist(snps)),colnames(x))]
+  comp <- complete.cases(x2) & !is.na(y)
+  if(!is.null(q))
+    comp <- comp & complete.cases(qm)
+  if(!all(comp)) {
+    message("Dropping ",sum(!comp)," samples due to incompleteness. ",sum(comp)," remain.")
+    x2 <- x2[comp,]
+    y2 <- y[comp]
+    qm <- qm[comp,,drop=FALSE]
+    q <- q[comp]
+  } else {
+    y2 <- y
+  }
+  logn <- log(nrow(x))
+##   if(verbose)
+##     print(family)
+  snps <- lapply(snps,setdiff,"1")
+  
+  ## check
+  allsnps <- unique(unlist(snps))
+  if(!all(allsnps %in% colnames(x2)))
+    stop("Not all SNPs found")
+  
+  if(is.null(parallel.file)) {
+  if(is.character("family"))
+    family <- switch(family,
+                     "gaussian"=gaussian(link="identity"),
+                     "binomial"=binomial(link="logit"))
+    results <- mclapply(seq_along(snps), function(i) {
+      if(verbose && i %% 100 == 0)
+        cat(i,"\t")
+      k=length(snps[[i]])+1
+      model <- glm.fit(cbind(x2[, snps[[i]] ],qm), y2, family=family)
+      class(model) <- c(class(model),"glm")
+      list(BIC=BIC(model),
+           coeff=cbind(beta=model$coefficients,
+             se=sqrt(diag(vcov(model)))))
+    })    
+  } else {
+    if(file.exists(parallel.file)) {
+      load(parallel.file)
+    } else {
+      message("Saving objects in ",parallel.file)
+      save(snps, x2, y2, qm, q, family, file=parallel.file)
+      message("Please fit the models using abf.manual and rerun with parallel.file")
+      return(NULL)
+    }
+  }
+  bics <- unlist(lapply(results, "[[", "BIC"))
+  coeff  <- lapply(results, "[[", "coeff")
+  return(list(bics=bics,coeff=coeff))
+  
+}
+
+abf.glm <- function(x,y,q,family,snps) {
+  if(is(x,"SnpMatrix"))
+    x <- matrix(as(x,"numeric"),nrow=nrow(x),dimnames=dimnames(x))
+  if(!is.null(q))
+    qm <- model.matrix(~q)
+  df <- as.data.frame(x[,intersect(unique(unlist(snps)),colnames(x))])
+  if(!is.null(q))
+    df$q <- q
+  df$y <- y                      
+  comp <- complete.cases(df)
+  if(!all(comp)) {
+    message("dropping ",sum(!comp)," SNPs due to incompleteness")
+    df2 <- df[comp,]
+  } else {
+    df2 <- df
+  }
+  ## is baseline already included?
+  l <- sapply(snps,length)
+  for(wh in which(l==0))
+    snps[[wh]] <- "1"
+  
+  results <- mclapply(seq_along(models), function(i) {
+    if(verbose && i %% 100 == 0)
+      cat(i,"\t")
+    if(!is.null(q)) {
+      f <- as.formula(paste("y ~ ",paste(snps[[i]],collapse="+"), "+ q"))
+    } else {
+      f <- as.formula(paste("y ~",paste(snps[[i]],collapse="+")))
+    }
+    model <- glm(f, data=df2, family=family)
+    list(BIC=BIC(model),
+         coeff=cbind(beta=model$coefficients,
+           se=sqrt(diag(vcov(model)))))
+  })
+  bics <- unlist(lapply(results, "[[", "BIC"))
+  coeff  <- unlist(lapply(results, "[[", "coeff"))
+  return(list(bics=bics,coeff=coeff))
+
 }

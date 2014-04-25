@@ -2,29 +2,29 @@
 \alias{ess2snpmod}
 \title{ess2snpmod}
 \usage{
-  ess2snpmod(ess, decode = NULL)
+ess2snpmod(ess, decode = NULL)
 }
 \arguments{
   \item{ess}{an object of class ESS}
 }
 \value{
-  an object of class snpmod
+an object of class snpmod
 }
 \description{
-  Convert an ESS object to a snpmod object
+Convert an ESS object to a snpmod object
 }
 \details{
-  R2GUESS and GUESSFM are aimed at slightly different
-  things.  That means different aspects of the output are
-  important.  R2GUESS major object class is ESS.  For
-  GUESSFM it is snpmod.  This function takes an object of
-  class ESS and creates the corresponding snpmod object.
-  The two contain slightly different information, so this
-  is not a one to one transformation.  You cannot do the
-  reverse, and create an ESS object from a snpmod one,
-  instead use the read.ess() function.
+R2GUESS and GUESSFM are aimed at slightly different things.
+That means different aspects of the output are important.
+R2GUESS major object class is ESS.  For GUESSFM it is
+snpmod.  This function takes an object of class ESS and
+creates the corresponding snpmod object.  The two contain
+slightly different information, so this is not a one to one
+transformation.  You cannot do the reverse, and create an
+ESS object from a snpmod one, instead use the read.ess()
+function.
 }
 \author{
-  Chris Wallace
+Chris Wallace
 }
 

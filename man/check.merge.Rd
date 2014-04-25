@@ -1,0 +1,36 @@
+\name{check.merge}
+\alias{check.merge}
+\title{Check if snp groups can be combined}
+\usage{
+check.merge(d, test.groups)
+}
+\arguments{
+  \item{d}{object of class snpmod}
+
+  \item{test.groups}{list of character vectors, each vector
+  giving the SNPs that comprise one group}
+}
+\value{
+shows the posterior probability of models containing
+exactly one, any, or all of the SNPs.
+}
+\description{
+Check if SNP groups can be combined.
+}
+\details{
+snp.picker tries to automatically group SNPs according the
+r2 and the model posterior probs, but may sometimes make
+two separate groups when one combined group might be
+considered more appropriate.  To check whether two groups
+can be combined, we need to check that SNPs from both
+groups are rarely included in the same models.
+
+If the output shows that pp["all"] >> pp["any"], and the
+SNPs have been shown to be in some LD, then it is likely
+that the groups can be appropriately merged, using
+\code{merge}.
+}
+\author{
+Chris Wallace
+}
+

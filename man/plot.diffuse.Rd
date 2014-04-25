@@ -2,28 +2,34 @@
 \alias{plot.diffuse}
 \title{Diffusion plot}
 \usage{
-  plot.diffuse(results, maxrank = 1000, thin = 500)
+plot.diffuse(results, maxrank = 1000, thin = 500)
 }
 \arguments{
-  \item{results}{an object of class snpmod, or a list of
-  such objects}
+  \item{results}{an object of class snpmod, or a named list
+  of such objects}
 
   \item{maxrank}{truncate the x axis at this value}
+
+  \item{thin}{thin data to display only \code{thin} points
+  per line}
 }
 \value{
-  no return value
+no return value
 }
 \description{
-  A summary plot to indicate how diffuse the posterior is.
+A summary plot to indicate how diffuse the posterior is.
 }
 \details{
-  This is measured by how rapidly the cumulative posterior
-  probability increases with number of models.  For one
-  dataset, this may be informative in an absolute sense,
-  but comparing different datasets, by supplying a list of
-  results, can be useful too.
+This is measured by how rapidly the cumulative posterior
+probability increases with number of models.  For one
+dataset, this may be informative in an absolute sense, but
+comparing different datasets, by supplying a list of
+results, can be useful too.
+
+If a list of snpmod objects are given, multiple diffusion
+plots are overlaid, with colours indicating labels.
 }
 \author{
-  Chris Wallace
+Chris Wallace
 }
 

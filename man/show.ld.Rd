@@ -2,8 +2,7 @@
 \alias{show.ld}
 \title{show.ld}
 \usage{
-  show.ld(X, snps = colnames(X), samples = rownames(X),
-    lines.limit = 20)
+show.ld(X, snps = colnames(X), samples = rownames(X), lines.limit = 20)
 }
 \arguments{
   \item{X}{a SnpMatrix object}
@@ -19,17 +18,17 @@
   lines.limit}
 }
 \value{
-  invisibly returns matrix with D' in upper.tri() entries
-  and R^2 in lower.tri() entries
+invisibly returns matrix with D' in upper.tri() entries and
+R^2 in lower.tri() entries
 }
 \description{
-  Calculate D' and R^2 for a SnpMatrix object and display
-  as a heatmap
+Calculate D' and R^2 for a SnpMatrix object and display as
+a heatmap
 }
 \details{
-  Side effect: displays plot on current graphics device
+Side effect: displays plot on current graphics device
 }
 \author{
-  Chris Wallace
+Chris Wallace
 }
 

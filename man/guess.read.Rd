@@ -2,21 +2,21 @@
 \alias{guess.read}
 \title{guess.read}
 \usage{
-  guess.read(...)
+guess.read(...)
 }
 \arguments{
   \item{...}{arguments to be passed to read.snpmod}
 }
 \value{
-  see read.snpmod
+see read.snpmod
 }
 \description{
-  guess.read, for backwards compatability
+guess.read, for backwards compatability
 }
 \details{
-  Just a wrapper for read.snpmod.
+Just a wrapper for read.snpmod.
 }
 \author{
-  Chris Wallace
+Chris Wallace
 }
 

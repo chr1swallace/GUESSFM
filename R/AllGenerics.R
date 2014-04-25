@@ -1,4 +1,35 @@
+setGeneric("length")
 setGeneric("plot")
+setGeneric("summary")
+#' Create a union of groups, snppicker or tags objects
+#'
+#' First, objects are converted to class groups.  Then any groups
+#' which overlap are identified, and replaced by their union.  Groups
+#' which do not overlap are unchanged.  The combined set of groups is
+#' returned.
+#' @docType methods
+#' @rdname union-methods
+#' @author Chris Wallace
+#' @export
+#' @param x object of class \code{groups}, \code{snppicker} or \code{tags}
+#' @param y object of same class as x
+#' @return object of class groups
 setGeneric("union", function(x,y) standardGeneric("union"))
+#' Check whether a snp is in a snppicker, groups or tags object
+#'
+#' @docType methods
+#' @rdname snpin-methods
+#' @author Chris Wallace
+#' @export
+#' @param x character vector of SNPs to be checked
+#' @param y object of class snppicker, groups or tags
+#' @return logical vector of length equal to length(x)
+setGeneric("snpin", function(x,y) standardGeneric("snpin"))
 #setGeneric("snpdrop", function(x,y) standardGeneric("drop"))
 
+##' Convert from old definitions of groups, tags classes to new
+##' DON'T USE THIS FUNCTION UNLESS YOU HAVE OBJECTS STORED FROM A PREVIOUS PRE-DEVELOPMENT VERSION!
+##' 
+##' @param object 
+##' @return new S4 structure
+setGeneric("convert",function(object) standardGeneric("convert"))

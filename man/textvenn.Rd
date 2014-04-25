@@ -2,7 +2,7 @@
 \alias{textvenn}
 \title{textvenn}
 \usage{
-  textvenn(A, B, quiet = FALSE)
+textvenn(A, B, quiet = FALSE)
 }
 \arguments{
   \item{A}{a vector}
@@ -12,14 +12,14 @@
   \item{quiet}{}
 }
 \value{
-  a list with three elements: A is setdiff(A,B).  int is
-  intersect(A,B).  B is setdiff(B,A)
+a list with three elements: A is setdiff(A,B).  int is
+intersect(A,B).  B is setdiff(B,A)
 }
 \description{
-  calculate intersection and setdiffs for two vectors
+calculate intersection and setdiffs for two vectors
 }
 \details{
-  Originally from randomFunctions
+Originally from randomFunctions
 }
 \examples{
 A <- 1:3
@@ -29,6 +29,6 @@ tv <- textvenn(A,B,quiet=TRUE)
 tv
 }
 \author{
-  Chris Wallace
+Chris Wallace
 }
 

@@ -2,8 +2,8 @@
 \alias{tag}
 \title{tag}
 \usage{
-  tag(X, tag.threshold = 0.99, snps = NULL, samples = NULL,
-    strata = NULL, quiet = FALSE, method = "complete")
+tag(X, tag.threshold = 0.99, snps = NULL, samples = NULL, strata = NULL,
+  quiet = FALSE, method = "complete")
 }
 \arguments{
   \item{X}{SnpMatrix object}
@@ -20,19 +20,18 @@
   \item{quiet}{if FALSE (default), show progress messages}
 }
 \value{
-  character vector, names are \code{snps}, values are the
-  tag for each SNP
+character vector, names are \code{snps}, values are the tag
+for each SNP
 }
 \description{
-  Derive tag SNPs for a SnpMatrix object using heirarchical
-  clustering
+Derive tag SNPs for a SnpMatrix object using heirarchical
+clustering
 }
 \details{
-  Uses complete linkage and the \code{\link{hclust}}
-  function to define clusters, then cuts the tree at
-  1-tag.threshold
+Uses complete linkage and the \code{\link{hclust}} function
+to define clusters, then cuts the tree at 1-tag.threshold
 }
 \author{
-  Chris Wallace
+Chris Wallace
 }
 

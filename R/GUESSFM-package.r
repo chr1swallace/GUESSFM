@@ -2,7 +2,9 @@
 #'
 #' @name GUESSFM
 #' @docType package
-##' @importFrom VGAM dbetabinom
+#' @importFrom ggbio tracks
+#' @importFrom reshape melt
+#' @importFrom VGAM dbetabinom
 #' @import Matrix
 #' @import snpStats
 NULL

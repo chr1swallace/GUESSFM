@@ -2,8 +2,7 @@
 \alias{impute.missing}
 \title{Fill in missing values in SnpMatrix object}
 \usage{
-  impute.missing(X, bp = 1:ncol(X), strata = NULL,
-    numeric = FALSE, ...)
+impute.missing(X, bp = 1:ncol(X), strata = NULL, numeric = FALSE, ...)
 }
 \arguments{
   \item{X}{SnpMatrix object}
@@ -20,13 +19,13 @@
   \item{...}{arguments passed on to \code{impute.snps}}
 }
 \value{
-  matrix, either numeric (if numeric=TRUE) or SnpMatrix (if
-  numeric=FALSE)
+matrix, either numeric (if numeric=TRUE) or SnpMatrix (if
+numeric=FALSE)
 }
 \description{
-  Uses snpStats' snp.imputation function
+Uses snpStats' snp.imputation function
 }
 \author{
-  Chris Wallace
+Chris Wallace
 }
 

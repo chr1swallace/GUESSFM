@@ -40,9 +40,9 @@ snp.picker <- function(d,data,start.thr=0.01,nochange.thr=0.001,nochange.run=3,r
   a$var <- as.character(a$var)
   max.r2 <- 0.5
   ## check all snps in a are in data
-  if(!all(a$var %in% colnames(data)))
+  if(!all(a$var %in% c("1",colnames(data))))
     stop("not all SNPs in d found in data")
-
+  
   ## create model matrix
   if(!skip.shared.models) {
     M <- modelMatrix(d)
@@ -61,7 +61,7 @@ snp.picker <- function(d,data,start.thr=0.01,nochange.thr=0.001,nochange.run=3,r
     r2[snp] <- 1
     ## models that contain best snp
     if(!skip.shared.models) {
-      Mbest <- M[ M[,snp]==1,]
+      Mbest <- M[ M[,snp]==1,,drop=FALSE]
       ## count of snps in models - proportion of models in which each SNP is present in addition to best snp
       cs <- structure(colSums(Mbest),names=colnames(Mbest))
       cs[snp] <- 0
@@ -123,8 +123,57 @@ snp.picker <- function(d,data,start.thr=0.01,nochange.thr=0.001,nochange.run=3,r
   
   return(new("snppicker",groups=groups,plotsdata=plotsdata))
 }
-
-
+##' Check if SNP groups can be combined.
+##'
+##' snp.picker tries to automatically group SNPs according the r2 and
+##' the model posterior probs, but may sometimes make two separate
+##' groups when one combined group might be considered more
+##' appropriate.  To check whether two groups can be combined, we need
+##' to check that SNPs from both groups are rarely included in the
+##' same models.
+##'
+##' If the output shows that pp["all"] >> pp["any"], and the SNPs have
+##' been shown to be in some LD, then it is likely that the groups can
+##' be appropriately merged, using \code{merge}.
+##' @title Check if snp groups can be combined 
+##' @param d object of class snpmod
+##' @param test.groups list of character vectors, each vector giving the SNPs that comprise one group
+##' @return shows the posterior probability of models containing exactly one, any, or all of the SNPs.  
+##' @author Chris Wallace
+##' @export
+check.merge <- function(d,test.groups) {
+  inmod <- lapply(test.groups, function(query) {
+    unlist(lapply(d@model.snps,function(target) as.numeric(any(query %in% target))))
+  })
+  inmod <- do.call("rbind",inmod)
+  cs <- colSums(inmod)
+  inmod <- rbind(inmod,
+                 any=ifelse(cs>0,1,0),
+                 all=ifelse(cs==length(test.groups),1,0))
+  return(inmod %*% d@models$PP)
+}
+##' Merge groups in an object of class groups
+##'
+##' Groups identified by the index tag SNPs given by \code{tags} will
+##' be merged, and the number of groups in the object reduced.
+##' @title merge groups
+##' @param groups object of class groups
+##' @param tags index tags indicating the groups which should be merged
+##' @return object of class groups
+##' @export
+merge.groups <- function(groups,tags) {
+  if(length(tags)<2)
+    stop("makes no sense to merge <2 groups")
+  if(!all(tags %in% groups@tags))
+    stop("can't find all index tags in groups@tags")
+  wh <- which(groups@tags %in% tags)
+  drop <- wh[-1]
+  keep <- wh[1]
+  groups@groups[[keep]] <- unlist(groups@groups[wh])
+  groups@groups <- groups@groups[-drop]
+  groups@tags <- groups@tags[-drop]
+  return(groups)
+}
 
 ##   df$cmpi <- cumsum(df$mpi)
 ##   ## group at points of inflection, where cmpi<=1

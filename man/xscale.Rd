@@ -2,7 +2,7 @@
 \alias{xscale}
 \title{xscale}
 \usage{
-  xscale(x, torange, xrange = c(min(x), max(x)))
+xscale(x, torange, xrange = c(min(x), max(x)))
 }
 \arguments{
   \item{x}{numeric vector to be transformed}
@@ -14,14 +14,14 @@
   supplied.}
 }
 \value{
-  transformed numeric vector
+transformed numeric vector
 }
 \description{
-  internal function: xscale
+internal function: xscale
 }
 \details{
-  Linear transformation to map x to a new range, so
-  min(x)==xrange[1], and max(x)==xrange[2]
+Linear transformation to map x to a new range, so
+min(x)==xrange[1], and max(x)==xrange[2]
 }
 \examples{
 x<-1:10
@@ -34,6 +34,6 @@ cbind(x,snpmod:::xscale(x,c(0.1,1)),snpmod:::xscale(x,c(1319,20578)))
 cbind(x,snpmod:::xscale(x,c(0.1,1),xrange=c(1,10)),snpmod:::xscale(x,c(1319,20578),xrange=c(1,10)))
 }
 \author{
-  Chris Wallace
+Chris Wallace
 }
 

@@ -4,6 +4,6 @@
 \alias{GUESSFM-package}
 \title{GUESSFM}
 \description{
-  GUESSFM
+GUESSFM
 }
 

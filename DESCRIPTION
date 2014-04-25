@@ -13,25 +13,9 @@ Depends:
     R (>= 3.0.2)
 Imports:
     Matrix,
-    VGAM
+    VGAM,
+    ggbio,
+    reshape,
+    snpStats
 License: GPL
 LazyData: true
-Collate:
-    'AllClasses.R'
-    'AllMethods.R'
-    'input.R'
-    'plot.R'
-    'run.R'
-    'GUESSFM-package.r'
-    'summary.R'
-    'tags.R'
-    'utilities.R'
-    'AllGenerics.R'
-    'abf.R'
-    'add.R'
-    'priors.R'
-    'snp-picker.R'
-    'combine-snpmatrix.R'
-    'ess-interact.R'
-    'impute.R'
-    'model-union.R'
