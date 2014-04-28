@@ -56,6 +56,6 @@ setClass("tags",
 setClass("snppicker",
          slots=c(plotsdata="list",groups="list"),
          validity=function(object) {
-           if(length(object@.Data)!=length(object@plotsdata))
+           if(length(object@groups)!=length(object@plotsdata))
              stop("groups and plotsdata should be lists of equal length")
          })
