@@ -33,7 +33,7 @@
 ##' @return object of class \code{snppicker}
 ##' @author Chris Wallace
 ##' @export
-snp.picker <- function(d,data,start.thr=0.01,nochange.thr=0.001,nochange.run=3,r2.gap=0.1,shared.models=0.01,skip.shared.models=FALSE) {
+snp.picker <- function(d,data,start.thr=0.01,nochange.thr=0.001,nochange.run=3,r2.gap=0.1,shared.models=0.03,skip.shared.models=FALSE) {
   groups <- plotsdata <- list()
   i <- 0
   a <- d@snps
@@ -57,8 +57,10 @@ snp.picker <- function(d,data,start.thr=0.01,nochange.thr=0.001,nochange.run=3,r
     wh <- which.max(a$Marg_Prob_Incl)
     (snp <- a$var[wh]) 
     ## r2 with best snp
-    r2 <- ld(data[,setdiff(colnames(data),snp)], data[,snp], stats="R.squared")[,1]
-    r2[snp] <- 1
+
+    #system.time({r2 <- ld(data[,setdiff(colnames(data),snp)], data[,snp], stats="R.squared")[,1]; r2[snp] <- 1})
+    r2 <- ld(data, data[,snp], stats="R.squared")[,1]
+
     ## models that contain best snp
     if(!skip.shared.models) {
       Mbest <- M[ M[,snp]==1,,drop=FALSE]
@@ -75,6 +77,7 @@ snp.picker <- function(d,data,start.thr=0.01,nochange.thr=0.001,nochange.run=3,r
       df <- df[-wh,]
     print(df)
     ## process
+    r2lim <- NULL
     if(nrow(df)==1) {     ## singletons
       r2lim <- 0
     } else {
@@ -105,11 +108,15 @@ snp.picker <- function(d,data,start.thr=0.01,nochange.thr=0.001,nochange.run=3,r
             break
           }
         }
-        message("outside given rules! Stopping on row ",wh[1]-1)
-        print(df2)
-        r2lim <- df2$r2bin[ wh[1]-1 ]    
       }
-    }
+      if(is.null(r2lim)) {
+          message("outside given rules! Stopping on row ",wh[1]-1)
+          print(df2)
+          r2lim <- df2$r2bin[ wh[1]-1 ]    
+      }
+      if(length(r2lim)==0)
+          r2lim <- 0
+    }    
     ## store
     wh <- which(round(df$r2,2)<=r2lim)
     snp.group <- rownames(df)[wh]
