@@ -305,9 +305,9 @@ abf.tag.notworking <- function(models,sm,BFcolumn="jeffreys",xR2=NULL,snp.data=N
   ##   return(marg.snps(tmp))
 }
 
-abf2snpmod <- function(abf,prior=snpprior(x=0:20,expected=3,n=932,truncate=20,overdispersion=2)) {
+abf2snpmod <- function(abf,prior=snpprior(x=0:20,expected=3,n=932,truncate=20,overdispersion=1)) {
   tmp <- new("snpmod")
-  msize <- nchar(gsub("[^%]","",abf$model))
+  msize <- nchar(gsub("[^%]","",abf$model)) + 1
   mprior <- prior[as.character(msize)]
   mpp <- log(mprior) + abf$lBF
   mpp <- mpp - logsum(mpp)
