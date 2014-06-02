@@ -44,7 +44,7 @@ setMethod("show", signature="groups",
 
 setMethod("summary",signature="snppicker",
           function(object){
-            ngroups <- length(object@.Data)
+            ngroups <- length(object@groups)
             cmpi <- unlist(lapply(object@groups, function(x) max(x$cmpi)))
             nsnp <- unlist(lapply(object@groups, nrow))
             index <- unlist(lapply(object@groups, function(x) x[1,"var"]))
@@ -204,7 +204,7 @@ setMethod("snpin",signature(x="character",y="snppicker"),definition=function(x,y
 #' @rdname snpin-methods
 #' @aliases snpin,character,tags-method
 setMethod("snpin",signature(x="character",y="tags"),definition=function(x,y) {
-  snpin(x,as(y,"tags"))
+  snpin(x,as(y,"groups"))
 })
 #' @rdname snpin-methods
 #' @aliases snpin,character,groups-method
@@ -213,7 +213,7 @@ setMethod("snpin",signature(x="character",y="groups"),definition=function(x,y) {
     return(NULL)
   names(y@.Data) <- paste0("group",seq_along(y@.Data))
   ret <- sapply(y@.Data,function(yg) x %in% yg)
-  if(nrow(ret))
+  if(!is.null(dim(ret)))
     rownames(ret) <- x
   return(ret)
 })
@@ -284,9 +284,14 @@ setMethod("union",signature(x="groups",y="groups"),definition=function(x,y) {
 
 ######################################################################
 
-##                      manipulate snpmods                             ##
+##                      accessors                                   ##
 
 ######################################################################
+
+setMethod("snps",signature(object="groups"), function(object) { object@.Data })
+setMethod("tags",signature(object="groups"), function(object) { object@tags })
+setMethod("snps",signature(object="tags"), function(object) { object@.Data })
+setMethod("tags",signature(object="tags"), function(object) { object@tags })
 
 ## setMethod("snpdrop",signature(x="snpmod",y="character"),
 ##           function(x,y) {
@@ -301,3 +306,5 @@ setMethod("union",signature(x="groups",y="groups"),definition=function(x,y) {
 ##           })
 
 ## setMethod("+",signature(e1="snpmod",e2="snpmod"), function(e1,e2) snpmod.add(e1,e2))
+
+## 
