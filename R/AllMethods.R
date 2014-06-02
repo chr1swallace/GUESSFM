@@ -213,8 +213,9 @@ setMethod("snpin",signature(x="character",y="groups"),definition=function(x,y) {
     return(NULL)
   names(y@.Data) <- paste0("group",seq_along(y@.Data))
   ret <- sapply(y@.Data,function(yg) x %in% yg)
-  if(!is.null(dim(ret)))
-    rownames(ret) <- x
+  if(is.null(dim(ret)))
+    ret <- matrix(ret,nrow=1)
+  rownames(ret) <- x
   return(ret)
 })
 
