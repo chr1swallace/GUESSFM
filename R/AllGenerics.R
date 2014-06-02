@@ -23,7 +23,7 @@ setGeneric("union", function(x,y) standardGeneric("union"))
 #' @export
 #' @param x character vector of SNPs to be checked
 #' @param y object of class snppicker, groups or tags
-#' @return logical vector of length equal to length(x)
+#' @return logical matrix of nrow equal to length(x) and ncol equal to number of groups in y
 setGeneric("snpin", function(x,y) standardGeneric("snpin"))
 #setGeneric("snpdrop", function(x,y) standardGeneric("drop"))
 
@@ -33,3 +33,17 @@ setGeneric("snpin", function(x,y) standardGeneric("snpin"))
 ##' @param object 
 ##' @return new S4 structure
 setGeneric("convert",function(object) standardGeneric("convert"))
+##' Accessor function to show list of snps in an object of class groups
+##'
+##' @title snps
+##' @param object 
+##' @return a list of character vectors
+##' @author Chris Wallace
+setGeneric("snps",function(object) standardGeneric("snps"))
+##' Accessor function to show tags from an object of class groups
+##'
+##' @title tags
+##' @param object 
+##' @return character vector of tag SNPs
+##' @author Chris Wallace
+setGeneric("tags",function(object) standardGeneric("tags"))
