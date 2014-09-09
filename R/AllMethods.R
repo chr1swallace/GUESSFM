@@ -3,7 +3,7 @@
 ##                          display                                 ##
 
 ######################################################################
-
+##' @rdname snpmod-class 
 setMethod("show", signature="snpmod",
           function(object) {
             nmod <- nrow(object@models)
@@ -15,6 +15,7 @@ setMethod("show", signature="snpmod",
             message(sprintf("PP ranges from %4.3f-%4.3f (sum: %4.3f).",minpp,maxpp,spp))
           })
 
+##' @rdname snppicker-class 
 setMethod("show", signature="snppicker",
           function(object) {
             ngroup <- length(object@.Data)
@@ -22,6 +23,7 @@ setMethod("show", signature="snppicker",
             message("snppicker object, containing ",sum(nsnps)," SNPs grouped into ",ngroup," groups.")
           })
 
+##' @rdname groups-class 
 setMethod("show", signature="tags",
           function(object) {
             ntags <- length(unique(object@tags))
@@ -29,6 +31,7 @@ setMethod("show", signature="tags",
             message("tags object, containing ",nsnps," SNPs in ",ntags," groups.")
           })
 
+##' @rdname groups-class 
 setMethod("show", signature="groups",
           function(object) {
             ntags <- length(object@tags)
@@ -81,12 +84,12 @@ setMethod("plot", signature(x="snppicker",y="missing"),
             red <- "#666666"
             plots <-
 
-              ggplot(df,aes(x=r2,y=cmpi)) + 
-                geom_vline(mapping=aes(xintercept=r2), data=subset(df,changepoint==TRUE),col=red) +
+              ggplot(df,aes(x=1-r2,y=cmpi)) + 
+                geom_vline(mapping=aes(xintercept=1-r2), data=subset(df,changepoint==TRUE),col=red) +
                   geom_hline(mapping=aes(yintercept=cmpi), data=subset(df,changepoint==TRUE),col=red,width=0.2) +
                     geom_point(col=cols[2],pch=3) + geom_path(col=cols[2],linetype="longdash") +
                       geom_point(aes(y=mpi),col=cols[1],pch=3) + geom_path(aes(y=mpi),col=cols[1],linetype="longdash") +
-                        ylim(0,1.2) + xlab("rsq with index SNP") + ylab("cumulative MPI/MPI") +
+                        ylim(0,1.2) + scale_x_reverse("rsq with index SNP") + ylab("cumulative MPI/MPI") +
                           facet_grid(index ~ .) +  theme(strip.text.y = element_text(angle = 0, size = 6,
                                                                         vjust = 0.5)) 
 
@@ -130,27 +133,45 @@ setAs("snppicker","tags",
                  tags=unlist(lapply(from@groups,function(x) x[1,"var"])))
         as(g,"tags")
       })
+##' Subset groups or tags objects
+##'
+##' '[' will extract another object of the same class.  '[[' will extract a single element.
+##' @param x groups object
+##' @param i numeric, logical or character vector to index SNPs
+##' @return subsetted groups or tags object
+##' @rdname groups-subset
 setMethod("[",signature=c(x="groups",i="character",j="missing",drop="missing"),
           function(x,i) {
             wh <- which(x@tags %in% i)
             new("groups",x@.Data[wh],tags=x@tags[wh])
           })
+##' @rdname groups-subset
 setMethod("[",signature=c(x="groups",i="numeric",j="missing",drop="missing"),
           function(x,i) {
             new("groups",x@.Data[i],tags=x@tags[i])
           })
+##' @rdname groups-subset
 setMethod("[",signature=c(x="groups",i="logical",j="missing",drop="missing"),
           function(x,i) {
             new("groups",x@.Data[i],tags=x@tags[i])
           })
+##' @rdname groups-subset
+setMethod("[",signature=c(x="tags",i="character",j="missing",drop="missing"),
+          function(x,i) {
+            wh <- sapply(i,function(ii) which(snps(x)==ii))
+            tags(tags)[wh]
+          })
+##' @rdname groups-subset
 setMethod("[[",signature=c(x="groups",i="numeric"),
           function(x,i) {
             x@.Data[[i]]
           })
+##' @rdname groups-subset
 setMethod("[[",signature=c(x="groups",i="logical"),
           function(x,i) {
             x@.Data[[i]]
           })
+##' @rdname groups-subset
 setMethod("[[",signature=c(x="groups",i="character"),
           function(x,i) {
             wh <- which(x@tags %in% i)
@@ -163,10 +184,17 @@ setMethod("[[",signature=c(x="groups",i="character"),
 
 ######################################################################
 
+#' Conversion of objects saved in pre-release version of GUESSFM to
+#' current version
+#'
+#' @rdname conversion
+#' @param object object of class groups or tags
+#' @return object of the same class
 setMethod("convert",signature=c(object="groups"), function(object) {
   object@.Data=object@groups
   return(object)
 })
+#' @rdname conversion
 setMethod("convert",signature=c(object="tags"), function(object) {
   object@.Data=object@snps
   return(object)
@@ -178,6 +206,19 @@ setMethod("convert",signature=c(object="tags"), function(object) {
 
 ######################################################################
 
+##' Subset snppicker object
+##'
+##' This works a bit like subsetting a list.  If you use the '['
+##' construct you will get another snppicker object with a subset of
+##' the elements.  The ability to plot that subset should remain.  If
+##' you use the '[[' construct it will extract just that element, and
+##' return an object of class groups.  No plotting ability is
+##' retained, but a single groups object is easy to inspect and
+##' manipulate.
+##' @param x snppicker object
+##' @param i numeric, logical or character vector to index SNPs
+##' @return subsetted snppicker object
+##' @rdname snppicker-subset
 setMethod("[",signature=c(x="snppicker",i="ANY",j="missing",drop="missing"),
           function(x,i) {
             new("snppicker",
@@ -185,6 +226,7 @@ setMethod("[",signature=c(x="snppicker",i="ANY",j="missing",drop="missing"),
                 plotsdata=x@plotsdata[i])
           })
 
+##' @rdname snppicker-subset
 setMethod("[[",signature=c(x="snppicker",i="ANY"),
           function(x,i) {
             groups=x@groups[[i]]
@@ -196,18 +238,17 @@ setMethod("[[",signature=c(x="snppicker",i="ANY"),
 
 ######################################################################
 
-#' @rdname snpin-methods
-#' @aliases snpin,character,snppicker-method
+#' @rdname snpin
 setMethod("snpin",signature(x="character",y="snppicker"),definition=function(x,y) {
   snpin(x,as(y,"groups"))
 })
-#' @rdname snpin-methods
-#' @aliases snpin,character,tags-method
+
+#' @rdname snpin
 setMethod("snpin",signature(x="character",y="tags"),definition=function(x,y) {
   snpin(x,as(y,"groups"))
 })
-#' @rdname snpin-methods
-#' @aliases snpin,character,groups-method
+
+#' @rdname snpin
 setMethod("snpin",signature(x="character",y="groups"),definition=function(x,y) {
   if(!length(y@.Data))
     return(NULL)
@@ -225,16 +266,15 @@ setMethod("snpin",signature(x="character",y="groups"),definition=function(x,y) {
 
 ######################################################################
 
-#' @rdname union-methods
-#' @aliases union,snppicker,snppicker-method
+#' @rdname union
 setMethod("union",signature(x="snppicker",y="snppicker"),definition=function(x,y) {
   union(as(x,"groups"),as(y,"groups")) })
-#' @rdname union-methods
-#' @aliases union,tags,tags-method
+
+#' @rdname union
 setMethod("union",signature(x="tags",y="tags"),definition=function(x,y) {
   as(union(as(x,"groups"),as(y,"groups")),"tags") })
-#' @rdname union-methods
-#' @aliases union,groups,groups-method
+
+#' @rdname union
 setMethod("union",signature(x="groups",y="groups"),definition=function(x,y) {
   if(!length(x))
     return(y)
@@ -285,13 +325,36 @@ setMethod("union",signature(x="groups",y="groups"),definition=function(x,y) {
 
 ######################################################################
 
+## split
+
+######################################################################
+
+## # @rdname union-methods
+## # @aliases union,snppicker,snppicker-method
+## setMethod("union",signature(x="snppicker",y="snppicker"),definition=function(x,y) {
+##   union(as(x,"groups"),as(y,"groups")) })
+## # @rdname union-methods
+## # @aliases union,tags,tags-method
+## setMethod("union",signature(x="tags",y="tags"),definition=function(x,y) {
+##   as(union(as(x,"groups"),as(y,"groups")),"tags") })
+## # @rdname split-methods
+## # @aliases split,groups,groups-method
+## setMethod("split",signature(x="groups",y="groups"),definition=function(x,y) {
+
+
+######################################################################
+
 ##                      accessors                                   ##
 
 ######################################################################
 
+##' @rdname snps
 setMethod("snps",signature(object="groups"), function(object) { object@.Data })
+##' @rdname tags
 setMethod("tags",signature(object="groups"), function(object) { object@tags })
+##' @rdname snps
 setMethod("snps",signature(object="tags"), function(object) { object@.Data })
+##' @rdname tags
 setMethod("tags",signature(object="tags"), function(object) { object@tags })
 
 ## setMethod("snpdrop",signature(x="snpmod",y="character"),

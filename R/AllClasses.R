@@ -3,7 +3,6 @@
 
 #' Class to hold data relating to multiple models fitted to SNP data
 #'
-#' @section Slots: 
 #' @slot snps data.frame containing marginal probabilities of inclusion for the SNPs
 #' @slot models data.frame containing summaries for each model
 #' @slot model.snps list containing the SNPs for each model. May be removed.
@@ -19,9 +18,9 @@ setClass("snpmod",
          })
 #' groups class
 #'
-#' @section Slots:
 #' @slot tags character vector giving tag SNPs.  Each tag indexes one group of SNPs
 #' @slot .Data list of character vectors giving the SNP membership of each group
+#' @rdname groups-class
 setClass("groups",
          slots=c(tags="character"),
          contains="list",
@@ -32,9 +31,9 @@ setClass("groups",
          })
 #' tags class
 #'
-#' @section Slots:
 #' @slot tags character vector giving tag SNPs, one per SNP in \code{snps}, repeated as necessary
 #' @slot .Data character vector giving SNPs included in this tags object
+#' @rdname groups-class
 setClass("tags",
          slots=c(tags="character"),
          contains="character",
@@ -48,7 +47,6 @@ setClass("tags",
 #' \code{snp.picker} groups SNPs according to LD and model inclusion
 #' and outputs objects of class snppicker.
 #'
-#' @section Slots:
 #' @slot groups list of data.frames describing SNPs in each group
 #' @slot plotsdata list of additional data relating to the snp.picker
 #' process that allows a summary of that process to be plotted via

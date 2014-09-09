@@ -16,10 +16,10 @@ guess.summ <- function(results, groups=NULL, snps=NULL, snp.data=NULL, tag.thr=0
   if(!is.list(results))
     results <- list(trait=results)
   if(!is.null(groups)) {
-    all.snps <- make.names(unlist(groups@groups))
+    all.snps <- make.names(unlist(snps(groups)))
     guess.snps <- lapply(results, function(x) subset(x@snps, var %in% all.snps))
   } else {
-    guess.snps <- lapply(results, function(x) subset(x@snps,Marg_Prob_Incl>pp.thr))
+    guess.snps <- lapply(results, function(x) subset(x@snps,x@snps$Marg_Prob_Incl>pp.thr))
     all.snps <- make.names(unique(unlist(lapply(guess.snps, "[[", "var"))))
   }
   if(!is.null(groups)) {
@@ -42,10 +42,10 @@ guess.summ <- function(results, groups=NULL, snps=NULL, snp.data=NULL, tag.thr=0
   }
   
   ## first order tags
-  cl <- unique(tags@tags)
+  cl <- unique(tags(tags))
   cl <- cl[ order(snps[cl, "position.hg19"]) ]
   ## then order snps within tag groups
-  tsplit <- split(tags@snps, tags@tags)[ cl ]
+  tsplit <- split(snps(tags), tags(tags))[ cl ]
   tsplit <- lapply(tsplit, function(x) x[ order(snps[x, "position.hg19"]) ])
   ## put it back together
   all.snps <- unlist(tsplit)
@@ -124,7 +124,7 @@ marg.snps.vecs <- function(str,pp) {
 }
 
 best.snps <- function(d,pp.thr=0.1) {
-  tmp <- subset(d@snps, Marg_Prob_Incl>pp.thr)
+  tmp <- subset(d@snps, d@snps$Marg_Prob_Incl>pp.thr)
   return(tmp[order(tmp$Marg_Prob_Incl,decreasing=TRUE),])
 }
 best.models <- function(d,pp.thr=0.01,cpp.thr=NA) {

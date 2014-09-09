@@ -7,18 +7,17 @@ setGeneric("summary")
 #' which overlap are identified, and replaced by their union.  Groups
 #' which do not overlap are unchanged.  The combined set of groups is
 #' returned.
-#' @docType methods
-#' @rdname union-methods
+#' @rdname union
 #' @author Chris Wallace
 #' @export
 #' @param x object of class \code{groups}, \code{snppicker} or \code{tags}
 #' @param y object of same class as x
 #' @return object of class groups
 setGeneric("union", function(x,y) standardGeneric("union"))
+
 #' Check whether a snp is in a snppicker, groups or tags object
 #'
-#' @docType methods
-#' @rdname snpin-methods
+#' @rdname snpin
 #' @author Chris Wallace
 #' @export
 #' @param x character vector of SNPs to be checked
@@ -30,20 +29,22 @@ setGeneric("snpin", function(x,y) standardGeneric("snpin"))
 ##' Convert from old definitions of groups, tags classes to new
 ##' DON'T USE THIS FUNCTION UNLESS YOU HAVE OBJECTS STORED FROM A PREVIOUS PRE-DEVELOPMENT VERSION!
 ##' 
-##' @param object 
+##' @param object GUESSFM object from pre-development version
 ##' @return new S4 structure
 setGeneric("convert",function(object) standardGeneric("convert"))
+
 ##' Accessor function to show list of snps in an object of class groups
 ##'
 ##' @title snps
-##' @param object 
+##' @param object object from which snps are to be extracted
 ##' @return a list of character vectors
 ##' @author Chris Wallace
 setGeneric("snps",function(object) standardGeneric("snps"))
+
 ##' Accessor function to show tags from an object of class groups
 ##'
 ##' @title tags
-##' @param object 
+##' @param object  object from which tag snps are to be extracted
 ##' @return character vector of tag SNPs
 ##' @author Chris Wallace
 setGeneric("tags",function(object) standardGeneric("tags"))

@@ -141,7 +141,7 @@ snp.picker <- function(d,data,start.thr=0.01,nochange.thr=0.001,nochange.run=3,r
 ##'
 ##' If the output shows that pp["all"] >> pp["any"], and the SNPs have
 ##' been shown to be in some LD, then it is likely that the groups can
-##' be appropriately merged, using \code{merge}.
+##' be appropriately merged, using \code{groups.merge}.
 ##' @title Check if snp groups can be combined 
 ##' @param d object of class snpmod
 ##' @param test.groups list of character vectors, each vector giving the SNPs that comprise one group
@@ -153,6 +153,8 @@ check.merge <- function(d,test.groups) {
     unlist(lapply(d@model.snps,function(target) as.numeric(any(query %in% target))))
   })
   inmod <- do.call("rbind",inmod)
+  #print(dim(inmod)
+  rownames(inmod) <- test.groups@tags
   cs <- colSums(inmod)
   inmod <- rbind(inmod,
                  any=ifelse(cs>0,1,0),
@@ -168,7 +170,7 @@ check.merge <- function(d,test.groups) {
 ##' @param tags index tags indicating the groups which should be merged
 ##' @return object of class groups
 ##' @export
-merge.groups <- function(groups,tags) {
+groups.merge <- function(groups,tags) {
   if(length(tags)<2)
     stop("makes no sense to merge <2 groups")
   if(!all(tags %in% groups@tags))
@@ -176,9 +178,9 @@ merge.groups <- function(groups,tags) {
   wh <- which(groups@tags %in% tags)
   drop <- wh[-1]
   keep <- wh[1]
-  groups@groups[[keep]] <- unlist(groups@groups[wh])
-  groups@groups <- groups@groups[-drop]
-  groups@tags <- groups@tags[-drop]
+  groups@.Data[[keep]] <- unlist(snps(groups)[wh])
+  groups@.Data <- snps(groups)[-drop]
+  groups@tags <- tags(groups)[-drop]
   return(groups)
 }
 

@@ -4,9 +4,11 @@
 ##' _sweeps_features.txt.  If you used run.bvs() to run GUESS, then
 ##' this function should find all the correct files.  If you didn't,
 ##' then this function probably won't work, and you should use
-##' as.ESS.object from the R2GUESS package directly.
+##' as.ESS.object from the R2GUESS package directly and use ess2snpmod
+##' to allow R2GUESS functions to work.
 ##' @title ess.read
 ##' @param f base file name, a character string
+##' @param ... optional arguments passed to as.ESS.object
 ##' @return object of class ESS
 ##' @export
 ##' @author Chris Wallace
@@ -27,7 +29,7 @@ read.ess <- function(f,...) {
 ##' Convert an ESS object to a snpmod object
 ##'
 ##' R2GUESS and GUESSFM are aimed at slightly different things.  That
-##' means different aspects of the output are important.  R2GUESS
+##' means different aspects of the output are important.  R2GUESS's
 ##' major object class is ESS.  For GUESSFM it is snpmod.  This
 ##' function takes an object of class ESS and creates the
 ##' corresponding snpmod object.  The two contain slightly different
@@ -39,14 +41,14 @@ read.ess <- function(f,...) {
 ##' @return an object of class snpmod
 ##' @export
 ##' @author Chris Wallace
-ess2snpmod <- function(ess,decode=NULL) {
+ess2snpmod <- function(ess## ,decode=NULL
+                       ) {
     ## ESS is just a list.  Extract the paths we need
-    if(is.null(decode)) {
+#    if(is.null(decode)) {
         read.snpmod(ess$path.input)
-    } else {
-        reader(f,decode)
-    }
-    
+#    } else {
+#        reader(f,decode)
+#    }   
 }
 
 ##' Read a decode file, internal function
@@ -68,7 +70,7 @@ read.decode <- function(dfile) {
 
 basefile <- function(f) {
   if(file.exists(f) && file.info(f)$isdir) {
-    ofiles <- list.files(f, pattern="^out_.*.txt",full=TRUE)
+    ofiles <- list.files(f, pattern="^out_.*.txt",full.names=TRUE)
     if(!length(ofiles))
         return(NULL)
     ofiles <- ofiles[ order( file.info(ofiles)$mtime, decreasing=TRUE ) ]

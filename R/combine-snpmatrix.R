@@ -1,10 +1,10 @@
-##' calculate intersection and setdiffs for two vectors
+##' Utility function to calculate intersection and setdiffs for two vectors
 ##'
 ##' Originally from randomFunctions
 ##' @title textvenn
 ##' @param A a vector
 ##' @param B a vector of the same type as A
-##' @param quiet 
+##' @param quiet suppress printing if TRUE 
 ##' @return a list with three elements: A is setdiff(A,B).  int is intersect(A,B).  B is setdiff(B,A)
 ##' @author Chris Wallace
 ##' @export

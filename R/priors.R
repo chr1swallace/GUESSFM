@@ -15,15 +15,14 @@
 ##' 
 ##' @title snpprior
 ##' @param x number of SNPs in a model (defaults to 1:length(groups), ie returns a vector)
-##' @param x number of SNPs in a model (defaults to 1:length(groups), ie returns a vector)
 ##' @param n total number of SNPs or SNP groups available
 ##' @param expected expected number of SNPs in a model
 ##' @param overdispersion overdispersion parameter.  Setting this to 1
 ##' gives a binomial prior.  Values < 1 are nonsensical: if you really
 ##' believe the prior should be underdispersed relative to a binomial
 ##' distribution, consider using a hypergeometric prior.
-##' @param groups groups of SNPs, from which at most one SNP should be selected
 ##' @param pi0 prior probability that no SNP is associated
+##' @param truncate optional, if supplied priors will be adjusted so models with x>truncate have prior 0
 ##' @return prior probabilities as a numeric vector
 ##' @export
 ##' @author Chris Wallace
@@ -50,6 +49,7 @@
 snpprior <- function(x=0:10, n, expected, overdispersion=1, pi0=NA, truncate=NA                     
                      ## , value=c("prob","odds")
                            ) {
+## ##' @param groups groups of SNPs, from which at most one SNP should be selected
   if(overdispersion < 1)
     stop("overdispersion parameter should be >= 1")
   x <- as.integer(x)

@@ -1,3 +1,5 @@
+## NONE OF THESE SHOULD BE EXPORTED - THEY ARE UTILITIES USED BY PACKAGE FUNCTIONS
+
 modelMatrix <- function(d) {
   allsnps <- rownames(d@snps)
   M <- Matrix(0,length(d@model.snps),length(allsnps))
@@ -27,6 +29,18 @@ logsum <- function(x) {
   my.res <- my.max + log(sum(exp(x - my.max )))
   return(my.res)
 }
+##' Paste a list of SNPs in a consistent way to create a model name
+##'
+##' @param x character vector
+##' @return character object
+##' @export
+##' @examples
+##' SNPS1 <- sample(letters[1:10])
+##' SNPS2 <- sample(letters[1:10])
+##' SNPS1
+##' SNPS2
+##' GUESSFM:::makestr(SNPS1)
+##' GUESSFM:::makestr(SNPS2)
 makestr <- function(x) {paste(sort(unique(x)),collapse="%")}
 ##' internal function: xscale
 ##'
@@ -39,13 +53,19 @@ makestr <- function(x) {paste(sort(unique(x)),collapse="%")}
 ##' @author Chris Wallace
 ##' @examples
 ##' x<-1:10
-##' cbind(x,snpmod:::xscale(x,c(0.1,1)),snpmod:::xscale(x,c(1319,20578)))
+##' cbind(x,
+##'       GUESSFM:::xscale(x,c(0.1,1)),
+##'       GUESSFM:::xscale(x,c(1319,20578)))
 ##' ## Now use only part of x
 ##' x<-x[2:7]
 ##' ## WRONG
-##' cbind(x,snpmod:::xscale(x,c(0.1,1)),snpmod:::xscale(x,c(1319,20578)))
+##' cbind(x,
+##'       GUESSFM:::xscale(x,c(0.1,1)),
+##'       GUESSFM:::xscale(x,c(1319,20578)))
 ##' ## RIGHT
-##' cbind(x,snpmod:::xscale(x,c(0.1,1),xrange=c(1,10)),snpmod:::xscale(x,c(1319,20578),xrange=c(1,10)))
+##' cbind(x,
+##'       GUESSFM:::xscale(x,c(0.1,1),xrange=c(1,10)),
+##'       GUESSFM:::xscale(x,c(1319,20578),xrange=c(1,10)))
 xscale <- function(x,torange,xrange=c(min(x),max(x))) {
   x0 <- (x - xrange[1]) / (xrange[2] - xrange[1]) # from 0 -> 1
   x0 * (torange[2] - torange[1]) + torange[1]
@@ -53,8 +73,12 @@ xscale <- function(x,torange,xrange=c(min(x),max(x))) {
 ##   LD$A <- (n-2) * (LD$A - mn) / (mx-mn) + 1.5
 
 }
-
+##' internal function: cumulative mean
+##'
+##' @param x numeric vector
+##' @return vector of cumulative mean
+##' @examples
+##' GUESSFM:::cummean(1:10)
 cummean <- function(x) {
   cumsum(x) / 1:length(x)
 }
-

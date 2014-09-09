@@ -1,15 +1,9 @@
-add.neighbours <- function(d) {
-
-  
-  
-}
-
 expand.tags <- function(d, tags) {
     best <- d@model.snps
     B <- length(best)
     bsnps <- unique(unlist(best))
-    wh <- which(make.names(tags@tags) %in% bsnps)
-    proxies <- split(make.names(tags@snps[wh]),make.names(tags@tags[wh]))
+    wh <- which(make.names(tags(tags)) %in% bsnps)
+    proxies <- split(make.names(snps(tags)[wh]),make.names(tags(tags)[wh]))
     table(sapply(proxies,length))
     message("expanding tags for ",B," models over ",length(proxies)," tag SNPs, tagging a total of ",length(unlist(proxies)), " SNPs.")
 
@@ -69,6 +63,7 @@ expand.tags <- function(d, tags) {
 ##' @param samples optional, subset of samples to use
 ##' @param strata optional, return a list of tag vectors, one for each stratum defined by as.factor(strata)
 ##' @param quiet if FALSE (default), show progress messages
+##' @param method method used for heirarchical clustering.  See hclust for options.
 ##' @return character vector, names are \code{snps}, values are the tag for each SNP
 ##' @author Chris Wallace
 ##' @export
@@ -107,10 +102,10 @@ tag <- function(X,tag.threshold=0.99, snps=NULL, samples=NULL, strata=NULL,quiet
     a <- apply(r2[g,g],1,mean)
     names(groups)[i] <- g[ which.max(a) ]
   }
-  groups <- new("groups",groups=groups,tags=names(groups))
+  groups <- new("groups",groups,tags=names(groups))
   
   ## check
-  r2 <- myr2(X[,groups@tags])
+  r2 <- myr2(X[,tags(groups)])
   diag(r2) <- 0
 ##   if(max(r2)==1) 
 ##     stop("max r2 still 1!")
@@ -127,7 +122,7 @@ myr2 <- function(X) {
   r2 <- ld(X,
            depth=ncol(X)-1,
            symmetric=TRUE,
-           stat="R.squared")
+           stats="R.squared")
   if(any(is.na(r2))) {
     r2.na <- as(is.na(r2),"matrix")
     use <- rowSums(r2.na)>0
