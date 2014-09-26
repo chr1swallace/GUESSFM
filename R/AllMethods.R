@@ -3,7 +3,14 @@
 ##                          display                                 ##
 
 ######################################################################
-##' @rdname snpmod-class 
+##' Show
+##'
+##' Methods to briefly summarise objects to screen. \code{show} is
+##' called implicitly when you type an object's name at the command
+##' line.  Use \code{summary}, where available, to get more details.
+##' @param object the thing to show
+##' @export
+##' @rdname show-methods 
 setMethod("show", signature="snpmod",
           function(object) {
             nmod <- nrow(object@models)
@@ -15,7 +22,7 @@ setMethod("show", signature="snpmod",
             message(sprintf("PP ranges from %4.3f-%4.3f (sum: %4.3f).",minpp,maxpp,spp))
           })
 
-##' @rdname snppicker-class 
+##' @rdname show-methods
 setMethod("show", signature="snppicker",
           function(object) {
             ngroup <- length(object@.Data)
@@ -23,7 +30,7 @@ setMethod("show", signature="snppicker",
             message("snppicker object, containing ",sum(nsnps)," SNPs grouped into ",ngroup," groups.")
           })
 
-##' @rdname groups-class 
+##' @rdname show-methods
 setMethod("show", signature="tags",
           function(object) {
             ntags <- length(unique(object@tags))
@@ -31,7 +38,7 @@ setMethod("show", signature="tags",
             message("tags object, containing ",nsnps," SNPs in ",ntags," groups.")
           })
 
-##' @rdname groups-class 
+##' @rdname show-methods
 setMethod("show", signature="groups",
           function(object) {
             ntags <- length(object@tags)
@@ -45,6 +52,14 @@ setMethod("show", signature="groups",
 
 ######################################################################
 
+
+##' Summaries
+##' 
+##' Print summary of an object
+##'
+##' @param object the thing to summarise
+##' @export
+##' @rdname summary
 setMethod("summary",signature="snppicker",
           function(object){
             ngroups <- length(object@groups)
@@ -57,6 +72,7 @@ setMethod("summary",signature="snppicker",
                        min.R2=1-maxr2,
                        sum.MPI=cmpi)
           })
+##' @rdname summary
 setMethod("summary",signature="groups",
           function(object) {
             data.frame(tag=object@tags,
@@ -69,6 +85,17 @@ setMethod("summary",signature="groups",
 
 ######################################################################
 
+##' Plots
+##'
+##' Descriptive plots showing how the sets in snppicker objects were
+##' generated.  Uses \code{ggplot2}, so you can customize using
+##' \code{theme} etc.
+##'
+##' @rdname plot-methods
+##' @param x snppicker object
+##' @param do.plot if TRUE (default) print the plot on the current
+##' device, otherwise invisibly return the plot object.
+##' @export
 setMethod("plot", signature(x="snppicker",y="missing"),
           function(x, do.plot=TRUE) {
             index <- unlist(lapply(x@groups, function(z) rownames(z)[1]))
@@ -133,6 +160,13 @@ setAs("snppicker","tags",
                  tags=unlist(lapply(from@groups,function(x) x[1,"var"])))
         as(g,"tags")
       })
+
+################################################################################
+
+## subsets
+
+################################################################################
+
 ##' Subset groups or tags objects
 ##'
 ##' '[' will extract another object of the same class.  '[[' will extract a single element.
@@ -184,12 +218,7 @@ setMethod("[[",signature=c(x="groups",i="character"),
 
 ######################################################################
 
-#' Conversion of objects saved in pre-release version of GUESSFM to
-#' current version
-#'
 #' @rdname conversion
-#' @param object object of class groups or tags
-#' @return object of the same class
 setMethod("convert",signature=c(object="groups"), function(object) {
   object@.Data=object@groups
   return(object)
@@ -348,13 +377,13 @@ setMethod("union",signature(x="groups",y="groups"),definition=function(x,y) {
 
 ######################################################################
 
-##' @rdname snps
+##' @rdname accessors
 setMethod("snps",signature(object="groups"), function(object) { object@.Data })
-##' @rdname tags
+##' @rdname accessors
 setMethod("tags",signature(object="groups"), function(object) { object@tags })
-##' @rdname snps
+##' @rdname accessors
 setMethod("snps",signature(object="tags"), function(object) { object@.Data })
-##' @rdname tags
+##' @rdname accessors
 setMethod("tags",signature(object="tags"), function(object) { object@tags })
 
 ## setMethod("snpdrop",signature(x="snpmod",y="character"),

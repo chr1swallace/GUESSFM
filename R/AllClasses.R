@@ -8,6 +8,8 @@
 #' @slot model.snps list containing the SNPs for each model. May be removed.
 #'
 #' @export
+#' @examples
+#' new("snpmod")
 setClass("snpmod",
          slots=c(snps="data.frame",
                         models="data.frame",
@@ -16,11 +18,20 @@ setClass("snpmod",
            if(nrow(object@models)!=length(object@model.snps))
              stop("Model summary should contain same number of models as model.snps decodes")
          })
-#' groups class
+#' Group focused class for holding information about sets of SNPs
+#' defined by their mutual LD
+#'
+#' \code{groups} and \code{tags} are two structures for holding the
+#' same information, depending on whether your focus is on the sets of
+#' SNPs or their index members.  It is easy to convert one to another
+#' and perhaps, in future, one class may be deprecated.
 #'
 #' @slot tags character vector giving tag SNPs.  Each tag indexes one group of SNPs
 #' @slot .Data list of character vectors giving the SNP membership of each group
-#' @rdname groups-class
+#' 
+#' @export
+#' @examples
+#' new("groups")
 setClass("groups",
          slots=c(tags="character"),
          contains="list",
@@ -29,11 +40,20 @@ setClass("groups",
              stop("groups must be named by their tag")
            }
          })
-#' tags class
+#' Tags focused class for holding information about sets of SNPs
+#' defined by their mutual LD
 #'
-#' @slot tags character vector giving tag SNPs, one per SNP in \code{snps}, repeated as necessary
+#' \code{groups} and \code{tags} are two structures for holding the
+#' same information, depending on whether your focus is on the sets of
+#' SNPs or their index members.  It is easy to convert one to another
+#' and perhaps, in future, one class may be deprecated.
+#'
+#' @slot tags character vector giving tag SNPs, one per SNP in
+#' in \code{.Data}, repeated as necessary
 #' @slot .Data character vector giving SNPs included in this tags object
 #' @rdname groups-class
+#' @examples
+#' new("tags")
 setClass("tags",
          slots=c(tags="character"),
          contains="character",
@@ -51,6 +71,7 @@ setClass("tags",
 #' @slot plotsdata list of additional data relating to the snp.picker
 #' process that allows a summary of that process to be plotted via
 #' \code{plot}.
+#' new("snppicker")
 setClass("snppicker",
          slots=c(plotsdata="list",groups="list"),
          validity=function(object) {

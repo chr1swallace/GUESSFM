@@ -80,7 +80,7 @@ plot_diffuse <- function(results, maxrank=1000, thin=500) {
   np <- levels(df$phenotype <- factor(df$phenotype))
   use <- unlist(tapply(1:nrow(df), df$phenotype, function(x) x[ seq(1,length(x), length.out=thin) ],simplify=FALSE)) ## WORKS
   
-  ggplot(df[use,], aes(x=rank,y=cPP, col=phenotype)) + geom_path()
+  ggplot(df[use,], aes(x=rank,y=cPP, col=phenotype)) + geom_path() + ylim(0,1)
 }
 ##' Rotated LD plot
 ##'
@@ -205,7 +205,11 @@ scalepos <- function(summ,pos="position.hg19") {
   summ$xmax.scale <- xscale(summ$x.max,torange=pr,xrange=xr)
   return(summ)
 }
-
+##' Summarize the posterior model support by the number of SNPs contained in a model
+##'
+##' @param results object of class snpmod
+##' @param plot if TRUE, print a pretty plot to current plotting device
+##' @return a list containing a named vector summarizing the posterior for each count of SNPs and a ggplot object
 pp.nsnp <- function(results,plot=FALSE) {
   if(!is.list(results))
     results <- list(trait=results)
@@ -218,7 +222,8 @@ pp.nsnp <- function(results,plot=FALSE) {
   df <- do.call("rbind",df)
   p <- ggplot(df,aes(x=n,y=pp,col=trait)) + geom_point() + geom_path() + 
     xlab("Number of SNPs in model") + ylab("Posterior Probability") + scale_x_continuous(breaks=seq(0,max(df$n),by=2))
-  print(p)
+  if(plot)
+    print(p)
   print(pp.nsnps)
   invisible(list(pp=pp.nsnps,plot=p))
 }

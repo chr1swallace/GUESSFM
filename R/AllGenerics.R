@@ -1,6 +1,8 @@
+## generics from S3
 setGeneric("length")
 setGeneric("plot")
 setGeneric("summary")
+
 #' Create a union of groups, snppicker or tags objects
 #'
 #' First, objects are converted to class groups.  Then any groups
@@ -27,24 +29,30 @@ setGeneric("snpin", function(x,y) standardGeneric("snpin"))
 #setGeneric("snpdrop", function(x,y) standardGeneric("drop"))
 
 ##' Convert from old definitions of groups, tags classes to new
-##' DON'T USE THIS FUNCTION UNLESS YOU HAVE OBJECTS STORED FROM A PREVIOUS PRE-DEVELOPMENT VERSION!
 ##' 
+##' DON'T USE THIS FUNCTION UNLESS YOU HAVE OBJECTS STORED FROM A
+##' PREVIOUS PRE-DEVELOPMENT VERSION!
+##' 
+#' @rdname conversion
 ##' @param object GUESSFM object from pre-development version
 ##' @return new S4 structure
 setGeneric("convert",function(object) standardGeneric("convert"))
 
-##' Accessor function to show list of snps in an object of class groups
+##' Accessor functions
 ##'
-##' @title snps
-##' @param object object from which snps are to be extracted
+##' \code{snps} shows list of snps in an object of class groups and
+##' returns a list of character vectors
+##'
+##' @title Accessors for groups objects
+##' @param object object from which items should be extracted
 ##' @return a list of character vectors
 ##' @author Chris Wallace
+##' @rdname accessors
+##' @export
 setGeneric("snps",function(object) standardGeneric("snps"))
 
-##' Accessor function to show tags from an object of class groups
-##'
-##' @title tags
-##' @param object  object from which tag snps are to be extracted
-##' @return character vector of tag SNPs
-##' @author Chris Wallace
+##' @details \code{tags} shows tags from an object of class groups and
+##' returns a character vector of tag SNPs
+##' @rdname accessors
+##' @export
 setGeneric("tags",function(object) standardGeneric("tags"))
