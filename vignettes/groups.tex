@@ -1,0 +1,138 @@
+% Created 2014-09-26 Fri 10:38
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{fixltx2e}
+\usepackage{graphicx}
+\usepackage{longtable}
+\usepackage{float}
+\usepackage{wrapfig}
+\usepackage{rotating}
+\usepackage[normalem]{ulem}
+\usepackage{amsmath}
+\usepackage{textcomp}
+\usepackage{marvosym}
+\usepackage{wasysym}
+\usepackage{amssymb}
+\usepackage{hyperref}
+\tolerance=1000
+\usepackage{fullpage}
+\author{Chris Wallace}
+\date{2014-04-25 Fri}
+\title{Groups, tags, and snp.picker}
+\hypersetup{
+  pdfkeywords={},
+  pdfsubject={},
+  pdfcreator={Emacs 24.3.1 (Org mode 8.2.7c)}}
+\usepackage{Sweave}
+\begin{document}
+
+\maketitle
+\tableofcontents
+
+%\VignetteIndexEntry{Groups, tags, and snp.picker}
+
+\section{Grouping SNPs}
+\label{sec-1}
+
+We often (usually) cannot resolve an association to a single causal
+variant, and one of the aims of GUESSFM is to generate groups of SNPs,
+one of which is likely to be causal.
+
+\section{The groups and tags classes}
+\label{sec-2}
+The \texttt{groups} and \texttt{tags} classes are two ways to represent the same
+information, but use different structures which might be more
+convenient for one function or another.
+
+\begin{Schunk}
+\begin{Sinput}
+> library(GUESSFM)
+> showClass("groups")
+\end{Sinput}
+\begin{Soutput}
+Class "groups" [package "GUESSFM"]
+
+Slots:
+                          
+Name:      .Data      tags
+Class:      list character
+
+Extends: 
+Class "list", from data part
+Class "vector", by class "list", distance 2
+Class "AssayData", by class "list", distance 2
+Class "vectorORfactor", by class "list", distance 3
+\end{Soutput}
+\begin{Sinput}
+> showClass("tags")
+\end{Sinput}
+\begin{Soutput}
+Class "tags" [package "GUESSFM"]
+
+Slots:
+                          
+Name:      .Data      tags
+Class: character character
+
+Extends: 
+Class "character", from data part
+Class "vector", by class "character", distance 2
+Class "data.frameRowLabels", by class "character", distance 2
+Class "SuperClassMethod", by class "character", distance 2
+Class "atomicVector", by class "character", distance 2
+Class "index", by class "character", distance 2
+Class "characterORconnection", by class "character", distance 2
+Class "atomic", by class "character", distance 2
+Class "characterORNULL", by class "character", distance 2
+Class "EnumerationValue", by class "character", distance 2
+Class "characterORMIAME", by class "character", distance 2
+Class "characterOrRle", by class "character", distance 2
+Class "vectorORfactor", by class "character", distance 3
+\end{Soutput}
+\end{Schunk}
+
+\section{Automatic group building based on marginal posterior probabilities}
+\label{sec-3}
+Once models have been fitted, we can average over them to find
+marginal posterior probabilities for each SNP.  We make the assumption
+that SNPs in a group should display the following properties:
+\begin{itemize}
+\item the sum of MPI should be no more than 1
+\item SNPs in a group should not occur in the same model together very
+often
+\item SNPs in a group should be correlated (r$^{\text{2}}$>0.5), and the MPI should tail
+off from the primary SNP with r$^{\text{2}}$
+\end{itemize}
+
+\texttt{snp.picker()} aims to create such groups in an automated manner,
+given the summary of a GUESS run and a genotype dataset from which r$^{\text{2}}$
+may be calculated.  It returns an object of class \texttt{snppicker} which is
+an extension of the \texttt{groups} class and contains information to allow
+plotting of the relationship between r$^{\text{2}}$ and MPI that was used to
+define a group.
+
+\begin{Schunk}
+\begin{Sinput}
+> showClass("snppicker")
+\end{Sinput}
+\begin{Soutput}
+Class "snppicker" [package "GUESSFM"]
+
+Slots:
+                          
+Name:  plotsdata    groups
+Class:      list      list
+\end{Soutput}
+\end{Schunk}
+
+\section{Manual corrections}
+\label{sec-4}
+Plotting an object of class \texttt{snppicker} should be informative.  The
+algorithm underlying \texttt{snp.picker()} has been designed so it is more
+likely to err by splitting a single group in two than by joining what
+might be two separate groups.  If you suspect two groups should be
+merged, you can check the assumptions above using \texttt{check.merge()}, and
+perform a merge using \texttt{group.merge()}.
+% Emacs 24.3.1 (Org mode 8.2.7c)
+\end{document}
