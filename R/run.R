@@ -1,18 +1,32 @@
 
-cond.best <- function(X,Y,best=NULL,p.thr=1e-6, ...) {
-  if(is.null(best)) {    
-    cond <- snp.rhs.tests(Y ~ 1, snp.data=X, data=data.frame(Y=Y, row.names=rownames(X)), ...)
-    p.thr <- 1
+cond.best <- function(X,Y,best=NULL,p.thr=1e-6,max=NA, ...) {
+ if(!is.na(max) & length(best)>=max)
+   return(NULL)
+ ## cs <- col.summary(X)
+ ## X <- X[,cs[,"MAF"]>0.05]
+ data <- data.frame(Y=Y, row.names=rownames(X))
+ if(is.null(best)) {
+   Xtest <- X
+   cond <- single.snp.tests(phenotype=data$Y, snp.data=Xtest)
+   p <- p.value(cond,1)
+   p.thr <- 1
   } else {
+    data <- cbind(data,as(X[,best],"numeric"))
+    LD <- ld(X,X[,best],stat="R.squared")
+    maxLD <- apply(LD,1,max,na.rm=TRUE)
+    drop <- unique(c(names(maxLD)[which(is.na(maxLD) | maxLD>0.5)],best))
+    Xtest <- X[,setdiff(colnames(X),drop)]
     cond <- snp.rhs.tests(as.formula(paste("Y ~", paste(best, collapse="+"))),
-                          snp.data=X,
-                          data=cbind(data.frame(Y=Y, row.names=rownames(X)),as(X[,best],"numeric")), ...)
+                          snp.data=Xtest,
+                          data=data,...) # binomial by default
+    
+    p <- p.value(cond)
   }
-  p <- p.value(cond)
   pmin <- min(p, na.rm=TRUE)
   if(pmin<p.thr) {
-    newbest <- colnames(X)[ which.min(p) ]
-    message(newbest," ",format.pval(pmin))
+    newbest <- colnames(Xtest)[ which.min(p) ]
+    cs <- col.summary(Xtest[,newbest])
+    message(newbest,"\tMAF=",signif(cs[1,"MAF"],2),"\tp=",format.pval(pmin))
     return(newbest)
   }
   return(NULL)
@@ -141,18 +155,28 @@ run.bvs <- function(X,Y,gdir="test",sub=NA,
       strat <- strat[use]
       m0 <- glm(gY ~ strat, family=family)
       gY <- residuals(m0)
+      family <- "gaussian"
   }
       
   message("using ",n," samples ",m," SNPs, ",p," confounders.")
+
+  ## any uncertain genotypes?
+  ## cs <- col.summary(X)
+  ## if(length(wh <- which(cs[,"Certain.calls"] < cs[,"Calls"]))) {
+  ##   N <- round(as(X,"numeric"))
+  ##   X <- new("SnpMatrix",N+1)
+  ## }
   
   ## IF GUESS: what are the best regressors? (95,220?)
   if(backend=="guess") {
     best <- NULL
-    for(j in 1:ncol(Y)) {
-      while(length(newbest <- cond.best(X, Y[,j], best, family=family)))
-        best <- c(best,newbest)
+    cs <- col.summary(X)
+    wh <- use.cols[which(cs[,"MAF"]>0.05 & cs[,"Certain.calls"]>0.9)]
+    while(length(newbest <- cond.best(X[use,wh], gY, best, family=family))) {
+      best <- c(best,newbest)
+      ##        wh <- setdiff(wh,which(colnames(X) %in% best))
     }
-  
+    
     ## prior
     if(dominance) {
         p <- 1.5*nexp/m

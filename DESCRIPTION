@@ -2,7 +2,7 @@ Package: GUESSFM
 Title: Using GUESS for Fine Mapping
 Description: GUESS is software to search for the best sets of multiple SNP
     models in a given dataset using MCMC.  GUESSFM has some functions to help
-    run GUESS in a fine mapping framework.  Note also R2GUESS which helps
+    run GUESS in a fine mapping setting.  Note also the package R2GUESS which helps
     directly run GUESS and evaluate its output.  GUESSFM is intended to be
     complementary to R2GUESS rather supercede any of its functionality.
 Version: 0.2

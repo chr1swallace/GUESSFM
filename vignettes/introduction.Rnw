@@ -1,4 +1,4 @@
-% Created 2014-09-26 Fri 10:39
+% Created 2014-10-13 Mon 11:56
 \documentclass[11pt]{article}
 \usepackage[utf8]{inputenc}
 \usepackage[T1]{fontenc}
@@ -53,7 +53,8 @@ Although GUESS uses g-priors, which inhibits visiting models with SNPs
 in high LD, we have found that running GUESS with SNPs in complete LD
 can lead to instability.  R2GUESS was created purely to allow running
 GUESS on a tagged set of SNPs to approximate the posterior model
-space, and then expand the most interesting models to include their tags.  It is perhaps useful to give an example of expanding a model.
+space, and then expand the most interesting models to include their
+tags.  It is perhaps useful to give an example of expanding a model.
 
 Suppose we begin tagging, and determine a couple of \emph{tag groups} as follows:
 
@@ -126,7 +127,7 @@ summary(col.summary(X))
 @ %def
 
 Looking at the LD, we see this is a region in which D' (above the
-diagonal) is very high, whilst $r^2$ can be high between some SNPs,
+diagonal) is typically high, whilst $r^2$ can be high between some SNPs,
 and with moderately strong $r^2 \simeq 0.7$ between two of our causal
 SNPs:
 <<>>=
@@ -145,7 +146,17 @@ demonstration as there is limited strong LD in this dataset.
 ## THIS DIRECTORY WILL HOLD ALL THE GUESS INPUT AND OUTPUT 
 ## AND WILL BE CREATED IF IT DOESN'T ALREADY EXIST
 mydir <- tempfile() 
-run.bvs(X,Y,gdir=mydir,backend="guess",tag.r2=0.8) ## THIS CAN TAKE A WHILE...
+## NB, IF GUESS IS NOT ON YOUR PATH, SUPPLY THE FULL PATH IN AN ARGUMENT
+## guess.command="/path/to/GUESS"
+run.bvs(X,Y,gdir=mydir,backend="guess",tag.r2=0.8,guess.command="/home/chrisw/GUESS_v1.1/Main/GUESS") 
+\end{verbatim}
+
+
+\begin{verbatim}
+## THIS CAN TAKE A WHILE.  FOR THE PURPOSES OF THIS VIGNETTE, 
+## WE WILL LOAD THE RESULTS FROM AN EXISTING RUN.
+mydir <-  system.file("inst","extdata",package="GUESSFM")
+
 ## what files were created?
 list.files(mydir)
 
