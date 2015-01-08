@@ -16,6 +16,8 @@ cond.best <- function(X,Y,best=NULL,p.thr=1e-6,max=NA, ...) {
     maxLD <- apply(LD,1,max,na.rm=TRUE)
     drop <- unique(c(names(maxLD)[which(is.na(maxLD) | maxLD>0.5)],best))
     Xtest <- X[,setdiff(colnames(X),drop)]
+    if(!ncol(Xtest))
+      return(NULL)
     cond <- snp.rhs.tests(as.formula(paste("Y ~", paste(best, collapse="+"))),
                           snp.data=Xtest,
                           data=data,...) # binomial by default
