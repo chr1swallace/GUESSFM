@@ -91,7 +91,9 @@ tag <- function(X,tag.threshold=0.99, snps=NULL, samples=NULL, strata=NULL,quiet
     return(tags)
   }
 
-  ## cs <- col.summary(X)
+  cs <- col.summary(X)
+  if(any(is.na(cs[,"HWE"])))
+    stop("some SNPs have zero standard deviation (missing HWE stat). Please fix and rerun")
   ## X <- X[,order(cs$MAF)]
   
 
