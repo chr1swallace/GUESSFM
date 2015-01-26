@@ -73,3 +73,8 @@ snpprior <- function(x=0:10, n, expected, overdispersion=1, pi0=NA, truncate=NA
   names(prob) <- as.character(x)
   return(exp(prob))
 }
+
+change.prior <- function(d, pr) {
+  M <- d@models
+#  M$ABF <- 
+}

@@ -1,5 +1,5 @@
 
-cond.best <- function(X,Y,best=NULL,p.thr=1e-6,max=NA, ...) {
+cond.best <- function(X,Y,best=NULL,p.thr=1e-3,max=NA, ...) {
  if(!is.na(max) & length(best)>=max)
    return(NULL)
  ## cs <- col.summary(X)
@@ -41,7 +41,7 @@ backend.guess <- function(gX, gY, gdir, nsweep, nchains, best, nsave, nexp, nexp
   message("creating decode files under ",gdir)
   if(!file.exists(gdir))
     dir.create(gdir)
-  decode <- matrix((1:ncol(gX)) - 1,ncol=1,dimnames=list(varname=colnames(gX),"varnum")) # 1-based
+  decode <- matrix((1:ncol(gX)) - 1,ncol=1,dimnames=list(varname=colnames(gX),"varnum")) # 0-based
   write.table(decode,
               file=decode.file,
               append=FALSE,quote=FALSE,sep="\t",row.names=TRUE,col.names=FALSE)
@@ -66,6 +66,8 @@ backend.guess <- function(gX, gY, gdir, nsweep, nchains, best, nsave, nexp, nexp
   x.file <- paste0(gdir,"/X_",nsweep)
   y.file <- paste0(gdir,"/Y_",nsweep)
   init.file <- paste0(gdir,"/init_",nsweep)
+  message("writing to ",init.file,":")
+  cat(length(cols.guess),cols.guess, sep="\n")
   cat(length(cols.guess),cols.guess, sep="\n", file=init.file)
   cat(nrow(gX),"\n",ncol(gX),"\n",sep="",file=x.file)
   cat(nrow(gX),"\n",1,"\n",sep="",file=y.file)

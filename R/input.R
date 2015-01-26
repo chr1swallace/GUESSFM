@@ -112,10 +112,12 @@ reader <- function(f,decode,offset) {
   models$logPP <- as.numeric(models$logPP)
   models$PP <- as.numeric(models$PP)
   models$jeffreys <- as.numeric(models$jeffreys)
+  if(any(is.nan(models$PP)))
+    models$PP <- exp(models$logPP - logsum(models$logPP))
 
   maxsize <- max(models$size)
   models <- models[, 1:(6+max(models$size))]
-  message(nrow(models), " models, covering all models with pp > ",signif(models[nrow(models), "PP"],3),
+  message(nrow(models), " models, with pp > ",signif(models[nrow(models), "PP"],3),
           ", and, cumulatively, to ",signif(sum(models$PP),3))
 
   model.snps <- apply(models[,-c(1:6)], 1, paste, collapse=",")
