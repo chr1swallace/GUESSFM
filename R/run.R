@@ -101,8 +101,8 @@ backend.guess <- function(gX, gY, gdir, nsweep, nchains, best, nsave, nexp, nexp
 ##' @param Y vector or matrix of phenotypes, nrow(Y)==nrow(X)
 ##' @param gdir directory where all the GUESS input/output files will be. If it doesn't exist, it will be created.
 ##' @param sub optional number < nrow(X). If supplied, only the subset of samples defined by 1:sub will be used.
-##' @param strat optional covariate vector. If supplied GUESS will be run on residuals from Y ~ strat.
-##' @param family family for Y ~ strat regression.  default "gaussian".
+##' @param covars optional matrix or vector of covariates. If supplied GUESS will be run on residuals from glm(Y ~ ., data=as.data.frame(covars)).
+##' @param family family for Y ~ covars regression.  default "gaussian".
 ##' @param tag.r2 r squared value at which to tag to avoid numerical instability.  Default of 0.99 has worked well in our experience.
 ##' @param nexp expected number of causal variants in region
 ##' @param nsave number of models to save, see documentation for GUESS 
@@ -116,7 +116,7 @@ backend.guess <- function(gX, gY, gdir, nsweep, nchains, best, nsave, nexp, nexp
 ##' @export
 ##' @return nothing.  side effect is to set GUESS running in the background.  This takes a while (typically several hours).
 run.bvs <- function(X,Y,gdir="test",sub=NA,
-                    strat=NULL,family="gaussian", nsweep=55000,nchains=3,
+                    covars=NULL,family="gaussian", nsweep=55000,nchains=3,
                     nexp=3,boot=0,tag.r2=0.99, nsave=1000, as.is=TRUE,dominance=FALSE,
                     guess.command="GUESS",
                     backend=c("guess","dummy")) { 
@@ -141,8 +141,8 @@ run.bvs <- function(X,Y,gdir="test",sub=NA,
   p <- 0
   
   use <- complete.cases(N) & complete.cases(Y)
-  if(!is.null(strat))
-      use <- use & complete.cases(strat)
+  if(!is.null(covars))
+      use <- use & complete.cases(covars)
   use <- which(use)
   if(!is.na(sub))
     use <- use[1:sub]
@@ -155,11 +155,13 @@ run.bvs <- function(X,Y,gdir="test",sub=NA,
   m <- length(use.cols)
 
 
-  if(!is.null(strat)) {
-      strat <- strat[use]
-      m0 <- glm(gY ~ strat, family=family)
-      gY <- residuals(m0)
-      family <- "gaussian"
+  if(!is.null(covars)) {
+    if(!is.matrix(covars)) # deal with vectors, without messing up data.frames
+      covars <- as.matrix(covars)
+    covars <- as.data.frame(covars[use,,drop=FALSE])
+    m0 <- glm(gY ~ ., data=covars,family=family)
+    gY <- residuals(m0)
+    family <- "gaussian"
   }
       
   message("using ",n," samples ",m," SNPs, ",p," confounders.")
