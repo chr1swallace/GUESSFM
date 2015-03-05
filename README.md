@@ -21,6 +21,13 @@ library(devtools)
 install_github("chr1swallace/GUESSFM")
 ```
 
+If you want the vignettes to build as well, you could do 
+```R
+install_github("chr1swallace/GUESSFM", build_vignettes=TRUE)
+```
+
+[Introduction](http://rawgit.com/chr1swallace/GUESSFM/master/inst/doc/introduction.html)
+
 ## Documentation
 
 To load the GUESSFM library and see the vignette, do
