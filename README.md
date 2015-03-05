@@ -27,6 +27,7 @@ install_github("chr1swallace/GUESSFM", build_vignettes=TRUE)
 ```
 
 [Introduction](http://rawgit.com/chr1swallace/GUESSFM/master/inst/doc/introduction.html)
+[Tags/groups](http://rawgit.com/chr1swallace/GUESSFM/master/inst/doc/groups.html)
 
 ## Documentation
 
