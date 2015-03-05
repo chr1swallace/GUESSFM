@@ -4,7 +4,7 @@
 \title{tag}
 \usage{
 tag(X, tag.threshold = 0.99, snps = NULL, samples = NULL, strata = NULL,
-  quiet = FALSE, method = "complete")
+  quiet = FALSE, method = "single", split.at = 500)
 }
 \arguments{
 \item{X}{SnpMatrix object}
@@ -20,6 +20,8 @@ tag(X, tag.threshold = 0.99, snps = NULL, samples = NULL, strata = NULL,
 \item{quiet}{if FALSE (default), show progress messages}
 
 \item{method}{method used for heirarchical clustering.  See hclust for options.}
+
+\item{split.at}{for large numbers of SNPs, tag first splits them into subsets of size split.at with similar MAF, then groups tag groups in high LD between subsets.  If you wish to avoid this, at additional computational cost, set split.at=NULL}
 }
 \value{
 character vector, names are \code{snps}, values are the tag for each SNP

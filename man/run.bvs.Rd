@@ -3,7 +3,7 @@
 \alias{run.bvs}
 \title{Bayesian variable selection}
 \usage{
-run.bvs(X, Y, gdir = "test", sub = NA, strat = NULL,
+run.bvs(X, Y, gdir = "test", sub = NA, covars = NULL,
   family = "gaussian", nsweep = 55000, nchains = 3, nexp = 3,
   boot = 0, tag.r2 = 0.99, nsave = 1000, as.is = TRUE,
   dominance = FALSE, guess.command = "GUESS", backend = c("guess",
@@ -18,9 +18,9 @@ run.bvs(X, Y, gdir = "test", sub = NA, strat = NULL,
 
 \item{sub}{optional number < nrow(X). If supplied, only the subset of samples defined by 1:sub will be used.}
 
-\item{strat}{optional covariate vector. If supplied GUESS will be run on residuals from Y ~ strat.}
+\item{covars}{optional matrix or vector of covariates. If supplied GUESS will be run on residuals from glm(Y ~ ., data=as.data.frame(covars)).}
 
-\item{family}{family for Y ~ strat regression.  default "gaussian".}
+\item{family}{family for Y ~ covars regression.  default "gaussian".}
 
 \item{nsweep}{number of sweeps, see documentation for GUESS}
 

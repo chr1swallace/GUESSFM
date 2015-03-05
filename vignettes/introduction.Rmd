@@ -1,34 +1,33 @@
-#+TITLE: GUESSFM: using GUESS for Fine Mapping
-#+AUTHOR: Chris Wallace
-#+EMAIL: chris.wallace@cimr.cam.ac.uk
-#+DATE: 2013-12-03 Tue
-#+DESCRIPTION:
-#+KEYWORDS:
-#+LANGUAGE: en
-#+OPTIONS: H:3 num:t toc:t \n:nil @:t ::t |:t ^:t -:t f:t *:t <:t
-#+OPTIONS: TeX:t LaTeX:t skip:nil d:(not LOGBOOK) todo:t pri:nil tags:t
+<div id="table-of-contents">
+<h2>Table of Contents</h2>
+<div id="text-table-of-contents">
+<ul>
+<li><a href="#sec-1">1. Introduction</a></li>
+<li><a href="#sec-2">2. R2GUESS Strategy</a></li>
+<li><a href="#sec-3">3. Simulate some data</a></li>
+<li><a href="#sec-4">4. Running GUESS and reading output</a></li>
+<li><a href="#sec-5">5. Using an existing R2GUESS run</a></li>
+<li><a href="#sec-6">6. Expanding</a></li>
+<li><a href="#sec-7">7. Plotting</a>
+<ul>
+<li><a href="#sec-7-1">7.1. <span class="todo TODO">TODO</span> separate vignette, including vagaries of ggplot</a></li>
+</ul>
+</li>
+<li><a href="#sec-8">8. Parallelism</a></li>
+</ul>
+</div>
+</div>
 
-#+EXPORT_SELECT_TAGS: export
-#+EXPORT_EXCLUDE_TAGS: noexport
-#+LINK_UP:
-#+LINK_HOME:
-#+XSLT:
-
-#+latex_header: \usepackage{fullpage}
-#+latex: %\VignetteIndexEntry{GUESSFM Introduction}
-
-#+begin_html
 <!--
 %\VignetteEngine{knitr}
 %\VignetteIndexEntry{GUESSFM Introduction}
 -->
-#+end_html
 
-* Introduction
+# Introduction<a id="sec-1" name="sec-1"></a>
 
-[[http://www.bgx.org.uk/software/guess.html][GUESS]] is software for Bayesian variable selection and model averaging
+[GUESS](http://www.bgx.org.uk/software/guess.html) is software for Bayesian variable selection and model averaging
 using a stochastic search algorithm to visit the most likely models
-via MCMC.  There also exists an R package, [[http://cran.r-project.org/web/packages/R2GUESS/index.html][R2GUESS]], which is a wrapper
+via MCMC.  There also exists an R package, [R2GUESS](http://cran.r-project.org/web/packages/R2GUESS/index.html), which is a wrapper
 for running GUESS, and provides useful diagnostic and summary
 functions.
 
@@ -38,7 +37,7 @@ variants.  The are particular challenges for fine mapping, mostly
 related to the density of SNP markers.  Nonetheless, this vignette
 will at first focus on an example dataset that comes with R2GUESS.
 
-* R2GUESS Strategy 
+# R2GUESS Strategy<a id="sec-2" name="sec-2"></a>
 
 Although GUESS uses g-priors, which inhibits visiting models with SNPs
 in high LD, we have found that running GUESS with SNPs in complete LD
@@ -47,21 +46,45 @@ GUESS on a tagged set of SNPs to approximate the posterior model
 space, and then expand the most interesting models to include their
 tags.  It is perhaps useful to give an example of expanding a model.
 
-Suppose we begin tagging, and determine a couple of /tag groups/ as follows:
+Suppose we begin tagging, and determine a couple of *tag groups* as follows:
 
-| Tag | SNPs in tag group |
-| $A$ | $A_1$, $A_2$      |
-| $B$ | $B_1$             | 
+<table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
+
+
+<colgroup>
+<col  class="left" />
+
+<col  class="left" />
+</colgroup>
+<tbody>
+<tr>
+<td class="left">Tag</td>
+<td class="left">SNPs in tag group</td>
+</tr>
+
+
+<tr>
+<td class="left">\(A\)</td>
+<td class="left">\(A_1\), \(A_2\)</td>
+</tr>
+
+
+<tr>
+<td class="left">\(B\)</td>
+<td class="left">\(B_1\)</td>
+</tr>
+</tbody>
+</table>
 
 R2GUESS will remove SNPs A1, A2 and B1, and will save a file
-containing an object of class =tags= containting the information in
+containing an object of class `tags` containting the information in
 the above table.  Then, suppose after GUESS has run on the set of tag
-SNPs, model $(A,B)$ is one of the most interesting.  GUESS FM will
-`expand' this model to the set of models ${(A,B), (A_1,B), (A_2,B),
-(A,B_1), (A_1,B_1), (A_2,B_1)}$.  
+SNPs, model \((A,B)\) is one of the most interesting.  GUESS FM will
+\`expand' this model to the set of models \({(A,B), (A_1,B), (A_2,B),
+(A,B_1), (A_1,B_1), (A_2,B_1)}\).  
 
 We assess each model using Bayes Factors.  The Bayes Factor for model
-$M_i$ is 
+\(M_i\) is 
 
 $$BF_{i0} = \frac{P(M_i | \text{data} )}{P(M_0 | \text{data})}.$$
 
@@ -75,20 +98,20 @@ GUESS.  Instead, we use Approximate Bayes Factors, based on the BIC:
 
 $$-2 \log{ABF_{i0}} = BIC(M_i) - BIC(M_0).$$
 
-These are calculated within R via the =glm= and =BIC= functions.  
+These are calculated within R via the `glm` and `BIC` functions.  
 
 At what threshold should you tag?  Probably, as high as you can go
-without inducing instability in GUESS.  We have found $r^2=0.99$ to
+without inducing instability in GUESS.  We have found \(r^2=0.99\) to
 work in some large datasets, but your mileage may vary.  In the
 examples below we use a lower threshold purely for demonstration.
 
-* Simulate some data
+# Simulate some data<a id="sec-3" name="sec-3"></a>
 
 We start with using some sample data from the snpStats package
 including 20 SNPs, and simulating a quantitative trait that depends
 on 3 causal SNPs.
 
-#+begin_src R :ravel :label=sim
+```{r }
 library(snpStats)
 data(for.exercise, package="snpStats")
 set.seed(12346)
@@ -98,46 +121,46 @@ causal <- c("rs1555897","rs7069505")
 Y <- rnorm(n,mean=as.numeric(X[,causal[1]]))*sqrt(0.2) +
   rnorm(n,mean=as.numeric(X[,causal[2]]))*sqrt(0.2) +
   rnorm(n)*sqrt(0.6)
-#+end_src
+```
 
-=X= contains some missing genotypes, but no SNPs with such a low call
+`X` contains some missing genotypes, but no SNPs with such a low call
 rate we would worry in a large study. Still, the rest of the analysis
 is easier to interpret for the purposes of a vignette if we fill in
 the missing values.
 
-#+BEGIN_SRC R :ravel :label=descsim
+```{r }
 library(GUESSFM)
 summary(col.summary(X))
 X <- impute.missing(X)
 summary(col.summary(X))
-#+END_SRC
+```
 
 Looking at the LD, we see this is a region in which D' (above the
-diagonal) is typically high, whilst $r^2$ can be high between some SNPs,
-and with moderately strong $r^2 \simeq 0.7$ between two of our causal
+diagonal) is typically high, whilst \(r^2\) can be high between some SNPs,
+and with moderately strong \(r^2 \simeq 0.7\) between two of our causal
 SNPs:
-#+begin_src R :ravel :fig=TRUE :label=ldfig
+
+```{r }
 ld <- show.ld(X=X)
-#+end_src
+```
 
+# Running GUESS and reading output<a id="sec-4" name="sec-4"></a>
 
-* Running GUESS and reading output
-
-First, via GUESSFM's wrapper, tagging at $r^2=0.8$.  This is
+First, via GUESSFM's wrapper, tagging at \(r^2=0.8\).  This is
 considerably lower than suggested above, and is used here purely for
 demonstration as there is limited strong LD in this dataset.
 
-: ## THIS DIRECTORY WILL HOLD ALL THE GUESS INPUT AND OUTPUT 
-: ## AND WILL BE CREATED IF IT DOESN'T ALREADY EXIST
-: mydir <- tempfile() 
-: ## NB, IF GUESS IS NOT ON YOUR PATH, SUPPLY THE FULL PATH IN AN ARGUMENT
-: ## guess.command="/path/to/GUESS"
-: run.bvs(X,Y,gdir=mydir,backend="guess",tag.r2=0.8,guess.command="GUESS") 
+    ## THIS DIRECTORY WILL HOLD ALL THE GUESS INPUT AND OUTPUT 
+    ## AND WILL BE CREATED IF IT DOESN'T ALREADY EXIST
+    mydir <- tempfile() 
+    ## NB, IF GUESS IS NOT ON YOUR PATH, SUPPLY THE FULL PATH IN AN ARGUMENT
+    ## guess.command="/path/to/GUESS"
+    run.bvs(X,Y,gdir=mydir,backend="guess",tag.r2=0.8,guess.command="GUESS")
 
 This can take a (long) while.  For the purposes of this vignette, 
 we will load the results from an existing run.
 
-#+BEGIN_SRC R
+```{r }
 mydir <-  system.file("extdata",package="GUESSFM")
 
 ## what files were created?
@@ -149,77 +172,72 @@ d <- read.snpmod(mydir)
 ## examine the best models and SNPs with greatest marginal support within the tagged data.
 best.models(d)
 best.snps(d)
-#+END_SRC
+```
 
-
-Note that both =best.models= and =best.snps= allow you to specify thresholds for
+Note that both `best.models` and `best.snps` allow you to specify thresholds for
 how to determine "best".  See their help pages for details.
 
-The tags created within the =run.bvs= function are saved to a
-=tags.RData= file under =mydir= and can be examined.
+The tags created within the `run.bvs` function are saved to a
+`tags.RData` file under `mydir` and can be examined.
 
-#+BEGIN_SRC R
+```{r }
 (load(file.path(mydir,"tags.RData")))
 tags
+```
 
-#+END_SRC
+1.  TODO Which SNPs were selected as tags, esp in relation to causal variants?  Which SNPs come up in the GUESS results?
 
-**** TODO Which SNPs were selected as tags, esp in relation to causal variants?  Which SNPs come up in the GUESS results?
-
-* Using an existing R2GUESS run
-
+# Using an existing R2GUESS run<a id="sec-5" name="sec-5"></a>
 
 You can convert a run from R2GUESS into a snpmod object with:
 
-#+BEGIN_SRC 
-## read output using a convenience wrapper for as.ESS.object()
-## this returns an object of class ESS, used by R2GUESS
-ess <- read.ess(mydir)
-str(ess)
+    ## read output using a convenience wrapper for as.ESS.object()
+    ## this returns an object of class ESS, used by R2GUESS
+    ess <- read.ess(mydir)
+    str(ess)
+    
+    ## GUESSFM maps snp numbers to names via a decode vector
+    decode <- structure(colnames(X),names=as.numeric(1:ncol(X)))
+    
+    ## create a snpmod
+    gfm2 <- ess2snpmod(ess)
+    best.models(gfm2)
 
-## GUESSFM maps snp numbers to names via a decode vector
-decode <- structure(colnames(X),names=as.numeric(1:ncol(X)))
-
-## create a snpmod
-gfm2 <- ess2snpmod(ess)
-best.models(gfm2)
-#+END_SRC
-
-* Expanding
+# Expanding<a id="sec-6" name="sec-6"></a>
 
 Tagging has allowed us to shrink the model space, by assuming that models with SNPs in very high LD will have very similar likelihoods, but for fine mapping we really do want to evaluate each and every model.  So, having chosen our best set of models within the shrunked space, we need to expand each of them to all the possible models they tag:
 
-#+BEGIN_SRC R
+```{r }
 dx<-expand.tags(d,tags)
-
-#+END_SRC
+```
 
 To see more about how to manipulate tags objects, see the vignette 
-: vignette("groups",package="GUESSFM")
 
-* Plotting
+    vignette("groups",package="GUESSFM")
+
+# Plotting<a id="sec-7" name="sec-7"></a>
+
 It is useful to assess the steps of any analysis by looking at the data.  With such
 a large number of models, the best way is to plot aspects of the data.  For that
 reason, GUESSFM contains lots of plotting functions.
 
-** TODO separate vignette, including vagaries of ggplot
+## TODO separate vignette, including vagaries of ggplot<a id="sec-7-1" name="sec-7-1"></a>
 
-
-* Parallelism
+# Parallelism<a id="sec-8" name="sec-8"></a>
 
 Looping over many, many models can be made quicker by parallel
-processing.  GUESSFM does this by means of calls to the =mclapply=
-function in the =parallel= package.  By default, 
-the =parallel= package sets itself up to use two cores.  You can
-change this by setting the option =mc.cores=.  Eg, if you have 20
+processing.  GUESSFM does this by means of calls to the `mclapply`
+function in the `parallel` package.  By default, 
+the `parallel` package sets itself up to use two cores.  You can
+change this by setting the option `mc.cores`.  Eg, if you have 20
 cores on your machine, you might set
-: options(mc.cores=16)
+
+    options(mc.cores=16)
+
 to use 16 of this for R, and leave the remainder free to run other
 processes.
 
 Functions which make use of this (and over which you might then not to
-use =mclapply= are: 
+use `mclapply` are: 
 
-=expand.tags=
-
-
+`expand.tags`

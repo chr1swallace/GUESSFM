@@ -1,6 +1,6 @@
 **********************************************************
 ***************** Setup options **********************
-Random seed 1411724650
+Random seed 1425550304
 nb_chains 3
 n_sweeps 55000
 n_top_models 1000
@@ -61,7 +61,7 @@ HERE 0.001
 	w = [0.1875 ; 22.4]
 	k = 0.001
 	alpha = 0.5
-	beta = 500
+	beta = 423.5
 	##### Prob #####
 		- Prob_mut 0.5
 		- Prob_sel 0.5
@@ -144,24 +144,24 @@ List_columns_X
 n_vars_in 2
 
 **************Results, chain 0 -- sweep 0***************
-	log_marg -3499.94
-	log_cond_post -3524.54
+	log_marg -2910.4
+	log_cond_post -2934.78
 ********************************************************
 List_columns_X
 3 12 
 n_vars_in 2
 
 **************Results, chain 1 -- sweep 0***************
-	log_marg -3499.94
-	log_cond_post -3524.54
+	log_marg -2910.4
+	log_cond_post -2934.78
 ********************************************************
 List_columns_X
 3 12 
 n_vars_in 2
 
 **************Results, chain 2 -- sweep 0***************
-	log_marg -3499.94
-	log_cond_post -3524.54
+	log_marg -2910.4
+	log_cond_post -2934.78
 ********************************************************
 ***************************************
           END OF FIRST SWEEP
@@ -170,10 +170,10 @@ n_vars_in 2
 ***************************************
 ***************************************
            END OF SWEEPS
-       # models evaluated: 617920
+       # models evaluated: 667269
 ***************************************
 ***************************************
 
-Setup Time: 0.11
-Main Loop Time: 63.08
-Post Processing Time: 0.05
+Setup Time: 0.05
+Main Loop Time: 67.2
+Post Processing Time: 0.07

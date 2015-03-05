@@ -13,7 +13,7 @@ plot_diffuse(results, maxrank = 1000, thin = 500)
 \item{thin}{thin data to display only \code{thin} points per line}
 }
 \value{
-no return value
+the ggplot2 object, which by default is print()ed to the current graphics device
 }
 \description{
 A summary plot to indicate how diffuse the posterior is.

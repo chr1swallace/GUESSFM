@@ -122,11 +122,30 @@ marg.snps.vecs <- function(str,pp) {
     marg.pp <- (pp %*% mod)[1,,drop=TRUE]
     data.frame(Marg_Prob_Incl=marg.pp, var=names(marg.pp), rownames=names(marg.pp), stringsAsFactors=FALSE)
 }
-
-best.snps <- function(d,pp.thr=0.1) {
-  tmp <- subset(d@snps, d@snps$Marg_Prob_Incl>pp.thr)
+##' Display the SNPs with greatest marginal posterior probability of inclusion (MPPI)
+##'
+##' @title Best SNPs
+##' @param d snpmod object
+##' @param mppi.thr MPPI threshold, SNPs with MPPI>mppi.thr will be shown
+##' @param pp.thr deprecated, alias for mppi.thr
+##' @return subset of \code{snps(d)} data.frame including best SNPs
+##' @author chris
+##' @export
+best.snps <- function(d,mppi.thr=pp.thr,pp.thr=0.1) {
+  tmp <- subset(d@snps, d@snps$Marg_Prob_Incl>mppi.thr)
   return(tmp[order(tmp$Marg_Prob_Incl,decreasing=TRUE),])
 }
+
+##' Display most likely models according to their posterior probability 
+##'
+##' Note that this isn't posterior probability in the true sense, it is the posterior probability for each model amongst the bag of models in the snpmod object, \code{d}.
+##' @title Best models
+##' @param d snpmod object
+##' @param pp.thr models with PP>pp.thr will be shown
+##' @param cpp.thr the smallest set of models such that sum(PP)>=cpp.thr will be shown
+##' @return subset of \code{models} slot in \code{d} showing best models
+##' @author chris
+##' @export
 best.models <- function(d,pp.thr=0.01,cpp.thr=NA) {
   if(!is.na(cpp.thr)) {
     d@models <- d@models[ order(d@models$PP,decreasing=TRUE),] # just in case

@@ -36,8 +36,8 @@ cond.best <- function(X,Y,best=NULL,p.thr=1e-3,max=NA, ...) {
 
 backend.guess <- function(gX, gY, gdir, nsweep, nchains, best, nsave, nexp, nexp.sd, guess.command) {
   ## print decode file
-  decode.file <- paste0(gdir,"/decode_",nsweep)
-  decode.file2 <- paste0(gdir,"/decode_samples_",nsweep)
+  decode.file <- file.path(gdir,paste0("decode_",nsweep))
+  decode.file2 <- file.path(gdir,paste0("decode_samples_",nsweep))
   message("creating decode files under ",gdir)
   if(!file.exists(gdir))
     dir.create(gdir)
@@ -128,8 +128,11 @@ run.bvs <- function(X,Y,gdir="test",sub=NA,
   ## tag
   colnames(X) <- make.names(colnames(X))
   if(!is.na(tag.r2)) {
+    tfile <- file.path(gdir,"tags.RData")
     tags <- tag(X,tag.threshold=tag.r2)
     X <- X[, unique(tags@tags)]
+    message("saving tags object to ",tfile)
+    save(tags,file=tfile)
   }
 
   ## matrix phenotypes

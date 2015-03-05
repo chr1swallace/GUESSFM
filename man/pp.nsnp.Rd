@@ -16,4 +16,10 @@ a list containing a named vector summarizing the posterior for each count of SNP
 \description{
 Summarize the posterior model support by the number of SNPs contained in a model
 }
+\seealso{
+Other plotting.GUESSFM.results: \code{\link{addlines}};
+  \code{\link{ggbed}}; \code{\link{ggchr}};
+  \code{\link{ggld}}; \code{\link{scalepos}};
+  \code{\link{signal.plot}}
+}
 
