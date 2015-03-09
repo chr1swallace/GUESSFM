@@ -71,9 +71,16 @@ backend.guess <- function(gX, gY, gdir, nsweep, nchains, best, nsave, nexp, nexp
   cat(length(cols.guess),cols.guess, sep="\n", file=init.file)
   cat(nrow(gX),"\n",ncol(gX),"\n",sep="",file=x.file)
   cat(nrow(gX),"\n",1,"\n",sep="",file=y.file)
-  write.table(gX,
-              file=x.file,
-              append=TRUE,quote=FALSE,sep=" ",row.names=FALSE,col.names=FALSE)
+  ## uncertain genotypes?
+  cs <- col.summary(gX)
+  if(any(cs[,"Certain.calls"]<1)) {
+    P <- g2post(gX)
+    P <- P[,2] + 2*P[,3]
+    N <- matrix(P,nrow(gX),ncol(gX))    
+    write.table(N,file=x.file, append=TRUE, quote = FALSE, sep = " ", row.names=FALSE,col.names=FALSE)
+  }
+  
+  write.SnpMatrix(gX, file=x.file, as.alleles= FALSE, append = TRUE, quote = FALSE, sep = " ", eol = "\n", na = "NA",row.names=FALSE,col.names=FALSE)
   cat(gY, file=y.file,
       sep="\n",append=TRUE)
   
@@ -82,17 +89,11 @@ backend.guess <- function(gX, gY, gdir, nsweep, nchains, best, nsave, nexp, nexp
   if(!file.exists(par.file))
     file.copy(system.file("Par_file_example.xml",package="GUESSFM"), par.file)
   
-  com <- sprintf("%s -history -X %s -Y %s -nsweep %s -burn_in %s -out %s/out -par %s/par.xml -top %s -init %s -Egam %s -Sgam %s -n_chain %s",
-                 guess.command,x.file,y.file,nsweep,round(nsweep/11),gdir,gdir,nsave,init.file,nexp,nexp.sd,nchains)
-#  if(grid) {
+  com <- sprintf("%s -history -X %s -Y %s -nsweep %s -burn_in %s -out %s/out -par %s/par.xml -top %s -init %s -Egam %s -Sgam %s -n_chain %s > %s/log",
+                 guess.command,x.file,y.file,nsweep,round(nsweep/11),gdir,gdir,nsave,init.file,nexp,nexp.sd,nchains,gdir)
     message("running GUESS with command")
     message(com)
-#    system(paste("/home/chrisw/local/bin/qCom.sh -N GUESS",com))
-#  } else {
-#    message("running GUESS locally with command")
-#    message(com)
-    system(sprintf("%s > %s/log",com,gdir), wait=FALSE)
-#  }
+    system(com, wait=FALSE)
 }
 ##' Bayesian variable selection
 ##'
@@ -117,11 +118,9 @@ backend.guess <- function(gX, gY, gdir, nsweep, nchains, best, nsave, nexp, nexp
 ##' @return nothing.  side effect is to set GUESS running in the background.  This takes a while (typically several hours).
 run.bvs <- function(X,Y,gdir="test",sub=NA,
                     covars=NULL,family="gaussian", nsweep=55000,nchains=3,
-                    nexp=3,boot=0,tag.r2=0.99, nsave=1000, as.is=TRUE,dominance=FALSE,
-                    guess.command="GUESS",
-                    backend=c("guess","dummy")) { 
+                    nexp=3,tag.r2=0.99, nsave=1000, 
+                    guess.command="GUESS") { 
 
-  backend <- match.arg(backend)
   if(!file.exists(gdir))
     dir.create(gdir,recursive=TRUE)
   
@@ -140,34 +139,39 @@ run.bvs <- function(X,Y,gdir="test",sub=NA,
     Y <- matrix(Y,ncol=1)
   
   ## format snp data  
-  N <- as(X,"numeric")
   p <- 0
+  rs <- row.summary(X)
   
-  use <- complete.cases(N) & complete.cases(Y)
-  if(!is.null(covars))
+  use <- rs[,"Call.rate"]==1 & complete.cases(Y)
+  if(!is.null(covars)) {
       use <- use & complete.cases(covars)
-  use <- which(use)
-  if(!is.na(sub))
-    use <- use[1:sub]
-  gX <- N[use,]
-  gY <- Y[use]
-  n <- length(use)
-  v <- apply(gX,2,var)
-  use.cols <- which(v>0)
-  gX <- gX[,use.cols]
+      p <- ncol(covars)
+    }
+  if(any(!use) || !is.na(sub)) {
+    use <- which(use)
+    if(!is.na(sub))
+      use <- use[1:sub]
+    gX <- X[use,]
+    gY <- Y[use]
+  if(!is.null(covars))
+    covars <- covars[use,]
+  }
+  n <- nrow(gX)
+  cs <- col.summary(gX)
+  use.cols <- which(!is.na(cs[,"z.HWE"]) & cs[,"MAF"]>0)
   m <- length(use.cols)
-
+  if(m < ncol(gX))
+    gX <- gX[,use.cols]
 
   if(!is.null(covars)) {
-    if(!is.matrix(covars)) # deal with vectors, without messing up data.frames
-      covars <- as.matrix(covars)
-    covars <- as.data.frame(covars[use,,drop=FALSE])
+    if(!is.data.frame(covars) & !is.matrix(covars)) # deal with vectors, without messing up data.frames
+      covars <- as.data.frame(as.matrix(covars))
     m0 <- glm(gY ~ ., data=covars,family=family)
     gY <- residuals(m0)
     family <- "gaussian"
   }
       
-  message("using ",n," samples ",m," SNPs, ",p," confounders.")
+  message("using ",n," samples ",m," SNPs, ",p," covariates.")
 
   ## any uncertain genotypes?
   ## cs <- col.summary(X)
@@ -177,65 +181,21 @@ run.bvs <- function(X,Y,gdir="test",sub=NA,
   ## }
   
   ## IF GUESS: what are the best regressors? (95,220?)
-  if(backend=="guess") {
-    best <- NULL
-    cs <- col.summary(X)
-    wh <- use.cols[which(cs[,"MAF"]>0.05 & cs[,"Certain.calls"]>0.9)]
-    while(length(newbest <- cond.best(X[use,wh], gY, best, family=family))) {
-      best <- c(best,newbest)
-      ##        wh <- setdiff(wh,which(colnames(X) %in% best))
-    }
+  best <- NULL
+  cs <- col.summary(X)
+  wh <- use.cols[which(cs[,"MAF"]>0.05 & cs[,"Certain.calls"]>0.9)]
+  while(length(newbest <- cond.best(X[use,wh], gY, best, family=family))) {
+    best <- c(best,newbest)
+    ##        wh <- setdiff(wh,which(colnames(X) %in% best))
+  }
     
     ## prior
-    if(dominance) {
-        p <- 1.5*nexp/m
-    } else {
-        p <- nexp/m
-    }
-    nexp.sd <- sqrt(m*p*(1-p)*1) # + overdispersion=0
-    message("setting prior parameters nexp, sd: ",nexp, " ",nexp.sd)
+  p.each <- nexp/m
+  nexp.sd <- sqrt(m*p.each*(1-p.each)*1) # + overdispersion=0
+  message("setting prior parameters nexp, sd: ",nexp, " ",nexp.sd)
 
-  }
-
-  ## dominance effects
-  if(dominance) {
-      D <- matrix(ifelse(gX>1.5,1,0),nrow=nrow(gX),dimnames=dimnames(gX))
-      v <- apply(D,2,var)
-      D <- D[,v>0]
-      cr <- cor(D)
-      wh <- which(cr>0.99,arr.ind=TRUE)
-      wh <- wh[wh[,1]>wh[,2],]
-      if(nrow(wh))
-          D <- D[,-wh[,2]]
-      cr <- cor(gX,D)
-      wh <- which(cr>0.99,arr.ind=TRUE)
-      if(nrow(wh))
-          D <- D[,-wh[,2]]
-      colnames(D) <- paste0(colnames(D),".D")
-      gX <- cbind(gX,D)
-  }
-  
-  for(i in 0:boot) {    
-    if(i==0 & !as.is)
-      next
-    
-    if(i>0) {
-      use <- sample(1:nrow(gX),size=nrow(gX),replace=TRUE)
-      gdir2 <- tempfile(paste0(gdir,"_boot_"), tmpdir=".")
-      dir.create(gdir2,recursive=TRUE)
-    } else {
-      use <- 1:nrow(gX)
-      gdir2 <- gdir
-    }
-      
-    switch(backend,
-           guess=backend.guess(gX=gX[use,], gY=gY[use], gdir=gdir2,
-               nsweep, nchains, best, nsave, nexp, nexp.sd, guess.command=guess.command),
-           dummy=NULL## ,
-##            sbams=backend.sbams(X=gX[use,],Y=gY[use],gdir=gdir2)
-           )
-  }
-    
+  backend.guess(gX=gX, gY=gY, gdir=gdir,
+                nsweep, nchains, best, nsave, nexp, nexp.sd, guess.command=guess.command)
 }
  
 
