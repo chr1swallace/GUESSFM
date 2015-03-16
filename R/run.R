@@ -78,9 +78,9 @@ backend.guess <- function(gX, gY, gdir, nsweep, nchains, best, nsave, nexp, nexp
     P <- P[,2] + 2*P[,3]
     N <- matrix(P,nrow(gX),ncol(gX))    
     write.table(N,file=x.file, append=TRUE, quote = FALSE, sep = " ", row.names=FALSE,col.names=FALSE)
+  } else {  
+    write.SnpMatrix(gX, file=x.file, as.alleles= FALSE, append = TRUE, quote = FALSE, sep = " ", eol = "\n", na = "NA",row.names=FALSE,col.names=FALSE)
   }
-  
-  write.SnpMatrix(gX, file=x.file, as.alleles= FALSE, append = TRUE, quote = FALSE, sep = " ", eol = "\n", na = "NA",row.names=FALSE,col.names=FALSE)
   cat(gY, file=y.file,
       sep="\n",append=TRUE)
   
@@ -93,6 +93,7 @@ backend.guess <- function(gX, gY, gdir, nsweep, nchains, best, nsave, nexp, nexp
                  guess.command,x.file,y.file,nsweep,round(nsweep/11),gdir,gdir,nsave,init.file,nexp,nexp.sd,nchains,gdir)
     message("running GUESS with command")
     message(com)
+  if(!is.null(guess.command))
     system(com, wait=FALSE)
 }
 ##' Bayesian variable selection
@@ -153,8 +154,11 @@ run.bvs <- function(X,Y,gdir="test",sub=NA,
       use <- use[1:sub]
     gX <- X[use,]
     gY <- Y[use]
-  if(!is.null(covars))
-    covars <- covars[use,]
+    if(!is.null(covars))
+      covars <- covars[use,]
+  } else {
+    gX <- X
+    gY <- Y
   }
   n <- nrow(gX)
   cs <- col.summary(gX)
