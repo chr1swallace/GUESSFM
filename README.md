@@ -21,10 +21,12 @@ library(devtools)
 install_github("chr1swallace/GUESSFM")
 ```
 
-If you want the vignettes to build as well, you could do 
+If you want the vignettes to build as well, this *should* work, but doesn't (even though they build locally):
 ```R
 install_github("chr1swallace/GUESSFM", build_vignettes=TRUE)
 ```
+
+Instead, see the vignettes direct from github:
 
 [Introduction](http://rawgit.com/chr1swallace/GUESSFM/master/inst/doc/introduction.html) | 
 [Tags/groups](http://rawgit.com/chr1swallace/GUESSFM/master/inst/doc/groups.html)
