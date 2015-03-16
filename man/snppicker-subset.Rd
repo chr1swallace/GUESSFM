@@ -2,12 +2,12 @@
 \docType{methods}
 \name{[,snppicker,ANY,missing,missing-method}
 \alias{[,snppicker,ANY,missing,missing-method}
-\alias{[[,snppicker,ANY,ANY-method}
+\alias{[[,snppicker,ANY-method}
 \title{Subset snppicker object}
 \usage{
 \S4method{[}{snppicker,ANY,missing,missing}(x, i)
 
-\S4method{[[}{snppicker,ANY,ANY}(x, i)
+\S4method{[[}{snppicker,ANY}(x, i)
 }
 \arguments{
 \item{x}{snppicker object}

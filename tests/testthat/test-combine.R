@@ -10,6 +10,6 @@ test_that("snpmatrix.combine", {
     expect_equal(nrow(z2),nrow(z))
     expect_identical(z[1:10,1:10], z2[1:10,colnames(z)[1:10]])
     expect_identical(z[11:20,6:15], z2[11:20,colnames(z)[6:15]])
-    expect_identical(z2[11:20,6:15],z[11:20,6:15])
+    expect_identical(z[11:20,6:15],z2[11:20,colnames(z)[6:15]])
     expect_false(identical(z2,z))
 })

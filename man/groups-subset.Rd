@@ -5,9 +5,9 @@
 \alias{[,groups,logical,missing,missing-method}
 \alias{[,groups,numeric,missing,missing-method}
 \alias{[,tags,character,missing,missing-method}
-\alias{[[,groups,character,ANY-method}
-\alias{[[,groups,logical,ANY-method}
-\alias{[[,groups,numeric,ANY-method}
+\alias{[[,groups,character-method}
+\alias{[[,groups,logical-method}
+\alias{[[,groups,numeric-method}
 \title{Subset groups or tags objects}
 \usage{
 \S4method{[}{groups,character,missing,missing}(x, i)
@@ -18,11 +18,11 @@
 
 \S4method{[}{tags,character,missing,missing}(x, i)
 
-\S4method{[[}{groups,numeric,ANY}(x, i)
+\S4method{[[}{groups,numeric}(x, i)
 
-\S4method{[[}{groups,logical,ANY}(x, i)
+\S4method{[[}{groups,logical}(x, i)
 
-\S4method{[[}{groups,character,ANY}(x, i)
+\S4method{[[}{groups,character}(x, i)
 }
 \arguments{
 \item{x}{groups object}

@@ -5,9 +5,7 @@
 \usage{
 run.bvs(X, Y, gdir = "test", sub = NA, covars = NULL,
   family = "gaussian", nsweep = 55000, nchains = 3, nexp = 3,
-  boot = 0, tag.r2 = 0.99, nsave = 1000, as.is = TRUE,
-  dominance = FALSE, guess.command = "GUESS", backend = c("guess",
-  "dummy"))
+  tag.r2 = 0.99, nsave = 1000, guess.command = "GUESS")
 }
 \arguments{
 \item{X}{snpMatrix object, holding genotypes}
@@ -28,19 +26,19 @@ run.bvs(X, Y, gdir = "test", sub = NA, covars = NULL,
 
 \item{nexp}{expected number of causal variants in region}
 
-\item{boot}{EXPERIMENTAL. Optional integer > 0 indicates that a number of bootstrap replicates should be run to understand variability in output}
-
 \item{tag.r2}{r squared value at which to tag to avoid numerical instability.  Default of 0.99 has worked well in our experience.}
 
 \item{nsave}{number of models to save, see documentation for GUESS}
 
-\item{as.is}{EXPERIMENTAL if boot=TRUE, and as.is=TRUE, explicitly exclude the unchanged data structure from the set of bootstrapped datasets}
-
-\item{dominance}{EXPERIMENTAL. If TRUE, include a dominance effect at each SNP}
-
 \item{guess.command}{Command to run GUESS, if GUESS is not on your PATH.}
 
 \item{backend}{"GUESS" (default) to run GUESS, or "dummy" to just generate the files for checking}
+
+\item{boot}{EXPERIMENTAL. Optional integer > 0 indicates that a number of bootstrap replicates should be run to understand variability in output}
+
+\item{as.is}{EXPERIMENTAL if boot=TRUE, and as.is=TRUE, explicitly exclude the unchanged data structure from the set of bootstrapped datasets}
+
+\item{dominance}{EXPERIMENTAL. If TRUE, include a dominance effect at each SNP}
 }
 \value{
 nothing.  side effect is to set GUESS running in the background.  This takes a while (typically several hours).
