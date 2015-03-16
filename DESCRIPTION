@@ -18,7 +18,6 @@ Imports:
     reshape,
     ggplot2,
     grid,
-    ggbio,
     snpStats,
     parallel,
     R2GUESS
