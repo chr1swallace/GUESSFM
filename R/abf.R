@@ -1,21 +1,25 @@
 ##' Uses the BIC approximation to calculate approximate Bayes factors for specified models
 ##'
+##' The central idea of GUESSFM is to use GUESS to rapidly survery the model space for a tagged version of the data, and select a set of plausible models.  From their, the models tagged by the top model from GUESS should be evaluated using abf.calc.
+##'
+##' The use of a parallel file enables abf.calc to be run in two ways.  If you name a file that does not exist, objects will be saved to that file to enable subsets of models to be fitted in a parallel fashion.  If you name a file that exists, it is assumed to be the joined results of such model fits and will be loaded.  Without a parallel file, all models will be fitted, which may take a long time.  See vignette for more information.
+##'
 ##' @title Calculate Approximate Bayes Factors
 ##' @param y response vector
 ##' @param x explanatory variables, a SnpMatrix object, data.frame or numeric matrix
 ##' @param models vector of models to consider
 ##' @param family family argument to pass to glm.  Currently only "binomial" and "gaussian" are implemented for the \code{glm.fit} method.
 ##' @param q optional vector of covariates to include in all models
-##' @param method use glm.fit or glm to fit the models.  Default is glm.fit which should be faster, but is less forgiving about the odd missing value etc, so if your code is giving potentially glm related errors, try running with \code{method="glm"} in the first instance.
+##' @param method use the speedglm library (if available), glm.fit or glm to fit the models.  Default is speedglm which should be faster, but, like glm.fit, is less forgiving about the odd missing value etc, so if your code is giving potentially glm related errors, try running with \code{method="glm"} in the first instance.
 ##' @param R2 matrix giving pairwise r-squared measures of LD from which tag SNPs will be calculated when not directly available
 ##' @param snp.data if R2 is missing, it is calculated from this SnpMatrix object
 ##' @param return.R2 if true, return the calculated R2 matrix.  Useful if you are analysing several strata of a population and you wish to avoid repeating the calculation.
 ##' @param verbose print lots of progress messages if TRUE.  Default is FALSE.
-##' @param parallel.file optional file name. If you name a file that does not exist, objects will be saved to that file to enable subsets of models to be fitted in a parallel fashion.  If you name a file that exists, it is assumed to be the joined results of such model fits and will be loaded.  Without a parallel file, all models will be fitted, which may take a long time.  See vignette for more information.
+##' @param parallel.file optional file name to enable parallelisation. 
 ##' @return a data.frame containing model name, ABF, and an indicator of whether the ABF was calculating directly or via a tag SNP
 ##' @author Chris Wallace
 abf.calc <- function(y,x,models,family="binomial",
-                     q=NULL,method=c("glm.fit","glm"),
+                     q=NULL,method=c("speedglm","glm.fit","glm"),
                      R2=NULL,snp.data=NULL,return.R2=FALSE,verbose=FALSE,
                      parallel.file=NULL) { # raftery, wen
   
@@ -38,6 +42,7 @@ abf.calc <- function(y,x,models,family="binomial",
   }  
   
   ## models that need to be assessed through tagging
+  models.alt <- NULL
   if(!all(use) && (!is.null(snp.data) || !is.null(R2))) {
     message("Attempting to find tag models for those with missing SNPs...")    
     models.missing <- setdiff(models.orig,models)
@@ -67,6 +72,7 @@ abf.calc <- function(y,x,models,family="binomial",
     (load(parallel.file))
   } else { ## prepare models
     results <- switch(method,
+                      speedglm=abf.speedglm.fit(x,y,q,family,snps,parallel.file),
                       glm.fit=abf.glm.fit(x,y,q,family,snps,parallel.file),
                       glm=abf.glm(x,y,q,family,snps))
     if(is.null(results))
@@ -99,11 +105,13 @@ abf.calc <- function(y,x,models,family="binomial",
     coeff[ mint ] <- results$coeff[ mint ]
   }
   ## tags
-  models.alt.missing <- models.alt[models.missing]
-  message("evaluating tag models: ",length(models.missing)," can be found through ",length(unique(models.alt.missing))," models.")
-  if(length(models.alt.missing)) {
-    lBF[ models.missing ] <- lBF.fits[ models.alt.missing ]
-    coeff[ models.missing ] <- results$coeff[ models.alt.missing ]
+  if(!is.null(models.alt)) {
+    models.alt.missing <- models.alt[models.missing]
+    message("evaluating tag models: ",length(models.missing)," can be found through ",length(unique(models.alt.missing))," models.")
+    if(length(models.alt.missing)) {
+      lBF[ models.missing ] <- lBF.fits[ models.alt.missing ]
+      coeff[ models.missing ] <- results$coeff[ models.alt.missing ]
+    }
   }
   
   ## mint <- intersect(names(lBF.fits),models.alt[models.missing])
@@ -181,14 +189,18 @@ abf.manual <- function(parallel.file,targets,bic.file,coeff.file,verbose=FALSE) 
   
 }
 
-abf.glm.fit <- function(x,y,q,family,snps,parallel.file=NULL,verbose=FALSE) {
+abf.speedglm.fit <- function(x,y,q,family,snps,parallel.file=NULL,verbose=FALSE) {
   
   if(is(x,"SnpMatrix"))
     x <- matrix(as(x,"numeric"),nrow=nrow(x),dimnames=dimnames(x))
   if(is(x,"data.frame"))
     x <- as.matrix(x)
   if(!is.null(q)) {
-    qm <- model.matrix(~q)
+    if(is.vector(q)) {
+      qm <- model.matrix(~q)
+    } else {
+      qm <- cbind(one=1,as.matrix(q))
+    }
   } else {
     qm <- matrix(1,nrow=nrow(x),ncol=1,dimnames=list(NULL,"one"))
   }
@@ -220,7 +232,79 @@ abf.glm.fit <- function(x,y,q,family,snps,parallel.file=NULL,verbose=FALSE) {
     family <- switch(family,
                      "gaussian"=gaussian(link="identity"),
                      "binomial"=binomial(link="logit"))
-    results <- mclapply(seq_along(snps), function(i) {
+    results <- lapply(seq_along(snps), function(i) {
+      if(verbose && i %% 100 == 0)
+        cat(i,"\t")
+      k=length(snps[[i]])+ncol(qm)
+      model <- speedglm.wfit(y2, cbind(x2[, snps[[i]] ],qm), family=family)
+      model0 <- speedglm.wfit(y2, qm, family=family)
+#      class(model) <- class(model0) <- c(class(model),"glm")
+      A1 <- AIC(model) - 2*k + k*log(length(y2))
+      A0 <- AIC(model0) - 2*ncol(qm) + ncol(qm)*log(length(y2))
+      list(BIC=A1-A0,
+           coeff=cbind(beta=model$coefficients,
+             se=sqrt(diag(vcov(model)))))
+    })    
+  } else {
+    if(file.exists(parallel.file)) {
+      load(parallel.file)
+    } else {
+      message("Saving objects in ",parallel.file)
+      save(snps, x2, y2, qm, q, family, file=parallel.file)
+      message("Please fit the models using abf.manual and rerun with parallel.file")
+      return(NULL)
+    }
+  }
+#  print(results)
+  bics <- unlist(lapply(results, "[[", "BIC"))
+  coeff  <- lapply(results, "[[", "coeff")
+  return(list(bics=bics,coeff=coeff))
+  
+}
+abf.glm.fit <- function(x,y,q,family,snps,parallel.file=NULL,verbose=FALSE) {
+  
+  if(is(x,"SnpMatrix"))
+    x <- matrix(as(x,"numeric"),nrow=nrow(x),dimnames=dimnames(x))
+  if(is(x,"data.frame"))
+    x <- as.matrix(x)
+  if(!is.null(q)) {
+    if(is.vector(q)) {
+      qm <- model.matrix(~q)
+    } else {
+      qm <- cbind(one=1,as.matrix(q))
+    }
+  } else {
+    qm <- matrix(1,nrow=nrow(x),ncol=1,dimnames=list(NULL,"one"))
+  }
+  x2<-x[,intersect(unique(unlist(snps)),colnames(x))]
+  comp <- complete.cases(x2) & !is.na(y)
+  if(!is.null(q))
+    comp <- comp & complete.cases(qm)
+  if(!all(comp)) {
+    message("Dropping ",sum(!comp)," samples due to incompleteness. ",sum(comp)," remain.")
+    x2 <- x2[comp,]
+    y2 <- y[comp]
+    qm <- qm[comp,,drop=FALSE]
+    q <- q[comp]
+  } else {
+    y2 <- y
+  }
+  logn <- log(nrow(x))
+##   if(verbose)
+##     print(family)
+  snps <- lapply(snps,setdiff,"1")
+  
+  ## check
+  allsnps <- unique(unlist(snps))
+  if(!all(allsnps %in% colnames(x2)))
+    stop("Not all SNPs found")
+  
+  if(is.null(parallel.file)) {
+  if(is.character("family"))
+    family <- switch(family,
+                     "gaussian"=gaussian(link="identity"),
+                     "binomial"=binomial(link="logit"))
+    results <- lapply(seq_along(snps), function(i) {
       if(verbose && i %% 100 == 0)
         cat(i,"\t")
       k=length(snps[[i]])+1
@@ -241,6 +325,7 @@ abf.glm.fit <- function(x,y,q,family,snps,parallel.file=NULL,verbose=FALSE) {
       return(NULL)
     }
   }
+#  print(results)
   bics <- unlist(lapply(results, "[[", "BIC"))
   coeff  <- lapply(results, "[[", "coeff")
   return(list(bics=bics,coeff=coeff))
@@ -286,3 +371,5 @@ abf.glm <- function(x,y,q,family,snps,verbose=FALSE) {
   return(list(bics=bics,coeff=coeff))
 
 }
+
+
