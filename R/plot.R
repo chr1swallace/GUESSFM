@@ -244,6 +244,8 @@ scalepos <- function(summ,pos="position.hg19") {
 ##'
 ##' @param results object of class snpmod
 ##' @param plot if TRUE, print a plot to current plotting device
+##' @param prior.expected optional, if specified, this is the prior expectation of the number of causal SNPs underlying the trait in the studied region.  Specifying will cause a line for the prior to be added to the plot
+##' @param prior.overdispersion optional, default=1.  Ignored unless prior.expected is given.  The overdispersion of the beta binomial distribution used for the prior relative to a binomial.
 ##' @return a named list containing
 ##' \itemize{
 ##'  \item{"pp"}{a named vector summarizing the posterior for each count of SNPs}
@@ -251,20 +253,31 @@ scalepos <- function(summ,pos="position.hg19") {
 ##' } 
 ##' @family plotting GUESSFM results
 ##' @export
-pp.nsnp <- function(results,plot=FALSE) {
+pp.nsnp <- function(results,plot=FALSE,prior.expected=NULL,prior.overdispersion=1) {
   if(!is.list(results)) ## single trait    
     results <- list(trait=results)
   if(is.null(names(results))) ## unnamed list
     names(results) <- paste0("trait",1:length(results))
-  df <- vector("list",length(results))
+  df <- pp.nsnps <- vector("list",length(results))
   for(i in seq_along(df)) {
     d <- results[[i]]
-    pp.nsnps <- tapply(d@models$PP,d@models$size,sum)
-    df[[i]] <- data.frame(n=as.numeric(names(pp.nsnps)),pp=pp.nsnps,trait=names(results)[i])
+    pp.nsnps[[i]] <- tapply(d@models$PP,d@models$size,sum)
+    df[[i]] <- data.frame(n=as.numeric(names(pp.nsnps[[i]])),pp=pp.nsnps[[i]],trait=names(results)[i])
   }
   df <- do.call("rbind",df)
-  p <- ggplot(df,aes(x=n,y=pp,col=trait)) + geom_point() + geom_path() + 
-    xlab("Number of SNPs in model") + ylab("Posterior Probability") + scale_x_continuous(breaks=seq(0,max(df$n),by=2))
+  if(!is.null(prior.expected)) {
+    nsnp <- nrow(results[[1]]@snps)
+    rho <- (prior.overdispersion - 1)/(nsnp-1)
+    p <- prior.expected/nsnp
+    nind <- 0:max(df$n)
+    df <- rbind(df,data.frame(n=nind,
+                              pp=dbetabinom(nind, size=nsnp, prob=p, rho=rho),
+                              trait="Prior"))
+  }
+    p <- ggplot(df,aes(x=n,y=pp,col=trait)) + geom_point() + geom_path() + 
+    labs(x="Number of SNPs in model",
+           y=if(is.null(prior.expected)) {"Posterior probability"} else {"Prior/posterior probability"}) +
+             scale_x_continuous(breaks=seq(0,max(df$n),by=2))
   if(plot)
     print(p)
   print(pp.nsnps)
