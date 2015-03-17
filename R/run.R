@@ -35,6 +35,7 @@ cond.best <- function(X,Y,best=NULL,p.thr=1e-3,max=NA, ...) {
 }
 
 backend.guess <- function(gX, gY, gdir, nsweep, nchains, best, nsave, nexp, nexp.sd, guess.command) {
+  opt.bak <- options(scipen=1000000000)
   ## print decode file
   decode.file <- file.path(gdir,paste0("decode_",nsweep))
   decode.file2 <- file.path(gdir,paste0("decode_samples_",nsweep))
@@ -88,9 +89,10 @@ backend.guess <- function(gX, gY, gdir, nsweep, nchains, best, nsave, nexp, nexp
   par.file=file.path(gdir,"par.xml")
   if(!file.exists(par.file))
     file.copy(system.file("Par_file_example.xml",package="GUESSFM"), par.file)
-  
+
   com <- sprintf("%s -history -X %s -Y %s -nsweep %s -burn_in %s -out %s/out -par %s/par.xml -top %s -init %s -Egam %s -Sgam %s -n_chain %s > %s/log",
                  guess.command,x.file,y.file,nsweep,round(nsweep/11),gdir,gdir,nsave,init.file,nexp,nexp.sd,nchains,gdir)
+  options(opt.bak)
     message("running GUESS with command")
     message(com)
   if(!is.null(guess.command))
@@ -190,7 +192,10 @@ run.bvs <- function(X,Y,gdir="test",sub=NA,
   wh <- use.cols[which(cs[,"MAF"]>0.05 & cs[,"Certain.calls"]>0.9)]
   while(length(newbest <- cond.best(X[use,wh], gY, best, family=family))) {
     best <- c(best,newbest)
-    ##        wh <- setdiff(wh,which(colnames(X) %in% best))
+  }
+  if(length(best)<3) {
+    wh <- setdiff(wh,which(colnames(X) %in% best))
+    best <- c(best, sample(colnames(X)[wh],3-length(best)))
   }
     
     ## prior
