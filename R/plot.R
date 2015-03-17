@@ -243,13 +243,19 @@ scalepos <- function(summ,pos="position.hg19") {
 ##' Summarize the posterior model support by the number of SNPs contained in a model
 ##'
 ##' @param results object of class snpmod
-##' @param plot if TRUE, print a pretty plot to current plotting device
-##' @return a list containing a named vector summarizing the posterior for each count of SNPs and a ggplot object
+##' @param plot if TRUE, print a plot to current plotting device
+##' @return a named list containing
+##' \itemize{
+##'  \item{"pp"}{a named vector summarizing the posterior for each count of SNPs}
+##'  \item{"plot"}{a ggplot object}
+##' } 
 ##' @family plotting GUESSFM results
 ##' @export
 pp.nsnp <- function(results,plot=FALSE) {
-  if(!is.list(results))
+  if(!is.list(results)) ## single trait    
     results <- list(trait=results)
+  if(is.null(names(results))) ## unnamed list
+    names(results) <- paste0("trait",1:length(results))
   df <- vector("list",length(results))
   for(i in seq_along(df)) {
     d <- results[[i]]
