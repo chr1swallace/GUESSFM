@@ -2,7 +2,9 @@
 ##'
 ##' The central idea of GUESSFM is to use GUESS to rapidly survery the model space for a tagged version of the data, and select a set of plausible models.  From their, the models tagged by the top model from GUESS should be evaluated using abf.calc.
 ##'
-##' The use of a parallel file enables abf.calc to be run in two ways.  If you name a file that does not exist, objects will be saved to that file to enable subsets of models to be fitted in a parallel fashion.  If you name a file that exists, it is assumed to be the joined results of such model fits and will be loaded.  Without a parallel file, all models will be fitted, which may take a long time.  See vignette for more information.
+##' The use of a parallel file enables abf.calc to be run in two ways.  If you name a file that does not exist, objects will be saved to that file to enable subsets of models to be fitted in a parallel fashion.  If you name a file that exists, it is assumed to be the joined results of such model fits and will be loaded.  Without a parallel file, all models will be fitted, which may take a long time, particularly for glms.  See vignette for more information.
+##'
+##' After abf.calc, you may want to use \code{\link{abf2snpmod}} to generate a snpmod with the same structed returned by \code{\link{read.guess}}.
 ##'
 ##' @title Calculate Approximate Bayes Factors
 ##' @param y response vector
@@ -18,6 +20,7 @@
 ##' @param parallel.file optional file name to enable parallelisation. 
 ##' @return a data.frame containing model name, ABF, and an indicator of whether the ABF was calculating directly or via a tag SNP
 ##' @author Chris Wallace
+##' @export
 abf.calc <- function(y,x,models,family="binomial",
                      q=NULL,method=c("speedglm","glm.fit","glm"),
                      R2=NULL,snp.data=NULL,return.R2=FALSE,verbose=FALSE,
@@ -127,7 +130,7 @@ abf.calc <- function(y,x,models,family="binomial",
                        stringsAsFactors=FALSE)
   if(return.R2 && exists("R2"))
     return(list(lBF=lBF.df,coeff=coeff,R2=R2))
-  return(list(lBF=lBF.df,coeff=coeff))
+  return(list(lBF=lBF.df,coeff=coeff,n=nrow(x)))
   
   ##   tmp <- new("snpmod")
   ##   tmp@models=data.frame(str=models[-1],
@@ -138,17 +141,26 @@ abf.calc <- function(y,x,models,family="binomial",
 }
 
 
-
-abf2snpmod <- function(abf,prior=snpprior(x=0:20,expected=3,n=932,truncate=20,overdispersion=1)) {
+##' Convert an abf object to a snpmod
+##'
+##' @title abf2snpmod
+##' @param abf object returned by abf.calc
+##' @inheritParams snpprior
+##' @return a snpmod
+##' @export
+##' @author Chris Wallace
+##' @seealso \link{snpprior}
+abf2snpmod <- function(abf,expected,overdispersion=1) {
+  prior <- snpprior(x=0:20,expected=expected,n=abf$n,truncate=20,overdispersion=overdispersion)
   tmp <- new("snpmod")
-  msize <- nchar(gsub("[^%]","",abf$model)) + 1
+  msize <- nchar(gsub("[^%]","",abf$lBF$model)) + 1
   mprior <- prior[as.character(msize)]
-  mpp <- log(mprior) + abf$lBF
+  mpp <- log(mprior) + abf$lBF$lBF
   mpp <- mpp - logsum(mpp)
-  message("creating data.frame")
-  tmp@models <- data.frame(str=abf$model,
-                           logABF=abf$lBF,
-                           by.tagging=abf$tag,
+  message("creating snpmod data.frame")
+  tmp@models <- data.frame(str=abf$lBF$model,
+                           logABF=abf$lBF$lBF,
+                           by.tagging=abf$lBF$tag,
                            size=msize,
                            prior=mprior,
                            lPP=mpp,
@@ -213,7 +225,7 @@ abf.speedglm.fit <- function(x,y,q,family,snps,parallel.file=NULL,verbose=FALSE)
     x2 <- x2[comp,]
     y2 <- y[comp]
     qm <- qm[comp,,drop=FALSE]
-    q <- q[comp]
+#   q <- q[comp]
   } else {
     y2 <- y
   }
@@ -250,7 +262,7 @@ abf.speedglm.fit <- function(x,y,q,family,snps,parallel.file=NULL,verbose=FALSE)
       load(parallel.file)
     } else {
       message("Saving objects in ",parallel.file)
-      save(snps, x2, y2, qm, q, family, file=parallel.file)
+      save(snps, x2, y2, qm, family, file=parallel.file)
       message("Please fit the models using abf.manual and rerun with parallel.file")
       return(NULL)
     }
