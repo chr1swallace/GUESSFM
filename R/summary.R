@@ -5,12 +5,13 @@
 ##' @param groups object of class groups.  If supplied, all SNPs here will be summarised, and grouped according to this structure
 ##' @param snps data.frame giving details of the SNPs
 ##' @param snp.data if groups is missing, tag groups are determined from this object of class SnpMatrix
+##' @param position name of column in snps data.frame giving SNP position
 ##' @param tag.thr if groups is missing, threshold at which to tag
 ##' @param pp.thr if groups is missing, threshold above which SNPs are selected for summary.  
 ##' @param method if groups is missing, method to determine tag groups using heirarchical clustering, default is "complete"
 ##' @return data.frame
 ##' @author Chris Wallace
-guess.summ <- function(results, groups=NULL, snps=NULL, snp.data=NULL, tag.thr=0.8, pp.thr=0.01, method="complete") {
+guess.summ <- function(results, groups=NULL, snps=NULL, snp.data=NULL, position, tag.thr=0.8, pp.thr=0.01, method="complete") {
   if(is.null(groups) && is.null(snp.data))
     stop("must supply either SNP groups or snp.data for fixed LD threshold groups")
   if(!is.list(results))
@@ -43,10 +44,10 @@ guess.summ <- function(results, groups=NULL, snps=NULL, snp.data=NULL, tag.thr=0
   
   ## first order tags
   cl <- unique(tags(tags))
-  cl <- cl[ order(snps[cl, "position.hg19"]) ]
+  cl <- cl[ order(snps[cl, position]) ]
   ## then order snps within tag groups
   tsplit <- split(snps(tags), tags(tags))[ cl ]
-  tsplit <- lapply(tsplit, function(x) x[ order(snps[x, "position.hg19"]) ])
+  tsplit <- lapply(tsplit, function(x) x[ order(snps[x, position]) ])
   ## put it back together
   all.snps <- unlist(tsplit)
   df.snps <- data.frame(snp=all.snps,tag=rep(names(tsplit),sapply(tsplit,length)),
