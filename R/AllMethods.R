@@ -25,8 +25,8 @@ setMethod("show", signature="snpmod",
 ##' @rdname show-methods
 setMethod("show", signature="snppicker",
           function(object) {
-            ngroup <- length(object@.Data)
-            nsnps <- if(ngroup==0) { 0 } else { sapply(object@.Data,length) }
+            ngroup <- length(object@groups)
+            nsnps <- if(ngroup==0) { 0 } else { sapply(object@groups,length) }
             message("snppicker object, containing ",sum(nsnps)," SNPs grouped into ",ngroup," groups.")
           })
 
@@ -70,7 +70,7 @@ setMethod("summary",signature="snppicker",
             data.frame(SNP.index=index,
                        SNP.count=nsnp,
                        min.R2=1-maxr2,
-                       sum.MPI=cmpi)
+                       gMMPI=cmpi)
           })
 ##' @rdname summary
 setMethod("summary",signature="groups",
@@ -167,6 +167,21 @@ setAs("snppicker","tags",
 
 ################################################################################
 
+##' @rdname groups-subset
+setMethod("taggedby",signature=c(object="tags",i="character"),
+          function(object,i) {
+            wh <- which(object@tags %in% i)
+            ret <- data.frame(tag=object@tags[wh],snps=object@.Data[wh])
+            return(ret[order(ret$tags),])  
+          })
+##' @rdname groups-subset
+setMethod("tagsof",signature=c(object="tags",i="character"),
+          function(object,i) {
+            wh <- which(object@.Data %in% i)
+            ret <- data.frame(tag=object@tags[wh],snps=object@.Data[wh])
+            return(ret[order(ret$tags),])  
+          })
+
 ##' Subset groups or tags objects
 ##'
 ##' '[' will extract another object of the same class.  '[[' will extract a single element.
@@ -206,6 +221,11 @@ setMethod("[[",signature=c(x="groups",i="logical"),
             x@.Data[[i]]
           })
 ##' @rdname groups-subset
+setMethod("[[",signature=c(x="groups",i="character"),
+          function(x,i) {
+            wh <- which(x@tags %in% i)
+            x@.Data[[wh]]
+          })
 setMethod("[[",signature=c(x="groups",i="character"),
           function(x,i) {
             wh <- which(x@tags %in% i)

@@ -56,3 +56,19 @@ setGeneric("snps",function(object) standardGeneric("snps"))
 ##' @rdname accessors
 ##' @export
 setGeneric("tags",function(object) standardGeneric("tags"))
+
+##' @details \code{tagsof} shows tags for a named character vector of SNPs
+##' @rdname groups-subset
+##' @export
+##' @param object tags object
+##' @param i character vector of SNPs
+##' @return data.frame of tags and their tagged SNPs
+setGeneric("tagsof", function(object,i) standardGeneric("tagsof"))
+
+##' @details \code{taggedby} shows SNPs tagged by a named character vector of tag SNPs
+##' @rdname groups-subset
+##' @export
+##' @param object tags object
+##' @param i character vector of tag SNPs
+##' @return data.frame of tags and their tagged SNPs
+setGeneric("taggedby", function(object,i) standardGeneric("taggedby"))
