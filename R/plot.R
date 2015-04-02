@@ -15,7 +15,22 @@ summary.plots <- function(results) {
   plots <- list(diffusion=plot_diffuse(results),
                 pp.nsnp=pp.nsnp(results))                
 }
-
+##' create a track from a guess.summ object showing snp ids
+##'
+##' @title ggsnp
+##' @param summx 
+##' @param snp.name column name for snp labels, default \code{snp}
+##' @return a ggplot object
+##' @author Chris Wallace
+##' @export
+ggsnp <- function(summx,snp.name="snp") {
+  summx <- unique(summx[,c(snp.name,"tag","x.scale")])
+  ggplot(summx,aes_string(x="x.scale",y=1,label=snp.name,xintercept="x.scale")) +
+    geom_vline(aes(xintercept=x.scale,col=tag),size=0.2,alpha=0.5) +
+      geom_text(angle=90,vjust=0.5,hjust=0,size=2,fontface="bold") +
+        theme(legend.position="none",axis.text=element_blank(),
+              axis.ticks=element_blank(),axis.title=element_blank()) + ylim(1,1.4)
+}
 
 plot.bf.pp <- function(results, nm="unknown",maxrank=1000) {
   if(!is.list(results))
@@ -225,14 +240,14 @@ ggbed <- function(bed,summ) {
 ##' 
 ##' @title Scale SNP positions
 ##' @inheritParams signal.plot
-##' @param pos character string: name of the column used for SNP position, default is "position.hg19"
+##' @param position character string: name of the column used for SNP position, default is "position"
 ##' @return summ data.frame with additional columns, x.scale, xmin.scale, xmax.scale
 ##' @export
 ##' @family plotting GUESSFM results
-scalepos <- function(summ,pos="position.hg19") {
-    if(!(pos %in% colnames(summ)))
-        stop("Position column not found: ",pos)       
-    summ$position.plot <- summ[,pos]
+scalepos <- function(summ,position="position") {
+    if(!(position %in% colnames(summ)))
+        stop("Position column not found: ",position)       
+    summ$position.plot <- summ[,position]
     pr <- c(min(summ$position.plot),max(summ$position.plot))
     xr <- c(min(summ$snpnum),max(summ$snpnum))
     summ$x.scale <- xscale(summ$snpnum,torange=pr,xrange=xr)
@@ -244,8 +259,8 @@ scalepos <- function(summ,pos="position.hg19") {
 ##'
 ##' @param results object of class snpmod
 ##' @param plot if TRUE, print a plot to current plotting device
-##' @param prior.expected optional, if specified, this is the prior expectation of the number of causal SNPs underlying the trait in the studied region.  Specifying will cause a line for the prior to be added to the plot
-##' @param prior.overdispersion optional, default=1.  Ignored unless prior.expected is given.  The overdispersion of the beta binomial distribution used for the prior relative to a binomial.
+##' @param expected optional, if specified, this is the prior expectation of the number of causal SNPs underlying the trait in the studied region.  Specifying will cause a line for the prior to be added to the plot
+##' @param overdispersion optional, default=1.  Ignored unless expected is given.  The overdispersion of the beta binomial distribution used for the prior relative to a binomial.
 ##' @return a named list containing
 ##' \itemize{
 ##'  \item{"pp"}{a named vector summarizing the posterior for each count of SNPs}
@@ -253,22 +268,24 @@ scalepos <- function(summ,pos="position.hg19") {
 ##' } 
 ##' @family plotting GUESSFM results
 ##' @export
-pp.nsnp <- function(results,plot=FALSE,prior.expected=NULL,prior.overdispersion=1) {
+##' @seealso \link{snpprior}
+pp.nsnp <- function(results,plot=FALSE,expected=NULL,overdispersion=1) {
   if(!is.list(results)) ## single trait    
     results <- list(trait=results)
   if(is.null(names(results))) ## unnamed list
     names(results) <- paste0("trait",1:length(results))
   df <- pp.nsnps <- vector("list",length(results))
+  names(df) <- names(results)
   for(i in seq_along(df)) {
     d <- results[[i]]
     pp.nsnps[[i]] <- tapply(d@models$PP,d@models$size,sum)
     df[[i]] <- data.frame(n=as.numeric(names(pp.nsnps[[i]])),pp=pp.nsnps[[i]],trait=names(results)[i])
   }
   df <- do.call("rbind",df)
-  if(!is.null(prior.expected)) {
+  if(!is.null(expected)) {
     nsnp <- nrow(results[[1]]@snps)
-    rho <- (prior.overdispersion - 1)/(nsnp-1)
-    p <- prior.expected/nsnp
+    rho <- (overdispersion - 1)/(nsnp-1)
+    p <- expected/nsnp
     nind <- 0:max(df$n)
     df <- rbind(df,data.frame(n=nind,
                               pp=dbetabinom(nind, size=nsnp, prob=p, rho=rho),
@@ -276,7 +293,7 @@ pp.nsnp <- function(results,plot=FALSE,prior.expected=NULL,prior.overdispersion=
   }
     p <- ggplot(df,aes(x=n,y=pp,col=trait)) + geom_point() + geom_path() + 
     labs(x="Number of SNPs in model",
-           y=if(is.null(prior.expected)) {"Posterior probability"} else {"Prior/posterior probability"}) +
+           y=if(is.null(expected)) {"Posterior probability"} else {"Prior/posterior probability"}) +
              scale_x_continuous(breaks=seq(0,max(df$n),by=2))
   if(plot)
     print(p)
@@ -381,3 +398,60 @@ if(!is.null(breaks)) {
 ##   diag(r2) <- 1
 ##   return(r2)
 ## }
+
+mod2group <- function(str,groups) {  
+  x.snps <- strsplit(str,"%")
+  x.groups <- lapply(x.snps,snpin,groups)
+  G <- sapply(x.groups,function(g) {
+    match <- apply(g,1,any)
+    ret <- numeric(nrow(g))
+    if(any(match))
+      ret[match] <- apply(g[match,,drop=FALSE],1,which)
+    return(paste(sort(ret),collapse="-"))
+  })
+  return(G)
+}
+gsumm <- function(x,groups) {
+  n <- max(as.numeric(unlist(strsplit(x$group,"-"))))
+  counts <- tapply(x$PP,x$group,sum)
+  df <- data.frame(pattern=names(counts), PP=counts)
+  df <- df[order(df$PP,decreasing=TRUE), ]
+  df$ymax <- cumsum(df$PP)
+  df$ymin <- c(0,df$ymax[-nrow(df)])
+  cn <- lapply(strsplit(rownames(df),"-"),as.numeric)  
+  df2 <- df[rep(1:nrow(df), times=sapply(cn,length)),]
+  df2$xmin <- unlist(cn)
+  df2$xmax <- unlist(cn)+1
+  return(df2)
+}
+##' Plot pattern of SNP group inclusion
+##'
+##' @title pattern.plot
+##' @param SM snpmod or list of snpmods
+##' @param groups groups object
+##' @return a ggplot object, by default printed to current graphics device
+##' @author Chris Wallace
+##' @export
+pattern.plot <- function(SM,groups) {
+  if(!is.list(SM))
+    SM <- list(trait=SM)
+  BM <- lapply(SM,function(x) best.models(x,cpp.thr=0.99)[,c("str","PP")])
+  for(i in seq_along(BM)) 
+    BM[[i]]$group <- mod2group(BM[[i]]$str,groups)
+  G <- lapply(BM,gsumm)
+  for(i in names(G)) 
+    G[[i]]$trait <- i
+  G <- do.call("rbind",G)
+
+  ggplot(G,aes(xmin=xmin,xmax=xmax,ymin=ymin,ymax=ymax)) +
+    geom_rect() +
+      geom_vline(aes(xintercept=xmin),col="gray60", size=0.2) +
+        geom_hline(aes(yintercept=ymax),col="gray60",size=0.2) +
+          scale_x_continuous(breaks=sort(unique(G$xmin))+0.5,labels=sort(unique(G$xmin))+1,limits=c(min(G$xmin),max(G$xmin)+1),expand=c(0,0)) +
+            scale_y_continuous(breaks=c(0,1), expand=c(0,0), limits=c(0,1)) +
+              theme_bw() +
+                theme(panel.grid=element_blank(),axis.text.x=element_text(angle=45,vjust=1,hjust=1), legend.position="none", panel.margin = unit(1, "lines")) +
+                  facet_grid(trait~.) + xlab("SNP group index") + ylab("Cumulative Model Posterior Probility") + 
+                    scale_fill_manual(values=c("FALSE"="grey","TRUE"="grey20")) 
+
+}
