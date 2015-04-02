@@ -2,6 +2,7 @@
 setGeneric("length")
 setGeneric("plot")
 setGeneric("summary")
+setOldClass("ggplot")
 
 #' Create a union of groups, snppicker or tags objects
 #'
@@ -57,18 +58,50 @@ setGeneric("snps",function(object) standardGeneric("snps"))
 ##' @export
 setGeneric("tags",function(object) standardGeneric("tags"))
 
-##' @details \code{tagsof} shows tags for a named character vector of SNPs
+##' \code{tagsof} shows tags for a named character vector of SNPs
 ##' @rdname groups-subset
 ##' @export
-##' @param object tags object
-##' @param i character vector of SNPs
+##' @param object tags or groups object
 ##' @return data.frame of tags and their tagged SNPs
 setGeneric("tagsof", function(object,i) standardGeneric("tagsof"))
 
-##' @details \code{taggedby} shows SNPs tagged by a named character vector of tag SNPs
+##' \code{taggedby} shows SNPs tagged by a named character vector of tag SNPs
 ##' @rdname groups-subset
 ##' @export
-##' @param object tags object
-##' @param i character vector of tag SNPs
-##' @return data.frame of tags and their tagged SNPs
 setGeneric("taggedby", function(object,i) standardGeneric("taggedby"))
+
+##' qc a GUESSFM run
+##'
+##' With all genetic data, we use some QC measures to determine "bad"
+##' SNPs.  The qc() functions in GUESSFM attempt to flag features that
+##' experience suggests is related to spurious differential SNP calls
+##' between cases and controls.
+##'
+##' The function \code{\link{pp.nsnp}} generates a posterior
+##' distribution for the number of SNPs in a model.  We expect this
+##' posterior distribution to have some right skew (as does the
+##' binomial or beta binomial prior) and be unimodal.  Experience
+##' suggests that a posterior that does not have these properties may
+##' have favoured models with "bad" SNPs.  Running \code{qc} on the
+##' object returned by \code{pp.nsnp} will flag these issues.
+##'
+##' You can also call \code{qc} directly on a \code{snpmod} object.
+##' This may take a little longer, and attempts to estimate the
+##' maximum r squared between SNPs in any model.  GUESS has a prior
+##' which should enforce that highly correlated SNPs are not both
+##' placed in a model.  Sometimes it may be that two correlated SNPs
+##' are indeed required to model a trait, but experience with imputed
+##' data suggests that when a majority of models above a given size
+##' contain highly correlated SNPs, there is a problem with
+##' differential genotype calling which requires further
+##' investigation.
+##' 
+##' @title Quality control
+##' @return data.frame of traits in pp.nsnp together with qc measures
+##' or data.frame of models and associated size and max r squared.
+##' @export
+##' @author Chris Wallace
+##' @rdname qc
+##' @param object snpmod object or object returned by \code{pp.nsnp}
+##' @param data SnpMatrix data for LD calculation if object is a snpmod
+setGeneric("qc", function(object,data) standardGeneric("qc"))

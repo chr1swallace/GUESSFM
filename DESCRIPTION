@@ -22,7 +22,8 @@ Imports:
     parallel,
     R2GUESS
 Suggests:
-    testthat
+    testthat,
+    speedglm
 License: GPL
 LazyData: true
 VignetteBuilder: knitr

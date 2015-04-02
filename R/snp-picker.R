@@ -38,9 +38,10 @@ snp.picker <- function(d,data,start.thr=0.01,nochange.thr=0.001,nochange.run=3,r
   i <- 0
   a <- d@snps
   a$var <- as.character(a$var)
+  a <- subset(a,var!="1") # ignore null model
   max.r2 <- 0.5
   ## check all snps in a are in data
-  if(!all(a$var %in% c("1",colnames(data))))
+  if(!all(a$var %in% colnames(data)))
     stop("not all SNPs in d found in data")
   
   ## create model matrix
@@ -55,10 +56,12 @@ snp.picker <- function(d,data,start.thr=0.01,nochange.thr=0.001,nochange.run=3,r
     (i <- i+1)
     ## best snp
     wh <- which.max(a$Marg_Prob_Incl)
-    (snp <- a$var[wh]) 
-    ## r2 with best snp
+    (snp <- a$var[wh])
 
-    #system.time({r2 <- ld(data[,setdiff(colnames(data),snp)], data[,snp], stats="R.squared")[,1]; r2[snp] <- 1})
+    ## r2 with best snp
+    ## system.time({
+    ##   r2 <- ld(data[,setdiff(colnames(data),snp)], data[,snp], stats="R.squared")[,1];
+    ##   r2[snp] <- 1})
     r2 <- ld(data, data[,snp], stats="R.squared")[,1]
 
     ## models that contain best snp
@@ -76,6 +79,7 @@ snp.picker <- function(d,data,start.thr=0.01,nochange.thr=0.001,nochange.run=3,r
     if(length(wh <- which(df$model.count>shared.models)))
       df <- df[-wh,]
     print(df)
+
     ## process
     r2lim <- NULL
     if(nrow(df)==1) {     ## singletons
@@ -122,7 +126,7 @@ snp.picker <- function(d,data,start.thr=0.01,nochange.thr=0.001,nochange.run=3,r
     snp.group <- rownames(df)[wh]
     groups[[i]] <- cbind(a[snp.group,,drop=FALSE],r2=df$r2[wh],cmpi=cumsum(df$mpi[wh]))
     cat(i,snp,length(snp.group),max(groups[[i]]$cmpi),"\n")
-    a <- a[!(a$var %in% snp.group),]
+    a <- subset(a, !(a$var %in% snp.group))
     dfp$changepoint <- 1:nrow(dfp)==max(wh)
     plotsdata[[i]] <- dfp    
 
@@ -285,7 +289,7 @@ snp.picker.old <- function(d,data,start.thr=0.01,nochange.thr=0.001,nochange.run
 ##       r2[snp] <- 1
 ##     }  
     
-    df <- data.frame(r2=1-r2[a$var], mpi=a$Marg_Prob_Incl)
+    df <- data.frame(r2=1-r2[a$var], mpi=a$Marg_Prob_Incl, row.names=a$var)
     df <- df[order(df$r2),]
     dfp <- df
     df <- df[df$r2<max.r2 & !is.na(df$r2),,drop=FALSE]

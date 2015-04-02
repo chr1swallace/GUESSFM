@@ -78,3 +78,23 @@ setClass("snppicker",
            if(length(object@groups)!=length(object@plotsdata))
              stop("groups and plotsdata should be lists of equal length")
          })
+
+#' Class to hold results of pp.nsnp
+#'
+#' \code{pp.nsnp} summarises prior and posterior support for the
+#' number of SNPs required to model a trait or several traits
+#'
+#' @slot .Data contains a named list of numeric vectors giving the support for each number
+#' @slot plot contains a ggplot object
+#'
+#' @export
+#'
+#' @examples
+#' new("ppnsnp")
+setClass("ppnsnp",
+         slots=c(.Data="list",plot="ANY",traits="character"),
+         validity=function(object) {
+           for(i in seq_along(object@.Data)) {
+             if(!is(object[[i]],"array"))
+               stop("ppnsnp should contain a list of arrays")
+           }})

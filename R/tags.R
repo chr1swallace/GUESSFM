@@ -10,7 +10,13 @@ expand.tags <- function(d, tags) {
     B <- length(best)
     bsnps <- unique(unlist(best))
     wh <- which(make.names(tags(tags)) %in% bsnps)
-    proxies <- split(make.names(snps(tags)[wh]),make.names(tags(tags)[wh]))
+    if(!length(wh))
+      stop("none of the supplied tags are amongst the best SNPs in d")
+    proxies <- split(make.names(snps(tags)[wh]),make.names(tags(tags)[wh]))    
+
+    ## check - all best SNPs should be in names of proxies
+    if(!all(bsnps %in% names(proxies)))
+      stop("not all model SNPs found in tags object")
     table(sapply(proxies,length))
     message("expanding tags for ",B," models over ",length(proxies)," tag SNPs, tagging a total of ",length(unlist(proxies)), " SNPs.")
 

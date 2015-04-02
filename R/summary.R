@@ -5,15 +5,17 @@
 ##' @param groups object of class groups.  If supplied, all SNPs here will be summarised, and grouped according to this structure
 ##' @param snps data.frame giving details of the SNPs
 ##' @param snp.data if groups is missing, tag groups are determined from this object of class SnpMatrix
-##' @param position name of column in snps data.frame giving SNP position
+##' @param position name of column in snps data.frame giving SNP position. default="position"
 ##' @param tag.thr if groups is missing, threshold at which to tag
 ##' @param pp.thr if groups is missing, threshold above which SNPs are selected for summary.  
 ##' @param method if groups is missing, method to determine tag groups using heirarchical clustering, default is "complete"
 ##' @return data.frame
 ##' @author Chris Wallace
-guess.summ <- function(results, groups=NULL, snps=NULL, snp.data=NULL, position, tag.thr=0.8, pp.thr=0.01, method="complete") {
+guess.summ <- function(results, groups=NULL, snps=NULL, snp.data=NULL, position="position", tag.thr=0.8, pp.thr=0.01, method="complete") {
   if(is.null(groups) && is.null(snp.data))
     stop("must supply either SNP groups or snp.data for fixed LD threshold groups")
+  if(!is.null(snps) & !(position %in% colnames(snps)))
+    stop("position column '",position,"' not found in snps data.frame")
   if(!is.list(results))
     results <- list(trait=results)
   if(!is.null(groups)) {
@@ -58,6 +60,8 @@ guess.summ <- function(results, groups=NULL, snps=NULL, snp.data=NULL, position,
   if(!is.null(snps)) {
     df.snps <- cbind(df.snps, snps[ as.character(df.snps$snp), ])
                                         #    df.snps$position.scale <- with(df.snps, xscale(position, c(min(snpnum),max(snpnum))))
+  } else {
+    df.snps$position <- 1:nrow(df.snps)
   }
   
   ## set xmin, xmax for easy plotting
@@ -160,6 +164,8 @@ best.models <- function(d,pp.thr=0.01,cpp.thr=NA) {
     d@models <- d@models[ order(d@models$PP,decreasing=TRUE),] # just in case
     cpp <- cumsum(d@models$PP)
     wh <- which(cpp<=cpp.thr)
+    if(!length(wh))
+      wh <- 1
     wh <- c(wh,max(wh)+1) # include the model which first exceeds the threshold
   } else {
     wh <- which(d@models$PP>pp.thr)

@@ -29,6 +29,13 @@ setMethod("show", signature="snppicker",
             nsnps <- if(ngroup==0) { 0 } else { sapply(object@groups,length) }
             message("snppicker object, containing ",sum(nsnps)," SNPs grouped into ",ngroup," groups.")
           })
+##' @rdname show-methods
+setMethod("show", signature="ppnsnp",
+          function(object) {
+            L <- object@.Data
+            names(L) <- object@traits
+            show(L)
+          })
 
 ##' @rdname show-methods
 setMethod("show", signature="tags",
@@ -92,7 +99,7 @@ setMethod("summary",signature="groups",
 ##' \code{theme} etc.
 ##'
 ##' @rdname plot-methods
-##' @param x snppicker object
+##' @param x ppsnp or snppicker object
 ##' @param do.plot if TRUE (default) print the plot on the current
 ##' device, otherwise invisibly return the plot object.
 ##' @export
@@ -124,6 +131,12 @@ setMethod("plot", signature(x="snppicker",y="missing"),
               print(plots)
             invisible(plots)            
           })
+
+##' @rdname plot-methods
+##' @export
+setMethod("plot", signature(x="ppnsnp",y="missing"),
+          function(x) print(x@plot))
+          
 
 ################################################################################
 
@@ -171,15 +184,29 @@ setAs("snppicker","tags",
 setMethod("taggedby",signature=c(object="tags",i="character"),
           function(object,i) {
             wh <- which(object@tags %in% i)
+            if(!length(wh))
+              stop("tags not found")
             ret <- data.frame(tag=object@tags[wh],snps=object@.Data[wh])
-            return(ret[order(ret$tags),])  
+            return(ret[order(ret$tag),])  
           })
 ##' @rdname groups-subset
 setMethod("tagsof",signature=c(object="tags",i="character"),
           function(object,i) {
             wh <- which(object@.Data %in% i)
-            ret <- data.frame(tag=object@tags[wh],snps=object@.Data[wh])
-            return(ret[order(ret$tags),])  
+             if(!length(wh))
+              stop("SNPs not found")
+           ret <- data.frame(tag=object@tags[wh],snps=object@.Data[wh])
+            return(ret[order(ret$tag),])  
+          })
+##' @rdname groups-subset
+setMethod("taggedby",signature=c(object="groups",i="character"),
+          function(object,i) {
+            taggedby(as(object,"tags"),i)
+          })
+##' @rdname groups-subset
+setMethod("tagsof",signature=c(object="groups",i="character"),
+          function(object,i) {
+            tagsof(as(object,"tags"),i)
           })
 
 ##' Subset groups or tags objects
@@ -321,7 +348,8 @@ setMethod("union",signature(x="snppicker",y="snppicker"),definition=function(x,y
 
 #' @rdname union
 setMethod("union",signature(x="tags",y="tags"),definition=function(x,y) {
-  as(union(as(x,"groups"),as(y,"groups")),"tags") })
+  ugr <- union(as(x,"groups"),as(y,"groups"))
+  as(ugr,"tags") })
 
 #' @rdname union
 setMethod("union",signature(x="groups",y="groups"),definition=function(x,y) {
@@ -421,3 +449,41 @@ setMethod("tags",signature(object="tags"), function(object) { object@tags })
 ## setMethod("+",signature(e1="snpmod",e2="snpmod"), function(e1,e2) snpmod.add(e1,e2))
 
 ## 
+################################################################################
+
+## qc
+##' @rdname qc
+##' @export
+setMethod("qc",signature(object="ppnsnp",data="missing"),
+          function(object) {
+            qc.skew <- skewness(object)
+            qc.nmodes <- nmodes(object)
+            ret <- data.frame(trait=object@traits, skewness=unlist(qc.skew),
+                              nmodes=unlist(qc.nmodes))
+            ret$flag <- ret$skewness<0 | ret$nmodes>1
+            return(ret)
+          })
+##' @rdname qc
+##' @export
+setMethod("qc",signature(object="snpmod",data="SnpMatrix"),
+          function(object,data) {
+            data <- data[,rownames(object@snps)]
+            LD <- ld(data, stat="R.squared", symmetric=TRUE, depth=ncol(data)-1)
+            diag(LD) <- 0
+            M <- object@models
+            ss <- strsplit(M$str,"%")
+            maxld <- numeric(length(ss))
+            n <- sapply(ss,length)
+            wh <- which(n > 1)
+            maxld[ wh ] <- unlist(lapply(ss[wh],function(s) max(LD[s,s],na.rm=TRUE)))
+            ret <- data.frame(model=M$str, nsnps=n, maxr2=maxld, stringsAsFactors=FALSE)
+            print(snps.from.correlated.models(ret))
+            return(ret)
+          })
+##' @rdname qc
+##' @export
+##' @author Chris Wallace
+setMethod("qc",signature(object="list",data="ANY"),
+          function(object) {
+            lapply(object,qc,data=data)
+          })

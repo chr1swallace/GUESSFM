@@ -1,6 +1,6 @@
 Feature	value
-n	847
-p	16
+n	1000
+p	17
 q	1
 n_conf	0
 nsweeps	55000
@@ -14,6 +14,6 @@ cuda	0
 history	1
 time	0
 med_RMSE	0.0316228
-seed	1425550431
+seed	1426758069
 last_sweep	55000
 run_finished	1

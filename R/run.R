@@ -97,6 +97,7 @@ backend.guess <- function(gX, gY, gdir, nsweep, nchains, best, nsave, nexp, nexp
     message(com)
   if(!is.null(guess.command))
     system(com, wait=FALSE)
+  return(com)
 }
 ##' Bayesian variable selection
 ##'
@@ -107,16 +108,12 @@ backend.guess <- function(gX, gY, gdir, nsweep, nchains, best, nsave, nexp, nexp
 ##' @param sub optional number < nrow(X). If supplied, only the subset of samples defined by 1:sub will be used.
 ##' @param covars optional matrix or vector of covariates. If supplied GUESS will be run on residuals from glm(Y ~ ., data=as.data.frame(covars)).
 ##' @param family family for Y ~ covars regression.  default "gaussian".
-##' @param tag.r2 r squared value at which to tag to avoid numerical instability.  Default of 0.99 has worked well in our experience.
-##' @param nexp expected number of causal variants in region
-##' @param nsave number of models to save, see documentation for GUESS 
 ##' @param nsweep number of sweeps, see documentation for GUESS
 ##' @param nchains number of chains, see documentation for GUESS
+##' @param nexp expected number of causal variants in region
+##' @param tag.r2 r squared value at which to tag to avoid numerical instability.  Default of 0.99 has worked well in our experience.
+##' @param nsave number of models to save, see documentation for GUESS 
 ##' @param guess.command Command to run GUESS, if GUESS is not on your PATH.
-##' @param backend "GUESS" (default) to run GUESS, or "dummy" to just generate the files for checking
-##' @param boot EXPERIMENTAL. Optional integer > 0 indicates that a number of bootstrap replicates should be run to understand variability in output
-##' @param as.is EXPERIMENTAL if boot=TRUE, and as.is=TRUE, explicitly exclude the unchanged data structure from the set of bootstrapped datasets
-##' @param dominance EXPERIMENTAL. If TRUE, include a dominance effect at each SNP
 ##' @export
 ##' @return nothing.  side effect is to set GUESS running in the background.  This takes a while (typically several hours).
 run.bvs <- function(X,Y,gdir="test",sub=NA,

@@ -32,9 +32,31 @@ best.models(d)
 best.snps(d)
 
 ## ------------------------------------------------------------------------
+sel=rownames(best.snps(d))
+ld[c(sel,causal),c(sel,causal)]
+
+## ------------------------------------------------------------------------
 (load(file.path(mydir,"tags.RData")))
 tags
+tagsof(tags,causal)
+taggedby(tags,sel)
 
 ## ------------------------------------------------------------------------
 dx<-expand.tags(d,tags)
+
+## ------------------------------------------------------------------------
+best <- best.models(dx,cpp.thr=0.9)
+library(speedglm)
+abf <- abf.calc(y=Y,x=X,models=best$str,family="gaussian")
+sm <- abf2snpmod(abf,expected=3)
+
+## ------------------------------------------------------------------------
+best.snps(d)
+best.snps(dx)
+best.snps(sm)
+
+## ------------------------------------------------------------------------
+sp <- snp.picker(sm,X)
+summary(sp)
+plot(sp)
 

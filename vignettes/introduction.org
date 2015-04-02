@@ -5,7 +5,7 @@
 #+DESCRIPTION:
 #+KEYWORDS:
 #+LANGUAGE: en
-#+OPTIONS: H:3 num:t toc:t \n:nil @:t ::t |:t ^:t -:t f:t *:t <:t
+#+OPTIONS: H:3 num:t toc:nil \n:nil @:t ::t |:t ^:t -:t f:t *:t <:t
 #+OPTIONS: TeX:t LaTeX:t skip:nil d:(not LOGBOOK) todo:t pri:nil tags:t
 
 #+EXPORT_SELECT_TAGS: export
@@ -17,12 +17,28 @@
 #+latex_header: \usepackage{fullpage}
 #+latex: %\VignetteIndexEntry{GUESSFM Introduction}
 
+# ---
+# title: "Introduction"
+# output:
+#   html_document:
+#     toc: true
+#     theme: united
+# ---
+
+
 #+begin_html
 <!--
 %\VignetteEngine{knitr}
 %\VignetteIndexEntry{GUESSFM Introduction}
 -->
+<h1>GUESSFM Introduction</h1>
+<font color="grey">
+*Chris Wallace // [web](http://www-gene.cimr.cam.ac.uk/staff/wallace) // [email](mailto:chris.wallace at cimr.cam.ac.uk)*  
+</font>
 #+end_html
+
+#+TOC: headlines 1
+
 
 * Introduction
 
@@ -120,6 +136,19 @@ SNPs:
 ld <- show.ld(X=X)
 #+end_src
 
+# However, to make the fine mapping problem a little harder, we should
+# perhaps have some greater LD.  Let's generate some very similar SNPs for each causal variant and for two of the non causal variants.
+
+# #+BEGIN_SRC R :ravel
+# snps.to.dup <- c(causal, "rs4881529", "rs11253446" )
+# X2 <- as(X[,snps.to.dup],"numeric") 
+# change <- sample(1:length(X2),500)
+# X2[change] <- X2[sample(change)]
+# colnames(X2) <- paste0(colnames(X2),".dup")
+# X2 <- new("SnpMatrix",X2+1)
+# X <- snpStats::cbind(X,X2)
+# ld <- show.ld(X=X[,c(snps.to.dup,paste0(snps.to.dup,".dup"))])
+# #+end_src
 
 * Running GUESS and reading output
 
@@ -132,7 +161,11 @@ demonstration as there is limited strong LD in this dataset.
 : mydir <- tempfile() 
 : ## NB, IF GUESS IS NOT ON YOUR PATH, SUPPLY THE FULL PATH IN AN ARGUMENT
 : ## guess.command="/path/to/GUESS"
-: run.bvs(X,Y,gdir=mydir,backend="guess",tag.r2=0.8,guess.command="GUESS") 
+: run.bvs(X,Y,gdir=mydir,
+:         tag.r2=0.95,           # maximum r2 between SNPs to be modelled
+:         guess.command="GUESS", # /path/to/GUESS
+:         nexp=3,                # expected number of causal variants, an overestimate
+:         nsave=1000)            # number of best models to save
 
 This can take a (long) while.  For the purposes of this vignette, 
 we will load the results from an existing run.
@@ -151,6 +184,14 @@ best.models(d)
 best.snps(d)
 #+END_SRC
 
+Huh.  GUESS has selected one of our causal SNPs, but not both.  Why?  We have a clue from the ld matrix:
+
+#+BEGIN_SRC R
+sel=rownames(best.snps(d))
+ld[c(sel,causal),c(sel,causal)]
+#+END_SRC
+
+So the selected SNP rs11253451 has $r^2=0.996$ and $D'=1$ with the causal but unselected SNP rs1555897.  That would explain it.  
 
 Note that both =best.models= and =best.snps= allow you to specify thresholds for
 how to determine "best".  See their help pages for details.
@@ -161,48 +202,75 @@ The tags created within the =run.bvs= function are saved to a
 #+BEGIN_SRC R
 (load(file.path(mydir,"tags.RData")))
 tags
-
+tagsof(tags,causal)
+taggedby(tags,sel)
 #+END_SRC
 
-**** TODO Which SNPs were selected as tags, esp in relation to causal variants?  Which SNPs come up in the GUESS results?
+Indeed, rs11253451 is a tag for rs1555897.  
 
-* Using an existing R2GUESS run
+NB: to see more about how to manipulate tags and groups objects, see the vignette 
+: vignette("groups",package="GUESSFM")
 
-
-You can convert a run from R2GUESS into a snpmod object with:
-
-#+BEGIN_SRC 
-## read output using a convenience wrapper for as.ESS.object()
-## this returns an object of class ESS, used by R2GUESS
-ess <- read.ess(mydir)
-str(ess)
-
-## GUESSFM maps snp numbers to names via a decode vector
-decode <- structure(colnames(X),names=as.numeric(1:ncol(X)))
-
-## create a snpmod
-gfm2 <- ess2snpmod(ess)
-best.models(gfm2)
-#+END_SRC
 
 * Expanding
 
-Tagging has allowed us to shrink the model space, by assuming that models with SNPs in very high LD will have very similar likelihoods, but for fine mapping we really do want to evaluate each and every model.  So, having chosen our best set of models within the shrunked space, we need to expand each of them to all the possible models they tag:
+Tagging has allowed us to shrink the model space, by assuming that models with SNPs in very high LD will have very similar likelihoods, but for fine mapping we really do want to evaluate each and every model.  So, having chosen our best set of models within the shrunken space, we need to expand each of them to all the possible models they tag:
 
 #+BEGIN_SRC R
 dx<-expand.tags(d,tags)
-
 #+END_SRC
 
-To see more about how to manipulate tags objects, see the vignette 
-: vignette("groups",package="GUESSFM")
+
+* Refitting
+The expanded models above have all been assigned the log Bayes Factor for their nearest tag model.  This isn't terrible, in practice, but if you care about fine mapping then you should get a more precise answer by refitting the most likely models individually.  Note this is especially important if you have a binomial outcome, as GUESS has been run using a linear model.
+
+Here, we take the set of most likely models which collectively capture 50% of the posterior support from GUESS, after expansion.  Loading the =speedglm= library makes the fitting faster, and we calculate the approximate Bayes Factors using the BIC approximation.  To do this, we also need to supply some information about our prior for the number of causal variants in the model.
+
+#+BEGIN_SRC R
+best <- best.models(dx,cpp.thr=0.9)
+library(speedglm)
+abf <- abf.calc(y=Y,x=X,models=best$str,family="gaussian")
+sm <- abf2snpmod(abf,expected=3)
+#+END_SRC
+
+Now we can explore the best SNPs and models in the tagged data, the expanded data, and the refitted data
+
+#+BEGIN_SRC R
+best.snps(d)
+best.snps(dx)
+best.snps(sm)
+#+END_SRC
+
+We see that on expanding the tags we pick up the true causal variant, together with two more extraneous SNPs, but on refitting the model we see only the two causal SNPs and rs11253451, which is in very high LD with rs1555897.
+
+* SNP groups
+
+A formal way to group SNPs in LD with posterior support is to use the =snp.picker= function, which can also produce a plot to show how it's working.  
+We do not expect that we will be able to discriminate, statistically,
+between highly correlated variants.  Instead, the posterior support is
+likely to be diluted across such sets of variants.  To group such
+SNPs, we used the marginal posterior probabilities of inclusion (MPPI)
+for each SNP, and applied the following algorithm:
+1. Pick the index SNP with maximum MPPI
+2. Order remaining SNPs by $r^2$ with index SNP
+3. Exclude SNPs which co-occur in models with the index SNP (joint MPPI $>0.02$)
+4. Step away from the index SNP in order of decreasing $r^2$, adding SNPs to its group until $\text{MPPI}<0.001$ for two SNPs in a row (NB, these SNPs will not be added to the SNP group), or until $r^2<0.5$
+5. Remove this set of SNPs and return to step 1 until no SNP remains with $\operatorname{MPPI}>0.01$.
+
+We summarize the support for any group of SNPs by the 
+grouped marginal posterior probability of inclusion, or gMPPI.
+
+#+BEGIN_SRC R :ravel :fig=TRUE :label=snppicker
+sp <- snp.picker(sm,X)
+summary(sp)
+plot(sp)
+#+END_SRC
 
 * Plotting
 It is useful to assess the steps of any analysis by looking at the data.  With such
 a large number of models, the best way is to plot aspects of the data.  For that
-reason, GUESSFM contains lots of plotting functions.
-
-** TODO separate vignette, including vagaries of ggplot
+reason, GUESSFM contains lots of plotting functions, described in a separate vignette.  To see it, do:
+: vignette("plotting",package="GUESSFM")
 
 
 * Parallelism
@@ -222,4 +290,23 @@ use =mclapply= are:
 
 =expand.tags=
 
+* Using an existing R2GUESS run
 
+You can convert a run from R2GUESS into a snpmod object with:
+
+#+BEGIN_SRC 
+## read output using a convenience wrapper for as.ESS.object()
+## this returns an object of class ESS, used by R2GUESS
+ess <- read.ess(mydir)
+str(ess)
+
+## GUESSFM maps snp numbers to names via a decode vector
+decode <- structure(colnames(X),names=as.numeric(1:ncol(X)))
+
+## create a snpmod
+gfm2 <- ess2snpmod(ess)
+best.models(gfm2)
+#+END_SRC
+
+Now you can apply all the plotting functions etc in GUESSFM, but
+without the tagging strategy, you won't be able to do the expansion.

@@ -18,7 +18,7 @@ summary.plots <- function(results) {
 ##' create a track from a guess.summ object showing snp ids
 ##'
 ##' @title ggsnp
-##' @param summx 
+##' @param summx summary of a snpmod + groups object
 ##' @param snp.name column name for snp labels, default \code{snp}
 ##' @return a ggplot object
 ##' @author Chris Wallace
@@ -275,7 +275,7 @@ pp.nsnp <- function(results,plot=FALSE,expected=NULL,overdispersion=1) {
   if(is.null(names(results))) ## unnamed list
     names(results) <- paste0("trait",1:length(results))
   df <- pp.nsnps <- vector("list",length(results))
-  names(df) <- names(results)
+  names(df) <- names(pp.nsnps) <- names(results)
   for(i in seq_along(df)) {
     d <- results[[i]]
     pp.nsnps[[i]] <- tapply(d@models$PP,d@models$size,sum)
@@ -297,8 +297,9 @@ pp.nsnp <- function(results,plot=FALSE,expected=NULL,overdispersion=1) {
              scale_x_continuous(breaks=seq(0,max(df$n),by=2))
   if(plot)
     print(p)
-  print(pp.nsnps)
-  invisible(list(pp=pp.nsnps,plot=p))
+##  print(pp.nsnps)
+  new("ppnsnp",.Data=pp.nsnps,plot=p,traits=names(pp.nsnps))
+#  invisible(list(pp=pp.nsnps,plot=p))
 }
 ##' Add lines to a ggplot, indicating position of snps
 ##'
