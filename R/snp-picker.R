@@ -263,7 +263,6 @@ groups.merge <- function(groups,tags) {
     
 ## }
 
-library(gridExtra)
 snp.picker.old <- function(d,data,start.thr=0.01,nochange.thr=0.001,nochange.run=3,r2.gap=0.1) {
   groups <- plotsdata <- list()
   i <- 0

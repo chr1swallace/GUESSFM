@@ -9,6 +9,7 @@
 ##' @param tag.thr if groups is missing, threshold at which to tag
 ##' @param pp.thr if groups is missing, threshold above which SNPs are selected for summary.  
 ##' @param method if groups is missing, method to determine tag groups using heirarchical clustering, default is "complete"
+##' @export
 ##' @return data.frame
 ##' @author Chris Wallace
 guess.summ <- function(results, groups=NULL, snps=NULL, snp.data=NULL, position="position", tag.thr=0.8, pp.thr=0.01, method="complete") {
