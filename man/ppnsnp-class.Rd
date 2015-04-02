@@ -14,6 +14,8 @@ number of SNPs required to model a trait or several traits
 \item{\code{.Data}}{contains a named list of numeric vectors giving the support for each number}
 
 \item{\code{plot}}{contains a ggplot object}
+
+\item{\code{traits}}{names of traits, corresponding to items in .Data}
 }}
 \examples{
 new("ppnsnp")

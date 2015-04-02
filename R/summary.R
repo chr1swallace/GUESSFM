@@ -174,12 +174,3 @@ best.models <- function(d,pp.thr=0.01,cpp.thr=NA) {
   }
   return(cbind(d@models[wh,], snps=unlist(lapply(d@model.snps[wh],makestr))))
 }
-
-newprior <- function(sm,prior) {
-  stop("TODO!")
-  M <- sm@models
-  pr <- snpprior(x=0:20,expected=nexp,n=1264,truncate=20,overdispersion=1)
-  logpr <- log(pr[ as.character(M$size) ])
-  logpr <- logpr - logsum(logpr)
-  nm(log(pr[as.character(M$size)]) + M$logABF)
-}

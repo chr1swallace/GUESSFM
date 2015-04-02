@@ -9,7 +9,7 @@
 #' @import ggplot2
 #' @importFrom speedglm speedglm.wfit
 #' @importFrom grid unit
-#' @importFrom snpStats snp.rhs.tests ld col.summary p.value snp.imputation impute.snps
+#' @importFrom snpStats snp.rhs.tests ld col.summary p.value snp.imputation impute.snps g2post write.SnpMatrix single.snp.tests row.summary
 #' @importFrom parallel mclapply
 #' @importFrom R2GUESS as.ESS.object
 NULL

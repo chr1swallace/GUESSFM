@@ -34,6 +34,7 @@
 Let's start with the data from the main vignette (GUESSFM Introduction):
 
 #+begin_src R :ravel :label=sim
+library(GUESSFM)
 mydir <-  system.file("extdata",package="GUESSFM")
 (load(file.path(mydir,"simdata.RData")))
 #+end_src

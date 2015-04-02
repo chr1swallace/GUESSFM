@@ -54,6 +54,11 @@ variants.  The are particular challenges for fine mapping, mostly
 related to the density of SNP markers.  Nonetheless, this vignette
 will at first focus on an example dataset that comes with R2GUESS.
 
+This vignettes introduces GUESSFM, and tries to do a sample run with
+simulated data.  The other vignettes visit some topics in more depth:
+
+[[./plotting.html][plotting]] and [[./groups.html][SNP groups]].
+
 * R2GUESS Strategy 
 
 Although GUESS uses g-priors, which inhibits visiting models with SNPs

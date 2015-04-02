@@ -175,6 +175,7 @@ abf2snpmod <- function(abf,expected,overdispersion=1) {
 
 fill.abf.list <- function(n,files) {
   L <- numeric(n)
+  targets <- NULL # R CMD check warning
   for(f in files) {
     obj <- (load(f))
     obj <- setdiff(obj,"targets")
@@ -186,7 +187,7 @@ fill.abf.list <- function(n,files) {
 abf.manual.join <- function(parallel.dir, ...) {
   if(!file.exists(parallel.dir))
     stop("parallel.dir not found: ",parallel.dir)
-  bic.files <- list.files(parallel.dir,pattern="^bic-.*.RData",full=TRUE)
+  bic.files <- list.files(parallel.dir,pattern="^bic-.*.RData",full.names=TRUE)
   coeff.files <- sub("bic","coeff",bic.files)
   parallel.data <- pdata(parallel.dir)
   parallel.results <- presults(parallel.dir)
@@ -194,7 +195,7 @@ abf.manual.join <- function(parallel.dir, ...) {
     stop("parallel data file not found, did you run abf.calc?")
   if(!length(bic.files))
     stop("no BIC/coeff files found in ",parallel.dir)
-
+  targets <- bics <- NULL # R CMD check warning
   (load(parallel.data))
 
   ## bics 
@@ -335,6 +336,7 @@ abf.fit.parallel.gather <- function(parallel.dir) {
     if(!file.exists(parallel.results))
         stop("results file not found: ",parallel.results)
     message("Loading results from ",parallel.results)
+    results <- NULL # avoid R CMD check warning
     load(parallel.results)
     return(results)
 }

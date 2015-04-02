@@ -86,6 +86,7 @@ setClass("snppicker",
 #'
 #' @slot .Data contains a named list of numeric vectors giving the support for each number
 #' @slot plot contains a ggplot object
+#' @slot traits names of traits, corresponding to items in .Data
 #'
 #' @export
 #'
@@ -94,6 +95,8 @@ setClass("snppicker",
 setClass("ppnsnp",
          slots=c(.Data="list",plot="ANY",traits="character"),
          validity=function(object) {
+           if(length(object@.Data)!=length(object@traits))
+             stop("traits should be same length as .Data")
            for(i in seq_along(object@.Data)) {
              if(!is(object[[i]],"array"))
                stop("ppnsnp should contain a list of arrays")

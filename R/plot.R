@@ -1,7 +1,7 @@
 utils:::globalVariables(c("A", "B", "cPP", "height", "jeffreys",
 "logPP", "n", "phenotype", "position.plot", "pp", "ppsum", "ppthr",
 "size", "trait", "value", "variable", "x", "X1", "X2", "xend", "xmax",
-"xmin", "x.min", "x.scale", "y", "yend"))
+"xmin", "x.min", "x.scale", "y", "ymin","ymax","yend"))
 
 ##' Plot two summaries of the models, a diffusion plot and a summary of the prior and posterior number of SNPs in the models
 ##'
@@ -9,7 +9,7 @@ utils:::globalVariables(c("A", "B", "cPP", "height", "jeffreys",
 ##' @param results object of class snpmod, or a named list of such objects
 ##' @return a list of two ggplot2 objects, which may be print()ed to the current graphics device
 ##' @export
-summary.plots <- function(results) {
+plotsummary <- function(results) {
   if(!is.list(results))
     results <- list(trait=results)
   plots <- list(diffusion=plot_diffuse(results),

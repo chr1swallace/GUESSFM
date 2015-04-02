@@ -12,7 +12,7 @@ cond.best <- function(X,Y,best=NULL,p.thr=1e-3,max=NA, ...) {
    p.thr <- 1
   } else {
     data <- cbind(data,as(X[,best],"numeric"))
-    LD <- ld(X,X[,best],stat="R.squared")
+    LD <- ld(X,X[,best],stats="R.squared")
     maxLD <- apply(LD,1,max,na.rm=TRUE)
     drop <- unique(c(names(maxLD)[which(is.na(maxLD) | maxLD>0.5)],best))
     Xtest <- X[,setdiff(colnames(X),drop)]

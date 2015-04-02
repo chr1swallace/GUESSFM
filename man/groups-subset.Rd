@@ -46,9 +46,9 @@ taggedby(object, i)
 \arguments{
 \item{object}{tags or groups object}
 
-\item{i}{numeric, logical or character vector to index SNPs}
+\item{i}{numeric, logical or character vector to index SNPs or tags}
 
-\item{x}{groups object}
+\item{x}{groups or tags object}
 }
 \value{
 data.frame of tags and their tagged SNPs

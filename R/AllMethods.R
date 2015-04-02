@@ -212,8 +212,8 @@ setMethod("tagsof",signature=c(object="groups",i="character"),
 ##' Subset groups or tags objects
 ##'
 ##' '[' will extract another object of the same class.  '[[' will extract a single element.
-##' @param x groups object
-##' @param i numeric, logical or character vector to index SNPs
+##' @param x groups or tags object
+##' @param i numeric, logical or character vector to index SNPs or tags
 ##' @return subsetted groups or tags object
 ##' @rdname groups-subset
 setMethod("[",signature=c(x="groups",i="character",j="missing",drop="missing"),
@@ -238,6 +238,7 @@ setMethod("[",signature=c(x="tags",i="character",j="missing",drop="missing"),
             tags(tags)[wh]
           })
 ##' @rdname groups-subset
+##' @export
 setMethod("[[",signature=c(x="groups",i="numeric"),
           function(x,i) {
             x@.Data[[i]]
@@ -248,11 +249,6 @@ setMethod("[[",signature=c(x="groups",i="logical"),
             x@.Data[[i]]
           })
 ##' @rdname groups-subset
-setMethod("[[",signature=c(x="groups",i="character"),
-          function(x,i) {
-            wh <- which(x@tags %in% i)
-            x@.Data[[wh]]
-          })
 setMethod("[[",signature=c(x="groups",i="character"),
           function(x,i) {
             wh <- which(x@tags %in% i)
@@ -468,7 +464,7 @@ setMethod("qc",signature(object="ppnsnp",data="missing"),
 setMethod("qc",signature(object="snpmod",data="SnpMatrix"),
           function(object,data) {
             data <- data[,rownames(object@snps)]
-            LD <- ld(data, stat="R.squared", symmetric=TRUE, depth=ncol(data)-1)
+            LD <- ld(data, stats="R.squared", symmetric=TRUE, depth=ncol(data)-1)
             diag(LD) <- 0
             M <- object@models
             ss <- strsplit(M$str,"%")
