@@ -30,6 +30,7 @@ Instead, see the vignettes direct from github:
 
 [Introduction](http://rawgit.com/chr1swallace/GUESSFM/master/inst/doc/introduction.html) | 
 [Tags/groups](http://rawgit.com/chr1swallace/GUESSFM/master/inst/doc/groups.html)
+[Plotting](http://rawgit.com/chr1swallace/GUESSFM/master/inst/doc/plotting.html)
 
 ## Documentation
 
