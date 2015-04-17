@@ -472,9 +472,9 @@ setMethod("qc",signature(object="snpmod",data="SnpMatrix"),
             n <- sapply(ss,length)
             wh <- which(n > 1)
             maxld[ wh ] <- unlist(lapply(ss[wh],function(s) max(LD[s,s],na.rm=TRUE)))
-            ret <- data.frame(model=M$str, nsnps=n, maxr2=maxld, stringsAsFactors=FALSE)
-            print(snps.from.correlated.models(ret))
-            return(ret)
+            ret <- data.frame(model=M$str, nsnps=n, PP=M$PP, maxr2=maxld, stringsAsFactors=FALSE)
+            ret.s <- snps.from.correlated.models(ret)
+            invisible(list(summary=ret.s$summary,SNPs=ret.s$SNPs,models=ret))
           })
 ##' @rdname qc
 ##' @export

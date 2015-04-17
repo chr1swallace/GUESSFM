@@ -53,7 +53,13 @@ snps.from.correlated.models <- function(ret, thr=0.8, nshow=10) {
     return(NULL)
   ss <- strsplit(ret$model[bads],"%")
   tt <- table(unlist(ss))/length(ss)
-  message("models containing highly correlated SNPs found: ",length(bads),"/",nrow(ret))
+  nbad <- length(bads)
+  ntot <- nrow(ret)
+  PPbad <- sum(ret$PP[bads])
+  message("models containing highly correlated SNPs found: ",nbad,"/",ntot)
+  message("accounting for a total PP: ",PPbad)
   message("SNPs found in these models:")
-  head(sort(tt,decreasing=TRUE),nshow)
+  print(head(sort(tt,decreasing=TRUE),nshow))
+  invisible(list(summary=c("n.corr.snps"=nbad,"n.tot.snps"=ntot,"PP.sum.corr"=PPbad),
+                 SNPs=head(sort(tt,decreasing=TRUE),nshow)))
 }
