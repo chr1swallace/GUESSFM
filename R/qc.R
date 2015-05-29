@@ -17,7 +17,7 @@ namedlapply <- function(x,fun) {
 skewness <- function(x) {
   if(is.list(x))
     return(namedlapply(x,skewness))
-  x <- x2xw(x)
+  x <- x2xw(x[-1])
   m1 <- sum(x$x * x$w) / sum(x$w)
   m2 <- sum(x$x^2 * x$w) / sum(x$w)
   m3 <- sum(x$x^3 * x$w) / sum(x$w)
@@ -60,6 +60,6 @@ snps.from.correlated.models <- function(ret, thr=0.8, nshow=10) {
   message("accounting for a total PP: ",PPbad)
   message("SNPs found in these models:")
   print(head(sort(tt,decreasing=TRUE),nshow))
-  invisible(list(summary=c("n.corr.snps"=nbad,"n.tot.snps"=ntot,"PP.sum.corr"=PPbad),
+  invisible(list(summary=c("nmodels.corr.snps"=nbad,"nmodels.total"=ntot,"sumPP.models.corr.snps"=PPbad),
                  SNPs=head(sort(tt,decreasing=TRUE),nshow)))
 }

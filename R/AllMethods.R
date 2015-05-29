@@ -322,7 +322,7 @@ setMethod("snpin",signature(x="character",y="tags"),definition=function(x,y) {
 
 #' @rdname snpin
 setMethod("snpin",signature(x="character",y="groups"),definition=function(x,y) {
-  if(!length(y@.Data))
+  if(!length(y@.Data) || !length(x))
     return(NULL)
   names(y@.Data) <- paste0("group",seq_along(y@.Data))
   ret <- sapply(y@.Data,function(yg) x %in% yg)

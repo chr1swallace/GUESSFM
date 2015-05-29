@@ -404,6 +404,8 @@ mod2group <- function(str,groups) {
   x.snps <- strsplit(str,"%")
   x.groups <- lapply(x.snps,snpin,groups)
   G <- sapply(x.groups,function(g) {
+    if(is.null(g))
+      return("N")
     match <- apply(g,1,any)
     ret <- numeric(nrow(g))
     if(any(match))
@@ -412,17 +414,23 @@ mod2group <- function(str,groups) {
   })
   return(G)
 }
+numorneg <- function(x) {
+  suppressWarnings(n <- as(x,"numeric"))
+  if(any(is.na(n)))
+    n[is.na(n)] <- -1
+  return(n)
+}
 gsumm <- function(x,groups) {
-  n <- max(as.numeric(unlist(strsplit(x$group,"-"))))
+  n <- max(numorneg(unlist(strsplit(x$group,"-"))))
   counts <- tapply(x$PP,x$group,sum)
   df <- data.frame(pattern=names(counts), PP=counts)
   df <- df[order(df$PP,decreasing=TRUE), ]
   df$ymax <- cumsum(df$PP)
   df$ymin <- c(0,df$ymax[-nrow(df)])
-  cn <- lapply(strsplit(rownames(df),"-"),as.numeric)  
+  cn <- lapply(strsplit(rownames(df),"-"),numorneg)  
   df2 <- df[rep(1:nrow(df), times=sapply(cn,length)),]
   df2$xmin <- unlist(cn)
-  df2$xmax <- unlist(cn)+1
+  df2$xmax <- df2$xmin+1
   return(df2)
 }
 ##' Plot pattern of SNP group inclusion
