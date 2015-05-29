@@ -270,7 +270,7 @@ abf.speedglm.fit <- function(x,y,q,family,snps,parallel.dir=NULL,verbose=FALSE) 
     x <- matrix(as(x,"numeric"),nrow=nrow(x),dimnames=dimnames(x))
   if(is(x,"data.frame"))
     x <- as.matrix(x)
-  if(is.vector(q))
+  if(is.vector(q) || is.data.frame(q))
     q <- as.data.frame(q)
   x2<-x[,intersect(unique(unlist(snps)),colnames(x))]
   comp <- complete.cases(x2) & !is.na(y)
@@ -307,19 +307,20 @@ abf.speedglm.fit <- function(x,y,q,family,snps,parallel.dir=NULL,verbose=FALSE) 
     stop("Not all SNPs found")
   
   if(is.null(parallel.dir)) { # run it
-    if(is.character("family"))
+    if(is.character(family))
       family <- switch(family,
                        "gaussian"=gaussian(link="identity"),
                        "binomial"=binomial(link="logit"))
     results <- lapply(seq_along(snps), function(i) {
       if(verbose && i %% 100 == 0)
         cat(i,"\t")
-      k=length(snps[[i]])+ncol(qm)
-      model <- speedglm.wfit(y2, cbind(x2[, snps[[i]] ],qm), family=family)
+      k0=ncol(qm)
+      k=length(snps[[i]]) + k0
+      model <- speedglm.wfit(y2, cbind(x2[, snps[[i]], drop=FALSE ],qm), family=family)
       model0 <- speedglm.wfit(y2, qm, family=family)
 #      class(model) <- class(model0) <- c(class(model),"glm")
       A1 <- AIC(model) - 2*k + k*log(length(y2))
-      A0 <- AIC(model0) - 2*ncol(qm) + ncol(qm)*log(length(y2))
+      A0 <- AIC(model0) - 2*k0 + k0*log(length(y2))
       list(BIC=A1-A0,
            coeff=cbind(beta=model$coefficients,
              se=sqrt(diag(vcov(model)))))
