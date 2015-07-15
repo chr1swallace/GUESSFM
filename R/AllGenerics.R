@@ -18,6 +18,16 @@ setOldClass("ggplot")
 #' @return object of class groups
 setGeneric("union", function(x,y) standardGeneric("union"))
 
+#' overlap
+#' 
+#' overlap can be used to examine the overlap between groups before the union is created
+#' @author Chris Wallace
+#' @export
+#' @param x object of class \code{groups}, \code{snppicker} or \code{tags}
+#' @param y object of same class as x
+#' @return object of class groups
+setGeneric("overlap", function(x,y) standardGeneric("overlap"))
+
 #' Check whether a snp is in a snppicker, groups or tags object
 #'
 #' @rdname snpin

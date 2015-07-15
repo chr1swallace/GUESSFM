@@ -67,6 +67,10 @@ makestr <- function(x) {paste(sort(unique(x)),collapse="%")}
 ##'       GUESSFM:::xscale(x,c(0.1,1),xrange=c(1,10)),
 ##'       GUESSFM:::xscale(x,c(1319,20578),xrange=c(1,10)))
 xscale <- function(x,torange,xrange=c(min(x),max(x))) {
+  if(torange[2]==torange[1])
+    torange[2] <- torange[1] + 1
+  if(xrange[2]==xrange[1])
+    xrange[2] <- xrange[1] + 1
   x0 <- (x - xrange[1]) / (xrange[2] - xrange[1]) # from 0 -> 1
   x0 * (torange[2] - torange[1]) + torange[1]
   

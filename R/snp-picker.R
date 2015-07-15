@@ -63,7 +63,11 @@ snp.picker <- function(d,data,start.thr=0.01,nochange.thr=0.001,nochange.run=3,r
     ##   r2 <- ld(data[,setdiff(colnames(data),snp)], data[,snp], stats="R.squared")[,1];
     ##   r2[snp] <- 1})
     r2 <- ld(data, data[,snp], stats="R.squared")[,1]
-
+    if(all(is.na(r2))) {
+      r2[is.na(r2)] <- 0
+      r2[snp] <- 1
+    }
+    
     ## models that contain best snp
     if(!skip.shared.models) {
       Mbest <- M[ M[,snp]==1,,drop=FALSE]

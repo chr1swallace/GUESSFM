@@ -13,7 +13,7 @@ plotsummary <- function(results) {
   if(!is.list(results))
     results <- list(trait=results)
   plots <- list(diffusion=plot_diffuse(results),
-                pp.nsnp=pp.nsnp(results))                
+                pp.nsnp=pp.nsnp(results,plot=TRUE))                
 }
 ##' create a track from a guess.summ object showing snp ids
 ##'
@@ -92,21 +92,27 @@ plot_diffuse <- function(results, maxrank=1000, thin=500) {
     results <- list(trait=results)
   df <- lapply(results, function(x) x@models)
   for(i in 1:length(results)) {
+    if(!("rank" %in% colnames(df[[i]]))) {
+      df[[i]]$rank <- 1:nrow(df[[i]])
+    }
     df[[i]]$phenotype <- names(results)[i]
     df[[i]]$cPP <- cumsum(df[[i]]$PP)
     df[[i]]$cPP <- df[[i]]$cPP/max(df[[i]]$cPP)
   }
+  df.max <- lapply(df,function(x) x[nrow(x),])
+  df.max <- do.call("rbind",df.max)
   df <- do.call("rbind",df)
   df <- subset(df, rank<=maxrank)
   np <- levels(df$phenotype <- factor(df$phenotype))
   use <- unlist(tapply(1:nrow(df), df$phenotype, function(x) x[ seq(1,length(x), length.out=thin) ],simplify=FALSE)) ## WORKS
   
-  ggplot(df[use,], aes(x=rank,y=cPP, col=phenotype)) + geom_path() + ylim(0,1)
+  ggplot(df[use,], aes(x=rank,y=cPP, col=phenotype)) + geom_path() + ylim(0,1) +
+    geom_hline(aes(yintercept=cPP,col=phenotype),data=df.max,linetype="dotted")
 }
 ##' Rotated LD plot
 ##'
 ##' Generates a plot of r2, rotating through 45 degrees so it can be
-##' aligned with other results, similarly to Haploview.
+##' aligned with other results, similar to Haploview.
 ##'
 ##' The positions in the summ object are used to align the snps to
 ##' the correct coordinates.
@@ -451,7 +457,9 @@ pattern.plot <- function(SM,groups) {
   for(i in names(G)) 
     G[[i]]$trait <- i
   G <- do.call("rbind",G)
-
+  G$xmin <- G$xmin - 1
+  G$xmax <- G$xmax - 1
+  
   ggplot(G,aes(xmin=xmin,xmax=xmax,ymin=ymin,ymax=ymax)) +
     geom_rect() +
       geom_vline(aes(xintercept=xmin),col="gray60", size=0.2) +

@@ -64,13 +64,8 @@ guess.summ <- function(results, groups=NULL, snps=NULL, snp.data=NULL, position=
   } else {
     df.snps$position <- 1:nrow(df.snps)
   }
-  
-  ## set xmin, xmax for easy plotting
-  tag.names <- unique(as.character(df.snps$tag))
-  tmp <- tapply(df.snps$snpnum, df.snps$tag, min)
-  df.snps[names(tmp),"x.min"] <- tmp
-  tmp <- tapply(df.snps$snpnum, df.snps$tag, max)
-  df.snps[names(tmp),"x.max"] <- tmp
+
+  df.snps <- summ.setminmax(df.snps)
   
   ## add pp results
   df.list <- vector("list",length(results))
@@ -78,7 +73,7 @@ guess.summ <- function(results, groups=NULL, snps=NULL, snp.data=NULL, position=
     df <- data.frame(x=1:length(all.snps), pp=results[[i]]@snps[all.snps,"Marg_Prob_Incl"], snp=df.snps$snp, tag=df.snps$tag,
                      row.names=df.snps$snp)
     ppsum <- tapply(df$pp,df$tag,sum, na.rm=TRUE)
-    df[names(ppsum),"ppsum"] <- ppsum
+    df[,"ppsum"] <- ppsum[df$tag]
     df.list[[i]] <- cbind(df.snps, trait=names(results)[i])
     df.list[[i]]$pp[rownames(df)] <- df$pp
     df.list[[i]]$ppsum[rownames(df)] <- df$ppsum  
@@ -88,6 +83,45 @@ guess.summ <- function(results, groups=NULL, snps=NULL, snp.data=NULL, position=
   df.snps$ppsum[ is.na(df.snps$ppsum) ] <- 0
                                         # df.snps[ is.na(df.snps) ] <- 0
   df.snps$snp <- make.names(df.snps$snp)
+  return(df.snps)
+}
+##' set xmin, xmax on a guess.summ object for easy plotting
+##'
+##' resets snpnum to be a continuous series of integers from 1
+##' @title summ.setminmax
+##' @param df.snps guess.summ object
+##' @return df.snps
+##' @author Chris Wallace
+summ.setminmax <- function(df.snps) {
+  ## snpnum from 1..
+  trans <- factor(as.character(sort(unique(df.snps$snpnum))),
+                  levels=as.character(sort(unique(df.snps$snpnum))))
+  trans <- structure(1:length(trans),names=levels(trans))
+  df.snps[,"snpnum"] <- as.numeric(trans[as.character(df.snps[,"snpnum"])])
+
+  ## missing tags
+  missing.tags <- setdiff(df.snps$tag,df.snps$snp)
+  if(length(missing.tags)) {
+    for(tg in missing.tags) {
+      wh <- which(df.snps$tag==tg)
+      df.snps[wh,"tag"] <- df.snps[wh[1],"snp"]
+    }
+  }
+  
+  ## set xmin, xmax for easy plotting
+  ##  df.snps$x <- df.snps$snpnum
+  tag.names <- unique(as.character(df.snps$tag))
+  tmp <- tapply(df.snps$snpnum, df.snps$tag, min)
+  m <- match(df.snps$snp, names(tmp))
+  df.snps[!is.na(m),"x.min"] <- tmp[m[!is.na(m)]]
+  tmp <- tapply(df.snps$snpnum, df.snps$tag, max)
+  m <- match(df.snps$snp, names(tmp))
+  df.snps[!is.na(m),"x.max"] <- tmp[m[!is.na(m)]]
+  wh <- with(df.snps,which(x.min==x.max))
+  if(length(wh)) {
+    df.snps[wh,"x.min"] <- df.snps[wh,"x.min"] - 0.1
+    df.snps[wh,"x.max"] <- df.snps[wh,"x.max"] + 0.1
+  }
   return(df.snps)
 }
 
