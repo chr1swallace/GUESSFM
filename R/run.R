@@ -1,6 +1,18 @@
-
-cond.best <- function(X,Y,best=NULL,p.thr=1e-3,max=NA, ...) {
- if(!is.na(max) & length(best)>=max)
+##' Stepwise regression on a snpMatrix
+##'
+##' Calls snp.rhs.test to find next best predictor to add, possibly given a list of existing chosen predictors.
+##' @title cond.best
+##' @param X snpMatrix object
+##' @param Y phenotype vector
+##' @param best SNPs chosen so far, NULL if none
+##' @param stepwise.p.thr maximum p value to continue adding predictors
+##' @param stepwise.max.predictors maximum predictors to choose, NA if continue until stepwise.p.thr is met
+##' @param ... arguments passed to snp.rhs.test
+##' @return new predictor, NULL if none found that meets conditions
+##' @export
+##' @author Chris Wallace
+cond.best <- function(X,Y,best=NULL,stepwise.p.thr=1e-3,stepwise.max.predictors=NA, ...) {
+ if(!is.na(stepwise.max.predictors) & length(best)>=stepwise.max.predictors)
    return(NULL)
  ## cs <- col.summary(X)
  ## X <- X[,cs[,"MAF"]>0.05]
@@ -9,7 +21,7 @@ cond.best <- function(X,Y,best=NULL,p.thr=1e-3,max=NA, ...) {
    Xtest <- X
    cond <- single.snp.tests(phenotype=data$Y, snp.data=Xtest)
    p <- p.value(cond,1)
-   p.thr <- 1
+   stepwise.p.thr <- 1
   } else {
     data <- cbind(data,as(X[,best],"numeric"))
     LD <- ld(X,X[,best],stats="R.squared")
@@ -25,7 +37,7 @@ cond.best <- function(X,Y,best=NULL,p.thr=1e-3,max=NA, ...) {
     p <- p.value(cond)
   }
   pmin <- min(p, na.rm=TRUE)
-  if(pmin<p.thr) {
+  if(pmin<stepwise.p.thr) {
     newbest <- colnames(Xtest)[ which.min(p) ]
     cs <- col.summary(Xtest[,newbest])
     message(newbest,"\tMAF=",signif(cs[1,"MAF"],2),"\tp=",format.pval(pmin))
@@ -114,12 +126,14 @@ backend.guess <- function(gX, gY, gdir, nsweep, nchains, best, nsave, nexp, nexp
 ##' @param tag.r2 r squared value at which to tag to avoid numerical instability.  Default of 0.99 has worked well in our experience.
 ##' @param nsave number of models to save, see documentation for GUESS 
 ##' @param guess.command Command to run GUESS, if GUESS is not on your PATH.
+##' @param ... GUESS starts from a stepwise solution found by cond.best.  Use ... to pass arguments firectly to cond.best to influence the p value threshold or number of predictors at which the stepwise search stops.
 ##' @export
 ##' @return nothing.  side effect is to set GUESS running in the background.  This takes a while (typically several hours).
 run.bvs <- function(X,Y,gdir="test",sub=NA,
                     covars=NULL,family="gaussian", nsweep=55000,nchains=3,
                     nexp=3,tag.r2=0.99, nsave=1000, 
-                    guess.command="GUESS") { 
+                    guess.command="GUESS",
+                    ...) { 
 
   if(!file.exists(gdir))
     dir.create(gdir,recursive=TRUE)
@@ -187,7 +201,7 @@ run.bvs <- function(X,Y,gdir="test",sub=NA,
   best <- NULL
   cs <- col.summary(X)
   wh <- use.cols[which(cs[,"MAF"]>0.05 & cs[,"Certain.calls"]>0.9)]
-  while(length(newbest <- cond.best(X[use,wh], gY, best, family=family))) {
+  while(length(newbest <- cond.best(X[use,wh], gY, best, family=family, ...))) {
     best <- c(best,newbest)
   }
   if(length(best)<3) {
