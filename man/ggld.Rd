@@ -19,7 +19,7 @@ Rotated LD plot
 }
 \details{
 Generates a plot of r2, rotating through 45 degrees so it can be
-aligned with other results, similarly to Haploview.
+aligned with other results, similar to Haploview.
 
 The positions in the summ object are used to align the snps to
 the correct coordinates.
