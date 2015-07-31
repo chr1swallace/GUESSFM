@@ -6,7 +6,7 @@
 \usage{
 run.bvs(X, Y, gdir = "test", sub = NA, covars = NULL,
   family = "gaussian", nsweep = 55000, nchains = 3, nexp = 3,
-  tag.r2 = 0.99, nsave = 1000, guess.command = "GUESS")
+  tag.r2 = 0.99, nsave = 1000, guess.command = "GUESS", ...)
 }
 \arguments{
 \item{X}{snpMatrix object, holding genotypes}
@@ -32,6 +32,8 @@ run.bvs(X, Y, gdir = "test", sub = NA, covars = NULL,
 \item{nsave}{number of models to save, see documentation for GUESS}
 
 \item{guess.command}{Command to run GUESS, if GUESS is not on your PATH.}
+
+\item{...}{GUESS starts from a stepwise solution found by cond.best.  Use ... to pass arguments firectly to cond.best to influence the p value threshold or number of predictors at which the stepwise search stops.}
 }
 \value{
 nothing.  side effect is to set GUESS running in the background.  This takes a while (typically several hours).
