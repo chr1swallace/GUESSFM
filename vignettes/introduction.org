@@ -191,7 +191,6 @@ R2GUESS::check.convergence(ess)
 d <- read.snpmod(mydir)
 
 ## run a basic QC check
-ess <- as.ESS.object(d)
 print(load(file.path(mydir,"simdata.RData")))
 qc(d,X)
 
