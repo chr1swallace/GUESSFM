@@ -181,8 +181,19 @@ mydir <-  system.file("extdata",package="GUESSFM")
 ## what files were created?
 list.files(mydir)
 
-## read output with GUESSFM
+## read output with R2GUESS and run a basic qc plot
+ess <- read.ess(file.path(mydir,"out_55000"))
+R2GUESS:::plot.ESS(ess)
+par(mfrow=c(1,2))
+R2GUESS::check.convergence(ess)
+
+## now read output with GUESSFM
 d <- read.snpmod(mydir)
+
+## run a basic QC check
+ess <- as.ESS.object(d)
+print(load(file.path(mydir,"simdata.RData")))
+qc(d,X)
 
 ## examine the best models and SNPs with greatest marginal support within the tagged data.
 best.models(d)
@@ -215,6 +226,8 @@ Indeed, rs11253451 is a tag for rs1555897.
 
 NB: to see more about how to manipulate tags and groups objects, see the vignette 
 : vignette("groups",package="GUESSFM")
+
+* Basic QC
 
 
 * Expanding

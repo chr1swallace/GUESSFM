@@ -44,10 +44,17 @@ mydir <-  system.file("extdata",package="GUESSFM")
 
 #+begin_src R :ravel :fig=TRUE :label=ldfig
 pp.nsnp(d,plot=TRUE)
-pp.nsnp(d,plot=TRUE,expected=3)
+pp <- pp.nsnp(d,plot=TRUE,expected=3)
 #+END_SRC
 
 So that's quite nice.  We had a vague-ish prior, spreading the prior weight across 0-7 SNP models, with an expected number of causal variants set at 3.  We simulated data with two causal variants, and the posterior is peaked on 2 SNPs, with some weight on 3-4 SNPs.
+
+The second time, we stored an underlying =pp.nsnp= object in =pp=.  We can check a couple of quality control measures on this.  Our priors are left skewed and unimodal, and so should our posteriors be:
+
+#+BEGIN_SRC R :ravel
+qc(pp)
+#+END_SRC
+
 
 * SNP groups
 
@@ -81,3 +88,18 @@ If you have =ggbio= installed, then this function will line up the above plots
 [[file:summx-tracks.jpg]]
 
 This sort of thing can be useful if you have other tracks (eg, functional information) you want to line up.
+
+* Patterns of SNPs selected
+
+It can be helpful to see which groups of SNPs are selected together in
+models, or never together.  If groups of SNPs are never selected
+together, then they maybe alternative explanations for the phenotype
+but do not jointly explain for of the variance than either set alone.
+Sometimes, this means =snp.picker= has failed to group SNPs properly,
+and these groups should be combined.  You can inspect whether this
+might be helpful using =check.merge()= and use =groups.merge()= to do
+the merge.
+#+begin_src R  :ravel :fig=TRUE :label=patterns
+pattern.plot(sp)
+#+end_src
+
