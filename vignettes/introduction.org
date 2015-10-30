@@ -190,7 +190,7 @@ R2GUESS::check.convergence(ess)
 ## now read output with GUESSFM
 d <- read.snpmod(mydir)
 
-## run a basic QC check
+## run another basic QC check
 print(load(file.path(mydir,"simdata.RData")))
 qc(d,X)
 
