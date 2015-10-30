@@ -26,7 +26,7 @@ setMethod("show", signature="snpmod",
 setMethod("show", signature="snppicker",
           function(object) {
             ngroup <- length(object@groups)
-            nsnps <- if(ngroup==0) { 0 } else { sapply(object@groups,length) }
+            nsnps <- if(ngroup==0) { 0 } else { sapply(object@groups,nrow) }
             message("snppicker object, containing ",sum(nsnps)," SNPs grouped into ",ngroup," groups.")
           })
 ##' @rdname show-methods
@@ -337,15 +337,68 @@ setMethod("snpin",signature(x="character",y="groups"),definition=function(x,y) {
 ##                        concatenate                               ##
 
 ######################################################################
+## two groups in x (8, 11) match to one group in y (1) with dups
+## x.7 also matches to y.1
 
 #' @rdname union
 setMethod("union",signature(x="snppicker",y="snppicker"),definition=function(x,y) {
-  union(as(x,"groups"),as(y,"groups")) })
+  xgr <- as(x,"groups")
+  ygr <- as(y,"groups")
+  int <- .group.intersection(xgr,ygr)
+  wh <- which(int,arr.ind=TRUE)
+  M <- new("snppicker",
+               plotsdata=c(x@plotsdata,y@plotsdata),
+               groups=c(x@groups,y@groups))
+  if(!length(wh)) { # no overlap, concatenate
+    return(M)
+  }
+  Mkeep <- rep(TRUE,length(M@groups))
+  for(i in 1:nrow(wh)) {
+    ix <- wh[i,1]
+    iy <- wh[i,2]
+    iy.M <- iy + length(x@groups)
+    gx <- M@groups[[ ix ]]
+    gy <- M@groups[[ iy ]]
+    gint <- intersect(rownames(gx),rownames(gy))
+    pintx <- sum(gx[gint,"Marg_Prob_Incl"])
+    pinty <- sum(gy[gint,"Marg_Prob_Incl"])
+    pnintx <- sum(gx[setdiff(rownames(gx),gint),"Marg_Prob_Incl"])
+    pninty <- sum(gy[setdiff(rownames(gy),gint),"Marg_Prob_Incl"])
+    if(pnintx > pintx || pninty > pinty) { # unmerge
+      if(pintx/(pintx + pnintx) > pinty/(pinty + pninty)) { # keep int in x
+        M@groups[[iy.M]] <- M@groups[[iy.M]][ !(rownames(M@groups[[iy.M]]) %in% gint), ]
+      } else { # keep int in y
+        M@groups[[ix]] <- M@groups[[ix]][ !(rownames(M@groups[[ix]]) %in% gint), ]
+      }
+    } else { # merge
+      tmp <- rbind(M@groups[[ix]],
+                   M@groups[[iy.M]][ !(rownames(M@groups[[iy.M]]) %in% gint), ])
+      M@groups[[ix]] <- tmp[ order(tmp$Marg_Prob_Incl, decreasing=TRUE), ]
+      Mkeep[[ iy.M ]] <- FALSE
+    }
+    cat(length(M@groups[[ix]]$var), length(unique(M@groups[[ix]]$var)),
+        length(M@groups[[iy.M]]$var), length(unique(M@groups[[iy.M]]$var)))
+        
+  }
+  new("snppicker",
+      plotsdata=M@plotsdata[which(Mkeep)],
+      groups=M@groups[which(Mkeep)])
+})
 
 #' @rdname union
 setMethod("union",signature(x="tags",y="tags"),definition=function(x,y) {
   ugr <- union(as(x,"groups"),as(y,"groups"))
   as(ugr,"tags") })
+
+.group.intersection <- function(x,y) {
+  int <- matrix(FALSE,length(x),length(y))
+  for(i in seq_along(x)) {
+    for(j in seq_along(y)) {      
+      int[i,j] <- any(x[[i]] %in% y[[j]])
+    }
+  }
+  return(int)
+}
 
 #' @rdname union
 setMethod("union",signature(x="groups",y="groups"),definition=function(x,y) {
@@ -354,12 +407,7 @@ setMethod("union",signature(x="groups",y="groups"),definition=function(x,y) {
   if(!length(y))
     return(x)
   ## find intersecting groups, and make unions
-  int <- matrix(FALSE,length(x),length(y))
-  for(i in seq_along(x)) {
-    for(j in seq_along(y)) {      
-      int[i,j] <- any(x[[i]] %in% y[[j]])
-    }
-  }
+  int <- .group.intersection(x,y)
   wh <- which(int,arr.ind=TRUE)
   if(nrow(wh)) {
     ## merge y into x
