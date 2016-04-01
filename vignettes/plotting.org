@@ -1,0 +1,105 @@
+#+TITLE: GUESSFM and plotting
+#+AUTHOR: Chris Wallace
+#+EMAIL: chris.wallace@cimr.cam.ac.uk
+#+DATE: <2015-03-18 Wed>
+#+DESCRIPTION:
+#+KEYWORDS:
+#+LANGUAGE: en
+#+OPTIONS: H:3 num:t toc:nil \n:nil @:t ::t |:t ^:t -:t f:t *:t <:t
+#+OPTIONS: TeX:t LaTeX:t skip:nil d:(not LOGBOOK) todo:t pri:nil tags:t
+
+#+EXPORT_SELECT_TAGS: export
+#+EXPORT_EXCLUDE_TAGS: noexport
+#+LINK_UP:
+#+LINK_HOME:
+#+XSLT:
+
+#+latex_header: \usepackage{fullpage}
+#+latex: %\VignetteIndexEntry{GUESSFM Plotting}
+
+#+begin_html
+<!--
+%\VignetteEngine{knitr}
+%\VignetteIndexEntry{GUESSFM Plotting}
+-->
+<h1>GUESSFM Plotting</h1>
+<font color="grey">
+*Chris Wallace // [web](http://www-gene.cimr.cam.ac.uk/staff/wallace) // [email](mailto:chris.wallace at cimr.cam.ac.uk)*  
+</font>
+#+end_html
+
+#+TOC: headlines 1
+
+* Some example data
+Let's start with the data from the main vignette (GUESSFM Introduction):
+
+#+begin_src R :ravel :label=sim
+library(GUESSFM)
+mydir <-  system.file("extdata",package="GUESSFM")
+(load(file.path(mydir,"simdata.RData")))
+#+end_src
+
+* Prior/posterior number of SNPs in the model
+=pp.nsnp= calculates a posterior distribution for the number of causal SNPs in the region, and with an argument =plot=TRUE= will also plot the distribution.  If you supply the prior expected number of causal SNPs, you can compare the posterior to the prior.
+
+#+begin_src R :ravel :fig=TRUE :label=ldfig
+pp.nsnp(d,plot=TRUE)
+pp <- pp.nsnp(d,plot=TRUE,expected=3)
+#+END_SRC
+
+So that's quite nice.  We had a vague-ish prior, spreading the prior weight across 0-7 SNP models, with an expected number of causal variants set at 3.  We simulated data with two causal variants, and the posterior is peaked on 2 SNPs, with some weight on 3-4 SNPs.
+
+The second time, we stored an underlying =pp.nsnp= object in =pp=.  We can check a couple of quality control measures on this.  Our priors are left skewed and unimodal, and so should our posteriors be:
+
+#+BEGIN_SRC R :ravel
+qc(pp)
+#+END_SRC
+
+
+* SNP groups
+
+In the introduction vignette, we formed a =snppicker= object, =sp=.  We can extract the SNP groups from this and use it to generate a useful summary object
+
+#+begin_src R  :ravel :fig=TRUE :label=summx
+groups <- as(sp,"groups")
+groups
+
+library(snpStats)
+data(for.exercise, package="snpStats") # for SNP information
+summx <- guess.summ(sm,groups=groups,snps=snp.support,position="position")
+summx <- scalepos(summx,position="position")
+
+library(ggplot2)
+signals <- signal.plot(summx)
+signals
+snps <- ggsnp(summx)
+snps
+lds <- ggld(X, summx)
+lds
+chr <- ggchr(summx)
+chr
+#+end_src
+
+Individually, perhaps only the signals plot is useful, which shows us two groups of SNPs which together have joint gMPPI close to 1.  The red one contains four SNPs, and the blue group 1.  The other tracks are useful to put this into some context.   =snps= labels the SNPs, =lds= plots the r^2 between pairs of SNPs.  Grouped SNPs are ordered so SNPs in the same group are together, but this is unlikley to reflect chromosome position.  =chr= is a plot of linking the group position to the chromosome position. 
+
+If you have =ggbio= installed, then this function will line up the above plots
+: library(ggbio)
+: tracks(chr,signals,snps,lds,heights=c(1,3,1,2))
+[[file:summx-tracks.jpg]]
+
+This sort of thing can be useful if you have other tracks (eg, functional information) you want to line up.
+
+* Patterns of SNPs selected
+
+It can be helpful to see which groups of SNPs are selected together in
+models, or never together.  If groups of SNPs are never selected
+together, then they maybe alternative explanations for the phenotype
+but do not jointly explain for of the variance than either set alone.
+Sometimes, this means =snp.picker= has failed to group SNPs properly,
+and these groups should be combined.  You can inspect whether this
+might be helpful using =check.merge()= and use =groups.merge()= to do
+the merge.
+#+begin_src R  :ravel :fig=TRUE :label=patterns
+pattern.plot(sp)
+#+end_src
+

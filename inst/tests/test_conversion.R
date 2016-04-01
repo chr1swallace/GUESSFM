@@ -1,0 +1,7 @@
+library(testthat)
+L <- list(a=c("a","b"),c=c("c"))
+T <- structure(c("a","a","c"),names=c("a","b","c"))
+x.groups <- new("groups",tags=names(L),groups=L)
+x.tags <- new("tags",tags=T,snps=names(T))
+as(x.groups,"tags")
+as(x.tags,"groups")
