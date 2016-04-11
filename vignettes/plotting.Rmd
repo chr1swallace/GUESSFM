@@ -4,7 +4,7 @@
 -->
 <h1>GUESSFM Plotting</h1>
 <font color="grey">
-*Chris Wallace // [web](http://www-gene.cimr.cam.ac.uk/staff/wallace) // [email](mailto:chris.wallace at cimr.cam.ac.uk)*  
+*Chris Wallace // [web](http://chr1swallace.github.io) // [email](mailto:cew54 at cam.ac.uk)*  
 </font>
 
 <div id="table-of-contents">
