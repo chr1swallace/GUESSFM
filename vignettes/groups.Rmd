@@ -15,7 +15,7 @@
 %\VignetteIndexEntry{Groups, tags, and snp.picker}
 -->
 <font color="grey">
-*Chris Wallace // [web](http://www-gene.cimr.cam.ac.uk/staff/wallace) // [email](mailto:chris.wallace at cimr.cam.ac.uk)*  
+*Chris Wallace // [web](http://chr1swallace.github.io) // [email](mailto:cew54 at cam.ac.uk)*  
 </font>
 
 # Grouping SNPs<a id="sec-1" name="sec-1"></a>
