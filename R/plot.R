@@ -293,8 +293,13 @@ pp.nsnp <- function(results,plot=FALSE,expected=NULL,overdispersion=1) {
     rho <- (overdispersion - 1)/(nsnp-1)
     p <- expected/nsnp
     nind <- 0:max(df$n)
+    pp <- if(rho==0) {
+              dbinom(nind, size=nsnp, prob=p)
+          } else {
+              dbetabinom(nind, size=nsnp, prob=p, rho=rho)
+          }
     df <- rbind(df,data.frame(n=nind,
-                              pp=dbetabinom(nind, size=nsnp, prob=p, rho=rho),
+                              pp=pp,
                               trait="Prior"))
   }
     p <- ggplot(df,aes(x=n,y=pp,col=trait)) + geom_point() + geom_path() + 
