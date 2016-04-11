@@ -293,10 +293,10 @@ abf.speedglm.fit <- function(x,y,q,family,snps,parallel.dir=NULL,verbose=FALSE) 
     if(is.matrix(q))
       qm <- cbind(one=1,as.matrix(q))
   } else {
-    qm <- matrix(1,nrow=nrow(x),ncol=1,dimnames=list(NULL,"one"))
+    qm <- matrix(1,nrow=nrow(x2),ncol=1,dimnames=list(NULL,"one"))
   }
 
-  logn <- log(nrow(x))
+  logn <- log(nrow(x2))
 ##   if(verbose)
 ##     print(family)
   snps <- lapply(snps,setdiff,c("1","one"))
