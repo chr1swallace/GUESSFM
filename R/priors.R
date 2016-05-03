@@ -61,8 +61,13 @@ snpprior <- function(x=0:10, n, expected, overdispersion=1, pi0=NA, truncate=NA
     stop("max x should be <= n")
 ##  value <- match.arg(value)
   p <- expected/n
-  rho <- (overdispersion - 1)/(n-1)
-  prob <- log(dbetabinom(x, size=n, prob=p, rho=rho)             )
+    rho <- (overdispersion - 1)/(n-1)
+    
+    prob <- if(rho==0) {
+                log(dbinom(x, size=n, prob=p))
+            } else {
+                log(dbetabinom(x, size=n, prob=p, rho=rho))
+            }
 #  if(value=="prob") {
     ## otherwise value=="odds"
   if(!is.na(pi0) && 0 %in% x)
