@@ -1,7 +1,7 @@
 #+TITLE: GUESSFM and plotting
 #+AUTHOR: Chris Wallace
-#+EMAIL: chris.wallace@cimr.cam.ac.uk
-#+DATE: <2015-03-18 Wed>
+#+EMAIL: cew54@cam.ac.uk
+#+DATE: <2016-04-11 Mon>
 #+DESCRIPTION:
 #+KEYWORDS:
 #+LANGUAGE: en
