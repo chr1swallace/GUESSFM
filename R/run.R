@@ -47,6 +47,9 @@ cond.best <- function(X,Y,best=NULL,stepwise.p.thr=1e-3,stepwise.max.predictors=
 }
 
 backend.guess <- function(gX, gY, gdir, nsweep, nchains, best, nsave, nexp, nexp.sd, guess.command) {
+
+    
+    
   opt.bak <- options(scipen=1000000000)
   ## print decode file
   decode.file <- file.path(gdir,paste0("decode_",nsweep))
@@ -125,16 +128,24 @@ backend.guess <- function(gX, gY, gdir, nsweep, nchains, best, nsave, nexp, nexp
 ##' @param nexp expected number of causal variants in region
 ##' @param tag.r2 r squared value at which to tag to avoid numerical instability.  Default of 0.99 has worked well in our experience.
 ##' @param nsave number of models to save, see documentation for GUESS 
-##' @param guess.command Command to run GUESS, if GUESS is not on your PATH.
+##' @param guess.command Command to run GUESS.  This is normally automatically set to the version of GUESS installed by R2GUESS, but you may override with a full path to a system version of GUESS if you prefer.
 ##' @param ... GUESS starts from a stepwise solution found by cond.best.  Use ... to pass arguments firectly to cond.best to influence the p value threshold or number of predictors at which the stepwise search stops.
 ##' @export
 ##' @return nothing.  side effect is to set GUESS running in the background.  This takes a while (typically several hours).
 run.bvs <- function(X,Y,gdir="test",sub=NA,
                     covars=NULL,family="gaussian", nsweep=55000,nchains=3,
                     nexp=3,tag.r2=0.99, nsave=1000, 
-                    guess.command="GUESS",
+                    guess.command=NULL,
                     ...) { 
 
+    if(is.null(guess.command)) {
+        pack.root <- system.file(package = "R2GUESS")
+        ESS.directory <- file.path(pack.root, "bin", .Platform$r_arch)
+        guess.executable <- ifelse(.Platform$OS.type == "unix", "GUESS", 
+                                   "GUESS.exe")
+        guess.command <- file.path(ESS.directory, guess.executable)
+    }
+    
   if(!file.exists(gdir))
     dir.create(gdir,recursive=TRUE)
   
