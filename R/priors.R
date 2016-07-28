@@ -23,6 +23,9 @@
 ##' distribution, consider using a hypergeometric prior.
 ##' @param pi0 prior probability that no SNP is associated
 ##' @param truncate optional, if supplied priors will be adjusted so models with x>truncate have prior 0
+##' @param overdispersion.warning by default, prior distributions should be binomial or beta-binomial (overdispersed).  If you give an overdispersion <1, snpprior will stop with an error.  Set overdispersion.warning=FALSE to override this.
+##' @param ## 
+##' @param value 
 ##' @return prior probabilities as a numeric vector
 ##' @export
 ##' @author Chris Wallace
@@ -46,11 +49,11 @@
 ##' points(x, y1.1, col="orange")
 ##' points(x, y1.5, col="pink")
 ##' points(x, y2.0, col="green")
-snpprior <- function(x=0:10, n, expected, overdispersion=1, pi0=NA, truncate=NA                     
+snpprior <- function(x=0:10, n, expected, overdispersion=1, pi0=NA, truncate=NA, overdispersion.warning=TRUE                     
                      ## , value=c("prob","odds")
                            ) {
 ## ##' @param groups groups of SNPs, from which at most one SNP should be selected
-  if(overdispersion < 1)
+  if(overdispersion < 1 & overdispersion.warning)
     stop("overdispersion parameter should be >= 1")
   x <- as.integer(x)
   if(any(x<0))

@@ -153,9 +153,12 @@ abf.calc <- function(y,x,models,family="binomial",
 ##' @author Chris Wallace
 ##' @seealso \link{snpprior}
 abf2snpmod <- function(abf,expected,overdispersion=1) {
-  prior <- snpprior(x=0:20,expected=expected,n=abf$n,truncate=20,overdispersion=overdispersion)
   tmp <- new("snpmod")
   msize <- nchar(gsub("[^%]","",abf$lBF$model)) + 1
+  prior <- snpprior(x=0:max(msize),expected=expected,
+                    n=abf$n,
+                    truncate=max(c(msize,20)),
+                    overdispersion=overdispersion)
   mprior <- prior[as.character(msize)]
   mpp <- log(mprior) + abf$lBF$lBF
   mpp <- mpp - logsum(mpp)

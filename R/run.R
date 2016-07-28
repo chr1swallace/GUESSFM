@@ -221,6 +221,7 @@ run.bvs <- function(X,Y,gdir="test",sub=NA,
   }
     
     ## prior
+    ## TODO: allow set overdispersion parameter, relax requirement that overdisp >=1 in snpprior
   p.each <- nexp/m
   nexp.sd <- sqrt(m*p.each*(1-p.each)*1) # + overdispersion=0
   message("setting prior parameters nexp, sd: ",nexp, " ",nexp.sd)

@@ -4,6 +4,8 @@ x <- Autosomes[1:10,1:10]
 y <- Autosomes[11:20,6:15]
 z <- Autosomes[1:20,1:15]
 
+context("snpmatrix.combine")
+
 test_that("snpmatrix.combine", {
     z2 <- snpmatrix.combine(x,y)
     expect_equal(ncol(z2),ncol(z))

@@ -40,6 +40,33 @@ mydir <-  system.file("extdata",package="GUESSFM")
 #+end_src
 
 * Prior/posterior number of SNPs in the model
+
+The prior for each model is dependent only on the number of SNPs it contains.  It is a beta-binomial model, and you need specify only the mean and overdispersion (variance relative to binomial) of this distrubtion.
+
+#+BEGIN_SRC R :ravel
+   n<-100 # 100 SNPs in region
+     x <- 1:10 # consider prior for up to 10 causal SNPs
+     xbar <- 3 # expect around 3 causal
+     
+     ## a binomial prior
+     y <- snpprior(x, n, xbar)
+     plot(x, y, type="h")
+     
+     ## is equivalent to
+     y1.0 <- snpprior(x, n, xbar, overdispersion=1.0)
+     points(x, y1.0, col="red")
+     
+     ##larger values of overdispersion change the distribution:
+     y1.1 <- snpprior(x, n, xbar, overdispersion=1.1)
+     y1.5 <- snpprior(x, n, xbar, overdispersion=1.5)
+     y2.0 <- snpprior(x, n, xbar, overdispersion=2.0)
+     points(x, y1.1, col="orange")
+     points(x, y1.5, col="pink")
+     points(x, y2.0, col="green")
+#+END_SRC
+
+#+RESULTS:
+
 =pp.nsnp= calculates a posterior distribution for the number of causal SNPs in the region, and with an argument =plot=TRUE= will also plot the distribution.  If you supply the prior expected number of causal SNPs, you can compare the posterior to the prior.
 
 #+begin_src R :ravel :fig=TRUE :label=ldfig
@@ -100,6 +127,6 @@ and these groups should be combined.  You can inspect whether this
 might be helpful using =check.merge()= and use =groups.merge()= to do
 the merge.
 #+begin_src R  :ravel :fig=TRUE :label=patterns
-pattern.plot(sp)
+pattern.plot(as.snpmod(sp))
 #+end_src
 

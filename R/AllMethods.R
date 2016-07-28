@@ -117,10 +117,10 @@ setMethod("plot", signature(x="snppicker",y="missing"),
             red <-  "#FF7F00"
             red <- "#666666"
             plots <-
-
               ggplot(df,aes(x=1-r2,y=cmpi)) + 
                 geom_vline(mapping=aes(xintercept=1-r2), data=subset(df,changepoint==TRUE),col=red) +
-                  geom_hline(mapping=aes(yintercept=cmpi), data=subset(df,changepoint==TRUE),col=red,width=0.2) +
+                  geom_hline(mapping=aes(yintercept=cmpi), data=subset(df,changepoint==TRUE),col=red## ,width=0.2
+                             ) +
                     geom_point(col=cols[2],pch=3) + geom_path(col=cols[2],linetype="longdash") +
                       geom_point(aes(y=mpi),col=cols[1],pch=3) + geom_path(aes(y=mpi),col=cols[1],linetype="longdash") +
                         ylim(0,1.2) + scale_x_reverse("rsq with index SNP") + ylab("cumulative MPI/MPI") +

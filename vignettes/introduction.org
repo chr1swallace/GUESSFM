@@ -241,7 +241,7 @@ dx<-expand.tags(d,tags)
 * Refitting
 The expanded models above have all been assigned the log Bayes Factor for their nearest tag model.  This isn't terrible, in practice, but if you care about fine mapping then you should get a more precise answer by refitting the most likely models individually.  Note this is especially important if you have a binomial outcome, as GUESS has been run using a linear model.
 
-Here, we take the set of most likely models which collectively capture 50% of the posterior support from GUESS, after expansion.  Loading the =speedglm= library makes the fitting faster, and we calculate the approximate Bayes Factors using the BIC approximation.  To do this, we also need to supply some information about our prior for the number of causal variants in the model.
+Here, we take the set of most likely models which collectively capture 90% of the posterior support from GUESS, after expansion.  Loading the =speedglm= library makes the fitting faster, and we calculate the approximate Bayes Factors using the BIC approximation.  To do this, we also need to supply some information about our prior for the number of causal variants in the model.
 
 #+BEGIN_SRC R
 best <- best.models(dx,cpp.thr=0.9)
@@ -268,14 +268,14 @@ between highly correlated variants.  Instead, the posterior support is
 likely to be diluted across such sets of variants.  To group such
 SNPs, we used the marginal posterior probabilities of inclusion (MPPI)
 for each SNP, and applied the following algorithm:
-1. Pick the index SNP with maximum MPPI
-2. Order remaining SNPs by $r^2$ with index SNP
-3. Exclude SNPs which co-occur in models with the index SNP (joint MPPI $>0.02$)
-4. Step away from the index SNP in order of decreasing $r^2$, adding SNPs to its group until $\text{MPPI}<0.001$ for two SNPs in a row (NB, these SNPs will not be added to the SNP group), or until $r^2<0.5$
-5. Remove this set of SNPs and return to step 1 until no SNP remains with $\operatorname{MPPI}>0.01$.
+1. Pick a starting SNP with maximum MPPI in the supplied snpmod object.  This will be called =SNP.index= in =snp.picker()= output.
+2. Order remaining SNPs by decreasing $r^2$ with starting SNP
+3. Exclude SNPs which co-occur in models with the starting SNP (joint MPPI $>0.03$) - parameter =shared.models=.  The rationale behind this step is that SNPs that occur together often should be in different SNP groups.
+4. Step away from the starting SNP in order of decreasing $r^2$, adding SNPs to its group until $\text{MPPI}<0.001$ - parameter =nochange.thr= - for three SNPs in a row - parameter =nochange.run= (NB, these SNPs will not be added to the SNP group), or until $r^2<0.5$
+5. Remove this set of SNPs and return to step 1 until no potential starting SNP remains with $\operatorname{MPPI}>0.01$ parameter =start.thr=.
 
 We summarize the support for any group of SNPs by the 
-grouped marginal posterior probability of inclusion, or gMPPI.
+grouped marginal posterior probability of inclusion, or gMPPI, which is the sum of model posterior probabilities across models which include (at least) one SNP in the group.  For accuracy, we say "at least", although in practice models rarely include two SNPs in the same group, because of step 3 above.
 
 #+BEGIN_SRC R :ravel :fig=TRUE :label=snppicker
 sp <- snp.picker(sm,X)
@@ -311,7 +311,7 @@ use =mclapply= are:
 
 You can convert a run from R2GUESS into a snpmod object with:
 
-#+BEGIN_SRC 
+#+BEGIN_SRC  R
 ## read output using a convenience wrapper for as.ESS.object()
 ## this returns an object of class ESS, used by R2GUESS
 ess <- read.ess(mydir)

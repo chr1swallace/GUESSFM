@@ -5,10 +5,11 @@ Description: GUESS is software to search for the best sets of multiple SNP
     run GUESS in a fine mapping setting.  Note also the package R2GUESS which
     helps directly run GUESS and evaluate its output.  GUESSFM is intended to
     be complementary to R2GUESS rather supercede any of its functionality.
-Version: 0.3
+Version: 1.0.1
+Date: 2016-07-28
 Authors@R: c(person("Chris", "Wallace", role=c("aut","cre"),
-    email = "chris.wallace@cimr.cam.ac.uk"))
-Maintainer: Chris Wallace <chris.wallace@cimr.cam.ac.uk>
+    email = "cew54@cam.ac.uk"))
+Maintainer: Chris Wallace <cew54@cam.ac.uk>
 Depends:
     R (>= 3.0.2)
 Imports:
@@ -21,10 +22,15 @@ Imports:
     snpStats,
     parallel,
     speedglm,
-    R2GUESS
+    data.table,
+    R2GUESS,
+    grDevises,
+    stats,
+    utils
 Suggests:
     testthat,
     knitr
 License: GPL
 LazyData: true
 VignetteBuilder: knitr
+RoxygenNote: 5.0.1

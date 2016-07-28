@@ -3,6 +3,7 @@
 ##' @title Expand tags for a snpmod object
 ##' @param d snpmod object
 ##' @param tags tags object
+##' @import data.table
 ##' @return snpmod object with tags expanded
 ##' @export
 expand.tags <- function(d, tags) {
@@ -17,9 +18,36 @@ expand.tags <- function(d, tags) {
     ## check - all best SNPs should be in names of proxies
     if(!all(bsnps %in% names(proxies)))
       stop("not all model SNPs found in tags object")
-    table(sapply(proxies,length))
+##    table(sapply(proxies,length))
     message("expanding tags for ",B," models over ",length(proxies)," tag SNPs, tagging a total of ",length(unlist(proxies)), " SNPs.")
 
+    ## ## map snp -> num to save memory, hopefully
+    ## allsnps <- unique(c(names(proxies),unlist(proxies)))
+    ## allsnps <- structure(seq_along(allsnps), names=allsnps)
+    ## ## check - names of proxies should correspond to 1..length(proxies)
+    ## if(!all(allsnps[names(proxies)]==seq_along(proxies)))
+    ##     stop("cannot map proxies to integers in expand.tags - this shouldn't happen")
+    ## Bnum <- lapply(best, function(b) allsnps[b])
+    ## Pnum <- lapply(proxies, function(p) allsnps[p])
+
+    ## modified from 
+    ## https://stat.ethz.ch/pipermail/r-help/2006-February/087972.html
+    ## expand.grid.str  <- function(id, vars) {
+    ##     nv <- length(vars)
+    ##     lims <- sapply(vars,length)
+    ##     stopifnot(length(lims) > 0, id <= prod(lims), length(names(vars)) == nv)
+    ##     res <- structure(vector("list",nv), .Names = names(vars))
+    ##     if (nv > 1) for(i in nv:2) {
+    ##                     f <- prod(lims[1:(i-1)])
+    ##                     res[[i]] <- vars[[i]][(id - 1)%/%f + 1]
+    ##                     id <- (id - 1)%%f + 1
+    ##                 }
+    ##     res[[1]] <- vars[[1]][id]
+    ##     res <- do.call("cbind",res)
+    ##     apply(res,1,makestr)
+    ## }
+
+  
     ## prepare expanded models
     pm <- mclapply(as.list(1:B), function(i) {
         ##  r2 <- ld(XX[,setdiff(colnames(X),best[[i]])],XX[,best[[i]]],stat="R.squared")
@@ -27,22 +55,25 @@ expand.tags <- function(d, tags) {
         if(d@models[i,"size"]==0) {
             pm.str <- ""
         } else {
-            pm <- do.call(expand.grid,proxies[best[[i]]])
-            pm.str <- apply(pm,1,makestr)
+            pm.str <- apply(do.call(expand.grid,proxies[best[[i]]]), 1, makestr)
+            ## system.time({
+            ##     toexpand <- proxies[best[[i]]]
+            ##     l <- sapply(toexpand,length)
+            ##     pm.str2 <- expand.grid.str(1:prod(l), toexpand)
+            ## })
         }
+        #message(i)
+        gc()
         return(pm.str)
     })
 
     ## tie these to their index models
     npm <- sapply(pm,length)
-    tmp <- d@models[rep(1:length(pm),times=npm),]
-    colnames(tmp) <- sub("str","index.str",colnames(tmp))
-    neighb <- cbind(data.frame(str=unlist(pm),
-                            stringsAsFactors=FALSE),
-                 tmp)
-        
-    neighb$index <- neighb$str==neighb$index.str
-    rownames(neighb) <- NULL
+    neighb <- as.data.table(d@models)[rep(1:length(pm),times=npm),]
+    ##colnames(neighb) <- sub("str","index.str",colnames(neighb))
+    setnames(neighb,sub("str","index.str",names(neighb)))
+    neighb[,str:=unlist(pm)]
+    neighb[,index:=str==index.str]
 
 #    neighb <- do.call("rbind",neighb)
 ##     vars <- colnames(neighb[[1]])
@@ -52,13 +83,11 @@ expand.tags <- function(d, tags) {
 ##     neighb <- as.data.frame(neighb2, stringsAsFactors=FALSE)
 
     ## normalise, PP should sum to 1
-    neighb$logPP <- neighb$logPP - logsum(neighb$logPP)
-    neighb$PP <- exp(neighb$logPP)
+    neighb[,logPP:=logPP - logsum(logPP)]
+    neighb[,PP:=exp(neighb$logPP)]
     neighb <- neighb[ order(neighb$PP,decreasing=TRUE),]
-    neighb$rank <- 1:nrow(neighb)
-    ##    return(neighb)
-
-    d@models <- neighb
+    neighb[,rank:=1:nrow(neighb)]
+    d@models <- as.data.frame(neighb)
     d@model.snps <- strsplit(neighb$str,"%")
     return(marg.snps(d))
 

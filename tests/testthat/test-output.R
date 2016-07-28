@@ -1,3 +1,5 @@
+context("Check runs ok")
+
 library(snpStats)
 data(testdata, package="snpStats")
 z <- Autosomes
@@ -26,6 +28,8 @@ fsdecode <- file.path(tmp,grep("^decode_samples_[0-9]",files,value=TRUE))
 dX <- read.table(fX,skip=2)
 dY <- read.table(fY,skip=2)
 ddecode <- read.table(fdecode)
+
+context("output dimensions")
 
 test_that("output has correct dimensions", {
   expect_equal(hX,dim(z))
