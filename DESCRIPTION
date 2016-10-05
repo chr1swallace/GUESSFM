@@ -24,7 +24,7 @@ Imports:
     speedglm,
     data.table,
     R2GUESS,
-    grDevises,
+    grDevices,
     stats,
     utils
 Suggests:
