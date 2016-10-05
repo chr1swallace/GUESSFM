@@ -21,7 +21,7 @@ install_github("chr1swallace/GUESSFM")
 ### Longer version (if this fails)
 
 GUESSFM is purely an R package and so is platform independent.  It depends on the software GUESS, which is available at http://www.bgx.org.uk/software/guess.html, but can be more easily installed via the R package R2GUESS, which is a dependency of GUESSFM.
-# and should be installed according to the instructions there.  
+ <!-- and should be installed according to the instructions there.   -->
 GUESS is described in the paper http://journals.plos.org/plosgenetics/article?id=10.1371/journal.pgen.1003657
 
 To install, you may first need some R package dependencies, the packages VGAM, reshape, ggplot2, grid, ggbio, snpStats, parallel, R2GUESS.  E.g., if you don't have ggpplot, from inside R, do
