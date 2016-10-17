@@ -68,22 +68,22 @@ read.decode <- function(dfile) {
 
 }
 
-basefile <- function(f) {
-  if(file.exists(f) && file.info(f)$isdir) {
-    ofiles <- list.files(f, pattern="^out_.*.txt",full.names=TRUE)
-    if(!length(ofiles))
-        return(NULL)
-    ofiles <- ofiles[ order( file.info(ofiles)$mtime, decreasing=TRUE ) ]
-    f <- sub("_sweeps.*", "", ofiles[[1]])
-    message(f," is a directory - reading most recent filestub: ",f)
-  } else {
-    message("reading supplied filestub: ",f)
-  }
-  return(f)
+basefile <- function(f,patt="^out_.*.txt") {
+    if(file.exists(f) && file.info(f)$isdir) {
+        ofiles <- list.files(f, pattern=patt,full.names=TRUE)
+        if(!length(ofiles))
+            return(NULL)
+        ofiles <- ofiles[ order( file.info(ofiles)$mtime, decreasing=TRUE ) ]
+        f <- gsub("_features.*|_output.*|_sweeps.*", "", ofiles[[1]])
+        message(f," is a directory - reading most recent filestub: ",f)
+    } else {
+        message("reading supplied filestub: ",f)
+    }
+    return(f)
 }
 
 reader <- function(f,decode,offset) {
-  files <- paste0(f,c("_sweeps_output_marg_prob_incl.txt","_sweeps_output_best_visited_models.txt"))
+  files <- paste0(f,c("_output_marg_prob_incl.txt","_output_best_visited_models.txt"))
   if(any(!file.exists(files))) {
     message("not both marg_prob_incl.txt and _best_visited_models.txt exist")
     return(NULL)
@@ -148,9 +148,10 @@ reader <- function(f,decode,offset) {
 ##' @author Chris Wallace
 ##' @export
 read.snpmod <- function(f,offset=0) {
-    f <- basefile(f)
-    decode <- read.decode(sub("out_","decode_",f))
+    f.decode <- basefile(f,patt="decode_[0-9]")
+    decode <- read.decode(f.decode)
 
+    f <- basefile(f)
     reader(f=f,decode=decode,offset=offset)
 }
 

@@ -38,3 +38,7 @@ test_that("output has correct dimensions", {
   expect_equal(dim(dY),hY)
 })
 
+test_that("reader works", {
+    expect_s4_class(read.snpmod(tmp),"snpmod")
+})
+
