@@ -164,15 +164,12 @@ demonstration as there is limited strong LD in this dataset.
 : ## THIS DIRECTORY WILL HOLD ALL THE GUESS INPUT AND OUTPUT 
 : ## AND WILL BE CREATED IF IT DOESN'T ALREADY EXIST
 : mydir <- tempfile() 
-: ## NB, IF GUESS IS NOT ON YOUR PATH, SUPPLY THE FULL PATH IN AN ARGUMENT
-: ## guess.command="/path/to/GUESS"
 : run.bvs(X,Y,gdir=mydir,
 :         tag.r2=0.95,           # maximum r2 between SNPs to be modelled
-:         guess.command="GUESS", # /path/to/GUESS
 :         nexp=3,                # expected number of causal variants, an overestimate
 :         nsave=1000)            # number of best models to save
 
-This can take a (long) while.  For the purposes of this vignette, 
+=run.bvs()= sets a GUESS process running, but doesn't wait for its completion because it may take a very long time (several hours), particularly with large datasets.  You can check whether the process has completed on unix-like systems using the command =ps -afe | grep GUESS=.  For the purposes of this vignette, 
 we will load the results from an existing run.
 
 #+BEGIN_SRC R
