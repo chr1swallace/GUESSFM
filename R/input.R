@@ -94,6 +94,7 @@ reader <- function(f,decode,offset) {
       return(NULL)
   rownames(pp) <- pp$var <- make.names(decode[ pp$Predictor ])
 
+  message("reading from ",files[[2]])
   models <- try(read.table(files[[2]], as.is=TRUE, header=FALSE, skip=1, comment.char="", fill=TRUE)) # sometimes file is empty
   if(inherits(models, "try-error"))
       return(NULL)
