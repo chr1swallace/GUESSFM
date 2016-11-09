@@ -46,7 +46,7 @@ cond.best <- function(X,Y,best=NULL,stepwise.p.thr=1e-3,stepwise.max.predictors=
   return(NULL)
 }
 
-backend.guess <- function(gX, gY, gdir, nsweep, nchains, best, nsave, nexp, nexp.sd, guess.command,wait=FALSE) {
+backend.guess <- function(gX, gY, gdir, nsweep, nchains, best, nsave, nexp, nexp.sd, guess.command,wait=FALSE,run=TRUE) {
     
   opt.bak <- options(scipen=1000000000)
   ## print decode file
@@ -108,7 +108,7 @@ backend.guess <- function(gX, gY, gdir, nsweep, nchains, best, nsave, nexp, nexp
   options(opt.bak)
     message("running GUESS with command")
     message(com)
-  if(!is.null(guess.command))
+  if(!is.null(guess.command) && run)
     system(com, wait=wait)
   return(com)
 }
@@ -139,6 +139,7 @@ backend.guess <- function(gX, gY, gdir, nsweep, nchains, best, nsave, nexp, nexp
 ##'     version of GUESS if you prefer.
 ##' @param wait logical.  default FALSE. if TRUE, run.bvs will wait
 ##'     for GUESS to finish, rather than running in background
+##' @param run logical.  default TRUE.  If FALSE, don't run GUESS, just return the command that would be run
 ##' @param ... GUESS starts from a stepwise solution found by
 ##'     cond.best.  Use ... to pass arguments firectly to cond.best to
 ##'     influence the p value threshold or number of predictors at
@@ -151,6 +152,7 @@ run.bvs <- function(X,Y,gdir="test",sub=NA,
                     nexp=3,tag.r2=0.99, nsave=1000, 
                     guess.command=NULL,
                     wait=FALSE,
+                    run=TRUE,
                     ...) { 
 
     if(is.null(guess.command)) {
@@ -242,7 +244,7 @@ run.bvs <- function(X,Y,gdir="test",sub=NA,
   message("setting prior parameters nexp, sd: ",nexp, " ",nexp.sd)
 
   backend.guess(gX=gX, gY=gY, gdir=gdir,
-                nsweep, nchains, best, nsave, nexp, nexp.sd, guess.command=guess.command,wait=wait)
+                nsweep, nchains, best, nsave, nexp, nexp.sd, guess.command=guess.command,wait=wait,run=run)
 }
  
 
