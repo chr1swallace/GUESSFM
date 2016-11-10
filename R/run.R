@@ -103,8 +103,21 @@ backend.guess <- function(gX, gY, gdir, nsweep, nchains, best, nsave, nexp, nexp
   if(!file.exists(par.file))
     file.copy(system.file("Par_file_example.xml",package="GUESSFM"), par.file)
 
-  com <- sprintf("%s -history -X %s -Y %s -nsweep %s -burn_in %s -out %s/out -par %s/par.xml -top %s -init %s -Egam %s -Sgam %s -n_chain %s > %s/log",
-                 guess.command,x.file,y.file,nsweep,round(nsweep/11),gdir,gdir,nsave,init.file,nexp,nexp.sd,nchains,gdir)
+  ## com <- sprintf("%s -history -X %s -Y %s -nsweep %s -burn_in %s -out %s/out_%s -par %s/par.xml -top %s -init %s -Egam %s -Sgam %s -n_chain %s > %s/log",
+  ##                guess.command,x.file,y.file,nsweep,round(nsweep/11),gdir,nsweep,gdir,nsave,init.file,nexp,nexp.sd,nchains,gdir)
+    com <- paste0(guess.command,
+                  " -history -X ",x.file,
+                  " -Y ",y.file,
+                  " -nsweep ",nsweep,
+                  " -burn_in ",round(nsweep/11),
+                  " -out ",file.path(gdir,paste0("out_",nsweep)),
+                  " -par ",file.path(gdir,"par.xml"),
+                  " -top ",nsave,
+                  " -init ",init.file,
+                  " -Egam ",nexp,
+                  " -Sgam ",nexp.sd,
+                  " -n_chain ",nchains,
+                  " > ",gdir,"/log")
   options(opt.bak)
     message("running GUESS with command")
     message(com)
