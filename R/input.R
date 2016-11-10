@@ -13,19 +13,19 @@
 ##' @export
 ##' @author Chris Wallace
 read.ess <- function(f,...) {
-    f <- basefile(f)
-    message("Reading from base file ",f)
-    DIR <- paste0(dirname(f),"/")
-    n <- gsub(".*/out_|_sweeps_features.txt","",f)
-    suff <- function(str) {
-        paste(str,n,sep="_")
-    }
     f.decode <- basefile(f,patt="decode_[0-9]")
+    f.Y <- basefile(f,patt="Y_[0-9]")
+    f.X <- basefile(f,patt="X_[0-9]")
+    DIR <- paste0(dirname(f),"/")
+    ## n <- gsub(".*/out_|_features.txt|_sweeps_features.txt","",f)
+    ## suff <- function(str) {
+    ##     paste(str,n,sep="_")
+    ## }
     decode <- read.decode(f.decode)
 #    decode <- read.decode(paste0(DIR,"/",suff("decode")))
-    as.ESS.object(dataY=suff("Y"),dataX=suff("X"),file.par="par.xml",command=FALSE,
+    as.ESS.object(dataY=f.Y,dataX=f.X,file.par="par.xml",command=FALSE,
                   path.input=DIR,path.output=DIR,path.par=DIR,
-                  root.file.output=sprintf("out_%s_sweeps",n),
+                  root.file.output=basename(basefile(f)), #sprintf("out_%s_sweeps",n),
                   label.X=decode,...)
 }
 ##' Convert an ESS object to a snpmod object
@@ -61,7 +61,6 @@ ess2snpmod <- function(ess## ,decode=NULL
 ##' @return named character vector, names=snp numbers (1-based), elements=snp names
 ##' @author Chris Wallace
 read.decode <- function(dfile) {
-
     ## decode snp numbers to names
     if(!file.exists(dfile)) 
         stop("decode file ",dfile," not found")
@@ -71,16 +70,15 @@ read.decode <- function(dfile) {
 }
 
 basefile <- function(f,patt="^out_.*.txt") {
-    if(file.exists(f) && file.info(f)$isdir) {
-        ofiles <- list.files(f, pattern=patt,full.names=TRUE)
-        if(!length(ofiles))
-            return(NULL)
-        ofiles <- ofiles[ order( file.info(ofiles)$mtime, decreasing=TRUE ) ]
-        f <- gsub("_features.*|_output.*|_sweeps.*", "", ofiles[[1]])
-        message("directory supplied - reading most recent filestub: ",f)
-    } else {
-        message("reading supplied filestub: ",f)
+    if(file.exists(f) && !file.info(f)$isdir) {
+        f <- dirname(f)
     }
+    ofiles <- list.files(f, pattern=patt,full.names=TRUE)
+    if(!length(ofiles))
+        return(NULL)
+    ofiles <- ofiles[ order( file.info(ofiles)$mtime, decreasing=TRUE ) ]
+    f <- gsub("_features.*|_output.*|_sweeps.*", "", ofiles[[1]])
+    message("reading filestub: ",f)
     return(f)
 }
 
@@ -153,9 +151,7 @@ reader <- function(f,decode,offset) {
 read.snpmod <- function(f,offset=0) {
     f.decode <- basefile(f,patt="decode_[0-9]")
     decode <- read.decode(f.decode)
-
-    f <- basefile(f)
-    reader(f=f,decode=decode,offset=offset)
+    reader(f=basefile(f),decode=decode,offset=offset)
 }
 
 ##' guess.read, for backwards compatability
