@@ -20,7 +20,9 @@ read.ess <- function(f,...) {
     suff <- function(str) {
         paste(str,n,sep="_")
     }
-    decode <- read.decode(paste0(DIR,"/",suff("decode")))
+    f.decode <- basefile(f,patt="decode_[0-9]")
+    decode <- read.decode(f.decode)
+#    decode <- read.decode(paste0(DIR,"/",suff("decode")))
     as.ESS.object(dataY=suff("Y"),dataX=suff("X"),file.par="par.xml",command=FALSE,
                   path.input=DIR,path.output=DIR,path.par=DIR,
                   root.file.output=sprintf("out_%s_sweeps",n),
@@ -75,7 +77,7 @@ basefile <- function(f,patt="^out_.*.txt") {
             return(NULL)
         ofiles <- ofiles[ order( file.info(ofiles)$mtime, decreasing=TRUE ) ]
         f <- gsub("_features.*|_output.*|_sweeps.*", "", ofiles[[1]])
-        message(f," is a directory - reading most recent filestub: ",f)
+        message("directory supplied - reading most recent filestub: ",f)
     } else {
         message("reading supplied filestub: ",f)
     }
