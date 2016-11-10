@@ -110,7 +110,7 @@ backend.guess <- function(gX, gY, gdir, nsweep, nchains, best, nsave, nexp, nexp
                   " -Y ",y.file,
                   " -nsweep ",nsweep,
                   " -burn_in ",round(nsweep/11),
-                  " -out ",file.path(gdir,paste0("out_",nsweep,"_sweeps")),
+                  " -out ",file.path(gdir,paste0("out_",nsweep)),
                   " -par ",file.path(gdir,"par.xml"),
                   " -top ",nsave,
                   " -init ",init.file,
