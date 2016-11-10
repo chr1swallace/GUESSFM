@@ -27,9 +27,14 @@ abf.calc <- function(y,x,models,family="binomial",
                      parallel.dir=NULL) { # raftery, wen
   
   method <- match.arg(method)
-  message("Calculating BICs using ",method)
-  
-  models[ models=="" ] <- "1"
+    message("Calculating BICs using ",method)
+
+    ## speedglm should check input type for y, but doesn't, so do it here
+    if(is.null(nrow(x)))
+        stop(paste("x should be a matrix: samples=rows, snps=columns"))
+     if(!is(y,"vector") || nrow(x)!=length(y))
+        stop(paste("y should be a vector of length equal to the rows in x"))
+    models[ models=="" ] <- "1"
   models.orig <- models
   
   ## models that can be fitted directly
@@ -259,7 +264,7 @@ abf.manual <- function(parallel.dir,start,end) {
 ##'
 ##' @title abf.speedglm.fit
 ##' @param x design matrix
-##' @param y response
+##' @param y response vector
 ##' @param q matrix of covariates
 ##' @param family glm family
 ##' @param snps list of snps models
