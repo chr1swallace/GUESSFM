@@ -319,7 +319,7 @@ abf.speedglm.fit <- function(x,y,q,family,snps,parallel.dir=NULL,verbose=FALSE) 
       family <- switch(family,
                        "gaussian"=gaussian(link="identity"),
                        "binomial"=binomial(link="logit"))
-    results <- lapply(seq_along(snps), function(i) {
+    results <- mclapply(seq_along(snps), function(i) {
       if(verbose && i %% 100 == 0)
         cat(i,"\t")
       k0=ncol(qm)
