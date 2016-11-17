@@ -357,7 +357,7 @@ setMethod("union",signature(x="snppicker",y="snppicker"),definition=function(x,y
     iy <- wh[i,2]
     iy.M <- iy + length(x@groups)
     gx <- M@groups[[ ix ]]
-    gy <- M@groups[[ iy ]]
+    gy <- M@groups[[ iy.M ]]
     gint <- intersect(rownames(gx),rownames(gy))
     pintx <- sum(gx[gint,"Marg_Prob_Incl"])
     pinty <- sum(gy[gint,"Marg_Prob_Incl"])
