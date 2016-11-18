@@ -341,23 +341,28 @@ setMethod("snpin",signature(x="character",y="groups"),definition=function(x,y) {
 
 #' @rdname union
 setMethod("union",signature(x="snppicker",y="snppicker"),definition=function(x,y) {
-  xgr <- as(x,"groups")
-  ygr <- as(y,"groups")
-  int <- .group.intersection(xgr,ygr)
-  wh <- which(int,arr.ind=TRUE)
+
+  ##   xgr <- as(x,"groups")
+  ## ygr <- as(y,"groups")
+  ## int <- .group.intersection(xgr,ygr)
   M <- new("snppicker",
                plotsdata=c(x@plotsdata,y@plotsdata),
-               groups=c(x@groups,y@groups))
-  if(!length(wh)) { # no overlap, concatenate
+           groups=c(x@groups,y@groups))
+    summppi <- sapply(M@groups, function(k) sum(k$Marg_Prob_Incl))    
+    M <- M[order(summppi,decreasing=TRUE)]
+    int <- .group.intersection(as(M,"groups"),as(M,"groups"))
+  wh <- which(int,arr.ind=TRUE)
+wh <- wh[ wh[,1] < wh[,2],  ] # remove diagonals and only count pairs once
+    if(!length(wh)) { # no overlap, concatenate
     return(M)
   }
   Mkeep <- rep(TRUE,length(M@groups))
   for(i in 1:nrow(wh)) {
     ix <- wh[i,1]
     iy <- wh[i,2]
-    iy.M <- iy + length(x@groups)
+##    iy.M <- iy + length(x@groups)
     gx <- M@groups[[ ix ]]
-    gy <- M@groups[[ iy.M ]]
+    gy <- M@groups[[ iy ]]
     gint <- intersect(rownames(gx),rownames(gy))
     pintx <- sum(gx[gint,"Marg_Prob_Incl"])
     pinty <- sum(gy[gint,"Marg_Prob_Incl"])
@@ -365,18 +370,18 @@ setMethod("union",signature(x="snppicker",y="snppicker"),definition=function(x,y
     pninty <- sum(gy[setdiff(rownames(gy),gint),"Marg_Prob_Incl"])
     if(pnintx > pintx || pninty > pinty) { # unmerge
       if(pintx/(pintx + pnintx) > pinty/(pinty + pninty)) { # keep int in x
-        M@groups[[iy.M]] <- M@groups[[iy.M]][ !(rownames(M@groups[[iy.M]]) %in% gint), ]
+        M@groups[[iy]] <- M@groups[[iy]][ !(rownames(M@groups[[iy]]) %in% gint), ]
       } else { # keep int in y
         M@groups[[ix]] <- M@groups[[ix]][ !(rownames(M@groups[[ix]]) %in% gint), ]
       }
     } else { # merge
       tmp <- rbind(M@groups[[ix]],
-                   M@groups[[iy.M]][ !(rownames(M@groups[[iy.M]]) %in% gint), ])
+                   M@groups[[iy]][ !(rownames(M@groups[[iy]]) %in% gint), ])
       M@groups[[ix]] <- tmp[ order(tmp$Marg_Prob_Incl, decreasing=TRUE), ]
-      Mkeep[[ iy.M ]] <- FALSE
+      Mkeep[[ iy ]] <- FALSE
     }
-    cat(length(M@groups[[ix]]$var), length(unique(M@groups[[ix]]$var)),
-        length(M@groups[[iy.M]]$var), length(unique(M@groups[[iy.M]]$var)))
+#    cat(length(M@groups[[ix]]$var), length(unique(M@groups[[ix]]$var)),
+#        length(M@groups[[iy.M]]$var), length(unique(M@groups[[iy.M]]$var)))
         
   }
   new("snppicker",
