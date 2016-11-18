@@ -345,17 +345,17 @@ setMethod("union",signature(x="snppicker",y="snppicker"),definition=function(x,y
   ##   xgr <- as(x,"groups")
   ## ygr <- as(y,"groups")
   ## int <- .group.intersection(xgr,ygr)
-  M <- new("snppicker",
-               plotsdata=c(x@plotsdata,y@plotsdata),
-           groups=c(x@groups,y@groups))
+    M <- new("snppicker",
+             plotsdata=c(x@plotsdata,y@plotsdata),
+             groups=c(x@groups,y@groups))
     summppi <- sapply(M@groups, function(k) sum(k$Marg_Prob_Incl))    
     M <- M[order(summppi,decreasing=TRUE)]
     int <- .group.intersection(as(M,"groups"),as(M,"groups"))
-  wh <- which(int,arr.ind=TRUE)
-wh <- wh[ wh[,1] < wh[,2],  ] # remove diagonals and only count pairs once
+    wh <- which(int,arr.ind=TRUE)
+    wh <- wh[ wh[,1] < wh[,2], ,drop=FALSE ] # remove diagonals and only count pairs once
     if(!length(wh)) { # no overlap, concatenate
-    return(M)
-  }
+        return(M)
+    }
   Mkeep <- rep(TRUE,length(M@groups))
   for(i in 1:nrow(wh)) {
     ix <- wh[i,1]
