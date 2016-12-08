@@ -10,20 +10,14 @@ Y <- data.Y.Hopx[,3]
 
 ## dummy run using run.bvs
 mydir <- tempfile()
-run.bvs(X,Y,gdir=mydir,backend="guess",tag.r2=NA)
+run.bvs(X,Y,gdir=mydir,tag.r2=NA)
 list.files(mydir)
-
-## read output with R2GUESS
-ess <- read.ess(mydir)
-str(ess)
+list.files("/home/chris/RP/GUESSFM/inst/extdata")
+system(paste0("cp ",mydir,"/* /home/chris/RP/GUESSFM/inst/extdata"))
+system(paste0("rm /home/chris/RP/GUESSFM/inst/extdata/*sweeps*"))
 
 ## read output with GUESSFM
 gfm <- read.snpmod(mydir)
 best.models(gfm)
 "V616" %in% rownames(best.snps(gfm))
-
-## check conversion
-gfm2 <- ess2snpmod(ess)
-best.models(gfm2)
-"V616" %in% rownames(best.snps(gfm2))
 

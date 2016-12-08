@@ -15,7 +15,7 @@
 #+XSLT:
 
 #+latex_header: \usepackage{fullpage}
-#+latex: %\VignetteIndexEntry{GUESSFM Introduction}
+#+latex: %\VignetteEngine{knitr::knitr}%\VignetteIndexEntry{GUESSFM Introduction}{\Large \textbf{Chris Wallace // \href{http://chr1swallace.github.io}{web} // \href{mailto:cew54 at cam.ac.uk}{email}
 
 # ---
 # title: "Introduction"
@@ -33,11 +33,12 @@
 -->
 <h1>GUESSFM Introduction</h1>
 <font color="grey">
-*Chris Wallace // [web](http://www-gene.cimr.cam.ac.uk/staff/wallace) // [email](mailto:chris.wallace at cimr.cam.ac.uk)*  
+*Chris Wallace // [web](http://chr1swallace.github.io) // [email](mailto:cew54 at cam.ac.uk)*  
 </font>
 #+end_html
 
 #+TOC: headlines 1
+
 
 
 * Introduction
@@ -169,7 +170,9 @@ demonstration as there is limited strong LD in this dataset.
 :         nexp=3,                # expected number of causal variants, an overestimate
 :         nsave=1000)            # number of best models to save
 
-=run.bvs()= sets a GUESS process running, but doesn't wait for its completion because it may take a very long time (several hours), particularly with large datasets.  You can check whether the process has completed on unix-like systems using the command =ps -afe | grep GUESS=.  For the purposes of this vignette, 
+=run.bvs()= sets a GUESS process running, but by default doesn't wait for its completion because it may take a very long time (several hours), particularly with large datasets.  You can check whether the process has completed on unix-like systems using the command =ps -afe | grep GUESS=.  When running on a computer queueing system (eg slurm), however, this will cause the queued job to die when the R process finishes, rather than waiting for GUESS to finish.  If you want to wait for GUESS to finish, add the option =wait=TRUE= to the =run.bvs()= call.
+
+For the purposes of this vignette, 
 we will load the results from an existing run.
 
 #+BEGIN_SRC R
@@ -304,23 +307,29 @@ use =mclapply= are:
 
 =expand.tags=
 
-* Using an existing R2GUESS run
 
-You can convert a run from R2GUESS into a snpmod object with:
+# * Using an existing R2GUESS run
 
-#+BEGIN_SRC  R
-## read output using a convenience wrapper for as.ESS.object()
-## this returns an object of class ESS, used by R2GUESS
-ess <- read.ess(mydir)
-str(ess)
+# You can convert a run from R2GUESS into a snpmod object with:
 
-## GUESSFM maps snp numbers to names via a decode vector
-decode <- structure(colnames(X),names=as.numeric(1:ncol(X)))
+# #+BEGIN_SRC  R
+# ## read output using a convenience wrapper for as.ESS.object()
+# ## this returns an object of class ESS, used by R2GUESS
+# ess <- read.ess(mydir)
+# str(ess)
 
-## create a snpmod
-gfm2 <- ess2snpmod(ess)
-best.models(gfm2)
-#+END_SRC
+# ## GUESSFM maps snp numbers to names via a decode vector
+# decode <- structure(colnames(X),names=as.numeric(1:ncol(X)))
 
-Now you can apply all the plotting functions etc in GUESSFM, but
-without the tagging strategy, you won't be able to do the expansion.
+# ## create a snpmod
+# gfm2 <- ess2snpmod(ess)
+# best.models(gfm2)
+# #+END_SRC
+
+# Now you can apply all the plotting functions etc in GUESSFM, but
+# without the tagging strategy, you won't be able to do the expansion.
+
+
+# Local Variables:
+# firestarter: (org-ravel-latex-noweb-dispatch)
+# End:

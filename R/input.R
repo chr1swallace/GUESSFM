@@ -146,7 +146,7 @@ reader <- function(f,decode,offset) {
   } else {
       tmp <- new("snpmod")
       tmp@models=models
-      tmp@model.snps=modle.snpnames
+      tmp@model.snps=model.snpnames
       marg.snps(tmp)
   }
 
