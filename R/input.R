@@ -90,9 +90,12 @@ reader <- function(f,decode,offset) {
   }
 
   pp <- try(read.table(files[[1]], as.is=TRUE, header=TRUE))
-  if(inherits(pp, "try-error"))
-      return(NULL)
-  rownames(pp) <- pp$var <- make.names(decode[ pp$Predictor ])
+  if(inherits(pp, "try-error")) {
+      message("problem with file ",files[[1]]," using best models only")
+                                        #return(NULL)
+  } else {
+      rownames(pp) <- pp$var <- make.names(decode[ pp$Predictor ])
+  }
 
   message("reading from ",files[[2]])
   models <- try(read.table(files[[2]], as.is=TRUE, header=FALSE, skip=1, comment.char="", fill=TRUE)) # sometimes file is empty
@@ -128,15 +131,24 @@ reader <- function(f,decode,offset) {
   models <- models[,1:6]
   models$str <- unlist(lapply(model.snpnames,makestr))
   if(offset!=0) {
-    pp$Predictor <- pp$Predictor - offset
-    model.snps <- lapply(model.snps, function(x) x-offset)
+      if(!inherits(pp, "try-error"))
+          pp$Predictor <- pp$Predictor - offset
+      model.snps <- lapply(model.snps, function(x) x-offset)
     ##   for(j in 1:max(models$size)) {
     ##     v <- paste0("s",j)
     ##     models[,v] <- models[,v] - offset
     ##   }
   }
-  return(new("snpmod",
-             snps=pp, models=models, model.snps=model.snpnames))
+  ## either return existing pp, or calculate
+  if(!inherits(pp,"try-error")) {
+      return(new("snpmod",
+                 snps=pp, models=models, model.snps=model.snpnames))
+  } else {
+      tmp <- new("snpmod")
+      tmp@models=models
+      tmp@model.snps=modle.snpnames
+      marg.snps(tmp)
+  }
 
 }
 
