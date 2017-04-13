@@ -160,6 +160,7 @@ abf.calc <- function(y,x,models,family="binomial",
 abf2snpmod <- function(abf,expected,overdispersion=1) {
   tmp <- new("snpmod")
   msize <- nchar(gsub("[^%]","",abf$lBF$model)) + 1
+  msize[abf$lBF$model=="1"] <- 0
   prior <- snpprior(x=0:max(msize),expected=expected,
                     n=abf$n,
                     truncate=max(c(msize,20)),
