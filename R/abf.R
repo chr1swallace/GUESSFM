@@ -137,7 +137,7 @@ abf.calc <- function(y,x,models,family="binomial",
                        stringsAsFactors=FALSE)
   if(return.R2 && exists("R2"))
     return(list(lBF=lBF.df,coeff=coeff,R2=R2))
-  return(list(lBF=lBF.df,coeff=coeff,n=nrow(x)))
+  return(list(lBF=lBF.df,coeff=coeff,nsamp=nrow(x),nsnp=ncol(x)))
   
   ##   tmp <- new("snpmod")
   ##   tmp@models=data.frame(str=models[-1],
@@ -152,17 +152,22 @@ abf.calc <- function(y,x,models,family="binomial",
 ##'
 ##' @title abf2snpmod
 ##' @param abf object returned by abf.calc
+##' @param nsnps number of SNPs in the region, optional, but required if not found in output of abf
 ##' @inheritParams snpprior
 ##' @return a snpmod
 ##' @export
 ##' @author Chris Wallace
 ##' @seealso \link{snpprior}
-abf2snpmod <- function(abf,expected,overdispersion=1) {
+abf2snpmod <- function(abf,expected,overdispersion=1,nsnps=NULL) {
   tmp <- new("snpmod")
   msize <- nchar(gsub("[^%]","",abf$lBF$model)) + 1
   msize[abf$lBF$model=="1"] <- 0
+  if(!is.null(nsnps))
+      abf$nsnp <- nsnps
+  if(is.null(abf$nsnp))
+      stop("please supply the number of SNPs in the region")
   prior <- snpprior(x=0:max(msize),expected=expected,
-                    n=abf$n,
+                    n=abf$nsnp,
                     truncate=max(c(msize,20)),
                     overdispersion=overdispersion)
   mprior <- prior[as.character(msize)]
