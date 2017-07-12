@@ -90,7 +90,8 @@ reader <- function(f,decode,offset) {
   }
 
   pp <- try(read.table(files[[1]], as.is=TRUE, header=TRUE))
-  if(inherits(pp, "try-error")) {
+  badpp <- inherits(pp, "try-error") || any(duplicated(pp$Predictor))
+  if(badpp) {
       message("problem with file ",files[[1]]," using best models only")
                                         #return(NULL)
   } else {
@@ -131,7 +132,7 @@ reader <- function(f,decode,offset) {
   models <- models[,1:6]
   models$str <- unlist(lapply(model.snpnames,makestr))
   if(offset!=0) {
-      if(!inherits(pp, "try-error"))
+      if(!badpp)
           pp$Predictor <- pp$Predictor - offset
       model.snps <- lapply(model.snps, function(x) x-offset)
     ##   for(j in 1:max(models$size)) {
@@ -140,7 +141,7 @@ reader <- function(f,decode,offset) {
     ##   }
   }
   ## either return existing pp, or calculate
-  if(!inherits(pp,"try-error")) {
+  if(!badpp) {
       return(new("snpmod",
                  snps=pp, models=models, model.snps=model.snpnames))
   } else {

@@ -350,43 +350,48 @@ setMethod("union",signature(x="snppicker",y="snppicker"),definition=function(x,y
              groups=c(x@groups,y@groups))
     summppi <- sapply(M@groups, function(k) sum(k$Marg_Prob_Incl))    
     M <- M[order(summppi,decreasing=TRUE)]
-    int <- .group.intersection(as(M,"groups"),as(M,"groups"))
-    wh <- which(int,arr.ind=TRUE)
-    wh <- wh[ wh[,1] < wh[,2], ,drop=FALSE ] # remove diagonals and only count pairs once
-    if(!length(wh)) { # no overlap, concatenate
+    wh <- .group.intersection(as(M,"groups"),as(M,"groups"),as.which=TRUE)
+    if(!nrow(wh))
         return(M)
+    print(wh)
+    Mkeep <- rep(TRUE,length(M@groups))
+    for(i in 1:nrow(wh)) { # overlap exists
+        ix <- wh[i,1]
+        iy <- wh[i,2]
+        ##    iy.M <- iy + length(x@groups)
+        gx <- M@groups[[ ix ]]
+        gy <- M@groups[[ iy ]]
+        gint <- intersect(rownames(gx),rownames(gy))
+        ## complete subset
+        if(all(rownames(gy) %in% rownames(gx))) {
+            Mkeep[[ iy ]] <- FALSE
+            next
+        }
+        if(all(rownames(gx) %in% rownames(gy))) {
+            Mkeep[[ ix ]] <- FALSE
+            next
+        }
+        pintx <- sum(gx[gint,"Marg_Prob_Incl"])
+        pinty <- sum(gy[gint,"Marg_Prob_Incl"])
+        pnintx <- sum(gx[setdiff(rownames(gx),gint),"Marg_Prob_Incl"])
+        pninty <- sum(gy[setdiff(rownames(gy),gint),"Marg_Prob_Incl"])
+        if(pnintx > pintx || pninty > pinty) { # unmerge
+            if(pintx/(pintx + pnintx) > pinty/(pinty + pninty)) { # keep int in x
+                M@groups[[iy]] <- M@groups[[iy]][ !(rownames(M@groups[[iy]]) %in% gint), ]
+            } else { # keep int in y
+                M@groups[[ix]] <- M@groups[[ix]][ !(rownames(M@groups[[ix]]) %in% gint), ]
+            }
+        } else { # merge
+            tmp <- rbind(M@groups[[ix]],
+                         M@groups[[iy]][ !(rownames(M@groups[[iy]]) %in% gint), ])
+            M@groups[[ix]] <- tmp[ order(tmp$Marg_Prob_Incl, decreasing=TRUE), ]
+            Mkeep[[ iy ]] <- FALSE
+        }
     }
-  Mkeep <- rep(TRUE,length(M@groups))
-  for(i in 1:nrow(wh)) {
-    ix <- wh[i,1]
-    iy <- wh[i,2]
-##    iy.M <- iy + length(x@groups)
-    gx <- M@groups[[ ix ]]
-    gy <- M@groups[[ iy ]]
-    gint <- intersect(rownames(gx),rownames(gy))
-    pintx <- sum(gx[gint,"Marg_Prob_Incl"])
-    pinty <- sum(gy[gint,"Marg_Prob_Incl"])
-    pnintx <- sum(gx[setdiff(rownames(gx),gint),"Marg_Prob_Incl"])
-    pninty <- sum(gy[setdiff(rownames(gy),gint),"Marg_Prob_Incl"])
-    if(pnintx > pintx || pninty > pinty) { # unmerge
-      if(pintx/(pintx + pnintx) > pinty/(pinty + pninty)) { # keep int in x
-        M@groups[[iy]] <- M@groups[[iy]][ !(rownames(M@groups[[iy]]) %in% gint), ]
-      } else { # keep int in y
-        M@groups[[ix]] <- M@groups[[ix]][ !(rownames(M@groups[[ix]]) %in% gint), ]
-      }
-    } else { # merge
-      tmp <- rbind(M@groups[[ix]],
-                   M@groups[[iy]][ !(rownames(M@groups[[iy]]) %in% gint), ])
-      M@groups[[ix]] <- tmp[ order(tmp$Marg_Prob_Incl, decreasing=TRUE), ]
-      Mkeep[[ iy ]] <- FALSE
-    }
-#    cat(length(M@groups[[ix]]$var), length(unique(M@groups[[ix]]$var)),
-#        length(M@groups[[iy.M]]$var), length(unique(M@groups[[iy.M]]$var)))
-        
-  }
-  new("snppicker",
-      plotsdata=M@plotsdata[which(Mkeep)],
-      groups=M@groups[which(Mkeep)])
+
+    M <- new("snppicker",
+        plotsdata=M@plotsdata[which(Mkeep)],
+        groups=M@groups[which(Mkeep)])
 })
 
 #' @rdname union
@@ -394,12 +399,21 @@ setMethod("union",signature(x="tags",y="tags"),definition=function(x,y) {
   ugr <- union(as(x,"groups"),as(y,"groups"))
   as(ugr,"tags") })
 
-.group.intersection <- function(x,y) {
+.group.intersection <- function(x,y,drop=numeric(0),as.which=FALSE) {
   int <- matrix(FALSE,length(x),length(y))
   for(i in seq_along(x)) {
     for(j in seq_along(y)) {      
-      int[i,j] <- any(x[[i]] %in% y[[j]])
+      int[i,j] <- sum(x[[i]] %in% y[[j]])
     }
+  }
+  if(as.which) {
+      wh <- which(int>0,arr.ind=TRUE)
+      wh <- cbind(wh, int[wh])
+      wh <- wh[ wh[,1] < wh[,2], ,drop=FALSE ] # remove diagonals and only count pairs once
+      wh <- wh[order(wh[,3],decreasing = TRUE),,drop=FALSE]
+      if(length(drop))
+          wh <- wh[ !(wh[,1] %in% drop | wh[,2] %in% drop), , drop=FALSE ]
+      return(wh)
   }
   return(int)
 }
@@ -411,8 +425,7 @@ setMethod("union",signature(x="groups",y="groups"),definition=function(x,y) {
   if(!length(y))
     return(x)
   ## find intersecting groups, and make unions
-  int <- .group.intersection(x,y)
-  wh <- which(int,arr.ind=TRUE)
+  wh <- .group.intersection(x,y,as.which=TRUE)
   if(nrow(wh)) {
     ## merge y into x
     for(i in 1:nrow(wh)) {
