@@ -16,7 +16,11 @@ read.ess <- function(f,...) {
     f.decode <- basefile(f,patt="decode_[0-9]")
     f.Y <- basefile(f,patt="Y_[0-9]")
     f.X <- basefile(f,patt="X_[0-9]")
-    DIR <- paste0(dirname(f),"/")
+    if(file.exists(f) && !file.info(f)$isdir) {
+        f <- dirname(f)
+    }
+    DIR <- paste0(f,#dirname(f),
+                  "/")
     ## n <- gsub(".*/out_|_features.txt|_sweeps_features.txt","",f)
     ## suff <- function(str) {
     ##     paste(str,n,sep="_")
