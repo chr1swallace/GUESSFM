@@ -21,14 +21,14 @@ expand.tags <- function(d, tags) {
 ##    table(sapply(proxies,length))
     message("expanding tags for ",B," models over ",length(proxies)," tag SNPs, tagging a total of ",length(unlist(proxies)), " SNPs.")
 
-    ## ## map snp -> num to save memory, hopefully
-    ## allsnps <- unique(c(names(proxies),unlist(proxies)))
-    ## allsnps <- structure(seq_along(allsnps), names=allsnps)
-    ## ## check - names of proxies should correspond to 1..length(proxies)
-    ## if(!all(allsnps[names(proxies)]==seq_along(proxies)))
-    ##     stop("cannot map proxies to integers in expand.tags - this shouldn't happen")
-    ## Bnum <- lapply(best, function(b) allsnps[b])
-    ## Pnum <- lapply(proxies, function(p) allsnps[p])
+    ## map snp -> num to save memory, hopefully
+    allsnps <- sort(unique(c(names(proxies),unlist(proxies))))
+    allsnps <- structure(seq_along(allsnps), names=allsnps)
+    ## check - names of proxies should correspond to 1..length(proxies)
+    if(!all(allsnps[names(proxies)]==seq_along(proxies)))
+        stop("cannot map proxies to integers in expand.tags - this shouldn't happen")
+    Bnum <- lapply(best, function(b) allsnps[b])
+    Pnum <- lapply(proxies, function(p) allsnps[p])
 
     ## modified from 
     ## https://stat.ethz.ch/pipermail/r-help/2006-February/087972.html
@@ -55,7 +55,25 @@ expand.tags <- function(d, tags) {
         if(d@models[i,"size"]==0) {
             pm.str <- ""
         } else {
-            pm.str <- apply(do.call(expand.grid,proxies[best[[i]]]), 1, makestr)
+            #pm.num <- apply(do.call(expand.grid,Pnum[ best[[i]] ]), 1, function(x) paste(allsnps[sort(x)],collapse="%"))
+           # microbenchmark({
+                tmp <- t(do.call(expand.grid,
+                                 c(proxies[best[[i]]], stringsAsFactors=FALSE, KEEP.OUT.ATTRS=FALSE)))
+                pm.str <- character(ncol(tmp))
+                for(j in seq_along(pm.str))
+                    pm.str[j] <- paste(sort(as.vector(tmp[,j])),collapse="%")
+            ## }, {
+            ##     tmp <- t(do.call(expand.grid,
+            ##                      c(proxies[best[[i]]], stringsAsFactors=FALSE, KEEP.OUT.ATTRS=FALSE)))
+            ##     pm.str3 <- apply(tmp,2,function(x) makestr(x))
+            ## }, {
+            ##     pm.str2 <- apply(do.call(expand.grid,
+            ##                              c(proxies[best[[i]]],
+            ##                                stringsAsFactors=FALSE,
+            ##                                KEEP.OUT.ATTRS=FALSE)),
+            ##                      1, makestr)
+            ## })
+            ## all.equal(pm.str3,pm.str)
             ## system.time({
             ##     toexpand <- proxies[best[[i]]]
             ##     l <- sapply(toexpand,length)
@@ -63,7 +81,7 @@ expand.tags <- function(d, tags) {
             ## })
         }
         #message(i)
-        gc()
+        #gc()
         return(pm.str)
     })
 
