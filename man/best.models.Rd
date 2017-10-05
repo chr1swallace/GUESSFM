@@ -25,4 +25,3 @@ Note that this isn't posterior probability in the true sense, it is the posterio
 \author{
 chris
 }
-

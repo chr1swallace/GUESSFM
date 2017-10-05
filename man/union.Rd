@@ -3,9 +3,9 @@
 \docType{methods}
 \name{union}
 \alias{union}
-\alias{union,groups,groups-method}
 \alias{union,snppicker,snppicker-method}
 \alias{union,tags,tags-method}
+\alias{union,groups,groups-method}
 \title{Create a union of groups, snppicker or tags objects}
 \usage{
 union(x, y)
@@ -33,4 +33,3 @@ returned.
 \author{
 Chris Wallace
 }
-

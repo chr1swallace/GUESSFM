@@ -47,4 +47,3 @@ After abf.calc, you may want to use \code{\link{abf2snpmod}} to generate a snpmo
 \author{
 Chris Wallace
 }
-

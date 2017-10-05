@@ -17,7 +17,7 @@ number of SNPs required to model a trait or several traits
 
 \item{\code{traits}}{names of traits, corresponding to items in .Data}
 }}
+
 \examples{
 new("ppnsnp")
 }
-

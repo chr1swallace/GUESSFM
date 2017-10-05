@@ -20,4 +20,3 @@ Read in the output files and create an object of class snpmod
 \author{
 Chris Wallace
 }
-

@@ -30,4 +30,3 @@ Internal function: create parallel.dir, save necessary files
 \author{
 chris
 }
-

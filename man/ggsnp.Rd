@@ -20,4 +20,3 @@ create a track from a guess.summ object showing snp ids
 \author{
 Chris Wallace
 }
-

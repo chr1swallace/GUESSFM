@@ -17,13 +17,12 @@ ggplot object
 \description{
 Plot a bed file, overlaying lines showing the positions of SNPs in a summ object
 }
-\author{
-chris
-}
 \seealso{
-Other plotting.GUESSFM.results: \code{\link{addlines}},
+Other plotting GUESSFM results: \code{\link{addlines}},
   \code{\link{ggchr}}, \code{\link{ggld}},
   \code{\link{pp.nsnp}}, \code{\link{scalepos}},
   \code{\link{signal.plot}}
 }
-
+\author{
+chris
+}

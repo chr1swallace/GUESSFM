@@ -23,4 +23,3 @@ SNPS2
 GUESSFM:::makestr(SNPS1)
 GUESSFM:::makestr(SNPS2)
 }
-

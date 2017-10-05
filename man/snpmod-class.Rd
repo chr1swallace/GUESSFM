@@ -16,7 +16,7 @@ Class to hold data relating to multiple models fitted to SNP data
 
 \item{\code{model.snps}}{list containing the SNPs for each model. May be removed.}
 }}
+
 \examples{
 new("snpmod")
 }
-

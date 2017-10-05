@@ -26,4 +26,3 @@ Uses snpStats' snp.imputation function
 \author{
 Chris Wallace
 }
-

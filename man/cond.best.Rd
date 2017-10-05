@@ -32,4 +32,3 @@ Calls snp.rhs.test to find next best predictor to add, possibly given a list of 
 \author{
 Chris Wallace
 }
-

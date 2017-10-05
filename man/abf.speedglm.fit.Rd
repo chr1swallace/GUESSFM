@@ -10,7 +10,7 @@ abf.speedglm.fit(x, y, q, family, snps, parallel.dir = NULL,
 \arguments{
 \item{x}{design matrix}
 
-\item{y}{response}
+\item{y}{response vector}
 
 \item{q}{matrix of covariates}
 
@@ -31,4 +31,3 @@ Internal function for fitting abf
 \author{
 Chris Wallace
 }
-

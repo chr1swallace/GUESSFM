@@ -4,7 +4,7 @@
 \alias{pattern.plot}
 \title{pattern.plot}
 \usage{
-pattern.plot(SM, groups)
+pattern.plot(SM, groups, r2 = NULL)
 }
 \arguments{
 \item{SM}{snpmod or list of snpmods}
@@ -20,4 +20,3 @@ Plot pattern of SNP group inclusion
 \author{
 Chris Wallace
 }
-

@@ -2,8 +2,8 @@
 % Please edit documentation in R/AllMethods.R
 \docType{methods}
 \name{summary,snppicker-method}
-\alias{summary,groups-method}
 \alias{summary,snppicker-method}
+\alias{summary,groups-method}
 \title{Summaries}
 \usage{
 \S4method{summary}{snppicker}(object)
@@ -16,4 +16,3 @@
 \description{
 Print summary of an object
 }
-

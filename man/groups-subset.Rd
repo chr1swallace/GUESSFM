@@ -2,19 +2,19 @@
 % Please edit documentation in R/AllGenerics.R, R/AllMethods.R
 \docType{methods}
 \name{tagsof}
-\alias{[,groups,character,missing,missing-method}
-\alias{[,groups,logical,missing,missing-method}
-\alias{[,groups,numeric,missing,missing-method}
-\alias{[,tags,character,missing,missing-method}
-\alias{[[,groups,character-method}
-\alias{[[,groups,logical-method}
-\alias{[[,groups,numeric-method}
-\alias{taggedby}
-\alias{taggedby,groups,character-method}
-\alias{taggedby,tags,character-method}
 \alias{tagsof}
-\alias{tagsof,groups,character-method}
+\alias{taggedby}
+\alias{taggedby,tags,character-method}
 \alias{tagsof,tags,character-method}
+\alias{taggedby,groups,character-method}
+\alias{tagsof,groups,character-method}
+\alias{[,groups,character,missing,missing-method}
+\alias{[,groups,numeric,missing,missing-method}
+\alias{[,groups,logical,missing,missing-method}
+\alias{[,tags,character,missing,missing-method}
+\alias{[[,groups,numeric-method}
+\alias{[[,groups,logical-method}
+\alias{[[,groups,character-method}
 \title{\code{tagsof} shows tags for a named character vector of SNPs}
 \usage{
 tagsof(object, i)
@@ -62,4 +62,3 @@ subsetted groups or tags object
 
 '[' will extract another object of the same class.  '[[' will extract a single element.
 }
-

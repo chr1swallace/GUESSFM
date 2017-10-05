@@ -29,8 +29,8 @@ in \code{.Data}, repeated as necessary}
 
 \item{\code{.Data}}{character vector giving SNPs included in this tags object}
 }}
+
 \examples{
 new("groups")
 new("tags")
 }
-
