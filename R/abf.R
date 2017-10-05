@@ -19,8 +19,8 @@
 ##' @param verbose print lots of progress messages if TRUE.  Default is FALSE.
 ##' @param parallel.dir optional directory name to enable manual parallelisation. 
 ##' @return a data.frame containing model name, ABF, and an indicator of whether the ABF was calculating directly or via a tag SNP
-##' @author Chris Wallace
 ##' @export
+##' @author Chris Wallace
 abf.calc <- function(y,x,models,family="binomial",
                      q=NULL,method=c("speedglm","glm.fit","glm"),
                      R2=NULL,snp.data=NULL,return.R2=FALSE,verbose=FALSE,
@@ -35,10 +35,10 @@ abf.calc <- function(y,x,models,family="binomial",
      if(!is(y,"vector") || nrow(x)!=length(y))
         stop(paste("y should be a vector of length equal to the rows in x"))
     models[ models=="" ] <- "1"
-  models.orig <- models
+    models.orig <- models
   
   ## models that can be fitted directly
-  if(verbose)
+    if(verbose)
     message("Finding models which can be evaluated directly...")
   snps <- strsplit(models,"%")
   cols.ok <- c("1",colnames(x))
@@ -339,7 +339,7 @@ abf.speedglm.fit <- function(x,y,q,family,snps,parallel.dir=NULL,verbose=FALSE) 
            coeff=cbind(beta=model$coefficients,
              se=sqrt(diag(vcov(model)))))
     })    
-  } else {
+  i=278} else {
       abf.fit.parallel.setup(parallel.dir, snps, x2, y2, q, family)
       return(length(snps))      
   }
