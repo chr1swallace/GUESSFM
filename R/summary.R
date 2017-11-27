@@ -195,8 +195,10 @@ best.models <- function(d,pp.thr=0.01,cpp.thr=NA) {
     return(lapply(d,best.models,pp.thr=pp.thr,cpp.thr=cpp.thr))
   if(!is(d,"snpmod"))
     stop("expected d to be a snpmod object, found ",class(d))
+  o <- order(d@models$PP,decreasing=TRUE),
+  d@models <- d@models[ o ] # just in case
+  d@model.snps <- d@model.snps[ o ] # just in case
   if(!is.na(cpp.thr)) {
-    d@models <- d@models[ order(d@models$PP,decreasing=TRUE),] # just in case
     cpp <- cumsum(d@models$PP)
     wh <- which(cpp<=cpp.thr)
     if(!length(wh))
@@ -204,7 +206,6 @@ best.models <- function(d,pp.thr=0.01,cpp.thr=NA) {
     wh <- c(wh,max(wh)+1) # include the model which first exceeds the threshold
   } else {
     wh <- which(d@models$PP>pp.thr)
-    wh <- wh[ order(d@models$PP[wh],decreasing=TRUE) ]
   }
   return(cbind(d@models[wh,], snps=unlist(lapply(d@model.snps[wh],makestr))))
 }
