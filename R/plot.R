@@ -139,7 +139,9 @@ all.snps <- names(snps.num)
   ## align A to 1:n
   LD$A <- xscale(LD$A, torange=c(1.5, n-0.5))
   ## scale by pos
-  LD$A <- xscale(LD$A, xrange=c(min(summ$snpnum),max(summ$snpnum)), torange=c(min(summ$position.plot),max(summ$position.plot)))
+LD$A <- xscale(LD$A,
+               xrange=c(min(summ$snpnum),max(summ$snpnum)),
+               torange=c(min(summ$x.scale),max(summ$x.scale)))
   
   ## length of ticks
   tlength <- (max(LD$B) - min(LD$B))/50
@@ -250,11 +252,15 @@ ggbed <- function(bed,summ) {
 ##' @return summ data.frame with additional columns, x.scale, xmin.scale, xmax.scale
 ##' @export
 ##' @family plotting GUESSFM results
-scalepos <- function(summ,position="position") {
+scalepos <- function(summ,position="position",prange=NULL) {
     if(!(position %in% colnames(summ)))
         stop("Position column not found: ",position)       
     summ$position.plot <- summ[,position]
-    pr <- c(min(summ$position.plot),max(summ$position.plot))
+    pr <- if(is.null(prange)) {
+              c(min(summ$position.plot),max(summ$position.plot))
+          } else {
+              prange
+          }
     xr <- c(min(summ$snpnum),max(summ$snpnum))
     summ$x.scale <- xscale(summ$snpnum,torange=pr,xrange=xr)
     summ$xmin.scale <- xscale(summ$x.min,torange=pr,xrange=xr)
