@@ -470,6 +470,8 @@ pattern.plot <- function(SM,groups,r2=NULL) {
   for(i in seq_along(BM)) 
     BM[[i]]$group <- mod2group(BM[[i]]$str,groups)
   G <- lapply(BM,gsumm)
+  if(is.null(names(G)))
+      names(G) <- paste0("trait",seq_along(G))
   for(i in names(G)) 
     G[[i]]$trait <- i
   G <- do.call("rbind",G)

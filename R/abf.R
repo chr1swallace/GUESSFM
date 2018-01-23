@@ -75,7 +75,7 @@ abf.calc <- function(y,x,models,family="binomial",
   }
   
   models <- c(one="1",models)
-  snps <- strsplit(models,"%")
+  snps <- c(one="1",snps) #strsplit(models,"%")
   
   ## load prepared results?
   parallel.results <- presults(parallel.dir)
@@ -339,7 +339,7 @@ abf.speedglm.fit <- function(x,y,q,family,snps,parallel.dir=NULL,verbose=FALSE) 
            coeff=cbind(beta=model$coefficients,
              se=sqrt(diag(vcov(model)))))
     })    
-  i=278} else {
+  } else {
       abf.fit.parallel.setup(parallel.dir, snps, x2, y2, q, family)
       return(length(snps))      
   }
