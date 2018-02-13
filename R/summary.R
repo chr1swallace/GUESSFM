@@ -195,7 +195,7 @@ best.models <- function(d,pp.thr=0.01,cpp.thr=NA) {
     return(lapply(d,best.models,pp.thr=pp.thr,cpp.thr=cpp.thr))
   if(!is(d,"snpmod"))
     stop("expected d to be a snpmod object, found ",class(d))
-  o <- order(d@models$PP,decreasing=TRUE),
+  o <- order(d@models$PP,decreasing=TRUE)
   d@models <- d@models[ o ] # just in case
   d@model.snps <- d@model.snps[ o ] # just in case
   if(!is.na(cpp.thr)) {
