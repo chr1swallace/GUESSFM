@@ -263,7 +263,7 @@ group.multi <- function(SM2,snp.data,min.mppi=0.01,r2.minmerge=0.5) {
     ## utility functions in local environment
     mem.sum <- function(members) { (colSums(MPPI[members,,drop=FALSE])) }
     mem.marg <- function(members) { sapply(X, function(x) {
-        sum( pmin( rowSums(x$x[,members,drop=FALSE]), 1 ) * x$w ) })
+        sum( pmin( apply(x$x[,members,drop=FALSE],1,sum), 1 ) * x$w ) })
     }
     mem.ab <- function(members) {list(a=mem.sum(members), b=mem.marg(members))}
     obj.ab <- function(object) {members <- labels(object); mem.ab(members)}
@@ -334,7 +334,7 @@ group.multi <- function(SM2,snp.data,min.mppi=0.01,r2.minmerge=0.5) {
   
         tomerge <- maxr2>r2.minmerge  & maxr < r.tol #& minr2>0.4
 
-        if(any(tomerge)) {
+        if(any(tomerge,na.rm=TRUE)) {
             wh <- which(tomerge,arr.ind=TRUE)
             wh <- wh[wh[,1] < wh[,2],,drop=FALSE ]
             wh <- cbind(wh,maxr2[wh])
@@ -343,7 +343,7 @@ group.multi <- function(SM2,snp.data,min.mppi=0.01,r2.minmerge=0.5) {
                 a <- wh[k,1]
                 b <- wh[k,2]
                 sumcols <- grep("sum.mppi",colnames(G1))
-                if(any(colSums(G1[c(a,b),sumcols]) > 1.01))
+                if(any(colSums(G1[c(a,b),sumcols,drop=FALSE]) > 1.01))
                     next
                 G2[[a]] <- c(G2[[a]], G2[[b]])
                 G2[[b]] <- NULL
