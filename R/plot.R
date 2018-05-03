@@ -27,7 +27,7 @@ ggsnp <- function(summx,snp.name="snp") {
   summx <- unique(summx[,c(snp.name,"tag","x.scale")])
   ggplot(summx,aes_string(x="x.scale",y=1,label=snp.name,xintercept="x.scale")) +
     geom_vline(aes(xintercept=x.scale,col=tag),size=0.2,alpha=0.5) +
-      geom_text(angle=90,vjust=0.5,hjust=0,size=2,fontface="bold") +
+      geom_text(angle=90,vjust=0.5,hjust=0,size=4,fontface="bold") +
         theme(legend.position="none",axis.text=element_blank(),
               axis.ticks=element_blank(),axis.title=element_blank()) + ylim(1,1.4)
 }
@@ -125,7 +125,7 @@ plot_diffuse <- function(results, maxrank=1000, thin=500) {
 ##' @family plotting GUESSFM results
 ggld <- function(data, summ) {
 use <- !duplicated(summ$snpnum)
-snps.num <- structure(summ$snpnum[use],names=summ$snp[use])
+snps.num <- structure(summ$snpnum[use],names=rownames(summ)[use])
 all.snps <- names(snps.num)
   LD <- melt(as(ld(data[,all.snps], stats="R.squared", depth=length(all.snps)-1, symmetric=TRUE),"matrix"))
   LD$X1 <- snps.num[as.character(LD$X1)] - 1
