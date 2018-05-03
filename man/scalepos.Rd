@@ -18,9 +18,8 @@ summ data.frame with additional columns, x.scale, xmin.scale, xmax.scale
 Scale SNP positions in a summ object in order to be plotted by signal.plot and friends
 }
 \seealso{
-Other plotting.GUESSFM.results: \code{\link{addlines}},
+Other plotting GUESSFM results: \code{\link{addlines}},
   \code{\link{ggbed}}, \code{\link{ggchr}},
   \code{\link{ggld}}, \code{\link{pp.nsnp}},
   \code{\link{signal.plot}}
 }
-

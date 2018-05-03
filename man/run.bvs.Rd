@@ -6,20 +6,26 @@
 \usage{
 run.bvs(X, Y, gdir = "test", sub = NA, covars = NULL,
   family = "gaussian", nsweep = 55000, nchains = 3, nexp = 3,
-  tag.r2 = 0.99, nsave = 1000, guess.command = NULL, ...)
+  tag.r2 = 0.99, nsave = 1000, guess.command = NULL, wait = FALSE,
+  run = TRUE, ...)
 }
 \arguments{
 \item{X}{snpMatrix object, holding genotypes}
 
 \item{Y}{vector or matrix of phenotypes, nrow(Y)==nrow(X)}
 
-\item{gdir}{directory where all the GUESS input/output files will be. If it doesn't exist, it will be created.}
+\item{gdir}{directory where all the GUESS input/output files will
+be. If it doesn't exist, it will be created.}
 
-\item{sub}{optional number < nrow(X). If supplied, only the subset of samples defined by 1:sub will be used.}
+\item{sub}{optional number < nrow(X). If supplied, only the subset
+of samples defined by 1:sub will be used.}
 
-\item{covars}{optional matrix or vector of covariates. If supplied GUESS will be run on residuals from glm(Y ~ ., data=as.data.frame(covars)).}
+\item{covars}{optional matrix or vector of covariates. If supplied
+GUESS will be run on residuals from glm(Y ~ .,
+data=as.data.frame(covars)).}
 
-\item{family}{family for Y ~ covars regression.  default "gaussian".}
+\item{family}{family for Y ~ covars regression.  default
+"gaussian".}
 
 \item{nsweep}{number of sweeps, see documentation for GUESS}
 
@@ -27,18 +33,31 @@ run.bvs(X, Y, gdir = "test", sub = NA, covars = NULL,
 
 \item{nexp}{expected number of causal variants in region}
 
-\item{tag.r2}{r squared value at which to tag to avoid numerical instability.  Default of 0.99 has worked well in our experience.}
+\item{tag.r2}{r squared value at which to tag to avoid numerical
+instability.  Default of 0.99 has worked well in our
+experience.}
 
 \item{nsave}{number of models to save, see documentation for GUESS}
 
-\item{guess.command}{Command to run GUESS.  This is normally automatically set to the version of GUESS installed by R2GUESS, but you may override with a full path to a system version of GUESS if you prefer.}
+\item{guess.command}{Command to run GUESS.  This is normally
+automatically set to the version of GUESS installed by
+R2GUESS, but you may override with a full path to a system
+version of GUESS if you prefer.}
 
-\item{...}{GUESS starts from a stepwise solution found by cond.best.  Use ... to pass arguments firectly to cond.best to influence the p value threshold or number of predictors at which the stepwise search stops.}
+\item{wait}{logical.  default FALSE. if TRUE, run.bvs will wait
+for GUESS to finish, rather than running in background}
+
+\item{run}{logical.  default TRUE.  If FALSE, don't run GUESS, just return the command that would be run}
+
+\item{...}{GUESS starts from a stepwise solution found by
+cond.best.  Use ... to pass arguments firectly to cond.best to
+influence the p value threshold or number of predictors at
+which the stepwise search stops.}
 }
 \value{
-nothing.  side effect is to set GUESS running in the background.  This takes a while (typically several hours).
+nothing.  side effect is to set GUESS running in the
+    background.  This takes a while (typically several hours).
 }
 \description{
 Wrapper for GUESS, an alternative to using R2GUESS
 }
-

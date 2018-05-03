@@ -21,4 +21,3 @@ Just a wrapper for read.snpmod.
 \author{
 Chris Wallace
 }
-

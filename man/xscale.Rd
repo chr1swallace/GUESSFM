@@ -41,4 +41,3 @@ cbind(x,
 \author{
 Chris Wallace
 }
-

@@ -161,7 +161,7 @@ tag <- function(X,tag.threshold=0.99, snps=NULL, samples=NULL, strata=NULL,quiet
   if(!is.null(split.at) && ncol(X)>split.at) {
     cs <- col.summary(X)
     Q <- quantile(cs$MAF,seq(0,1,length=ceiling(ncol(X)/split.at)+1))
-    maf <- cut(cs$MAF,breaks=Q,include.lowest=TRUE)
+    maf <- cut(cs$MAF,breaks=unique(Q),include.lowest=TRUE)
     tags <- mclapply(levels(maf), function(l) {
       wh <- which(maf==l)
       if(!length(wh))

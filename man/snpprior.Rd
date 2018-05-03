@@ -73,4 +73,3 @@ points(x, y2.0, col="green")
 \author{
 Chris Wallace
 }
-

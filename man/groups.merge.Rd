@@ -21,4 +21,3 @@ Merge groups in an object of class groups
 Groups identified by the index tag SNPs given by \code{tags} will
 be merged, and the number of groups in the object reduced.
 }
-

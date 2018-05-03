@@ -34,4 +34,3 @@ guess.summ
 \author{
 Chris Wallace
 }
-

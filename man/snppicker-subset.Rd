@@ -27,4 +27,3 @@ return an object of class groups.  No plotting ability is
 retained, but a single groups object is easy to inspect and
 manipulate.
 }
-

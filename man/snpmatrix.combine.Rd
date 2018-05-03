@@ -25,4 +25,3 @@ strands will produce a meaningless result.
 \author{
 Chris Wallace
 }
-

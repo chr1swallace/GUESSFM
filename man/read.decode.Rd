@@ -21,4 +21,3 @@ NB decode file is written 0-based, but ESS input is read 1-based, so do that swi
 \author{
 Chris Wallace
 }
-

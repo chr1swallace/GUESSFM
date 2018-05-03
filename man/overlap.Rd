@@ -20,4 +20,3 @@ overlap can be used to examine the overlap between groups before the union is cr
 \author{
 Chris Wallace
 }
-

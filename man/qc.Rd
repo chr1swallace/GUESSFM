@@ -3,9 +3,9 @@
 \docType{methods}
 \name{qc}
 \alias{qc}
-\alias{qc,list,ANY-method}
 \alias{qc,ppnsnp,missing-method}
 \alias{qc,snpmod,SnpMatrix-method}
+\alias{qc,list,ANY-method}
 \title{Quality control}
 \usage{
 qc(object, data)
@@ -58,4 +58,3 @@ Chris Wallace
 
 Chris Wallace
 }
-

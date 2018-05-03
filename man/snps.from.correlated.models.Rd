@@ -22,4 +22,3 @@ internal function: summarise snps from highly correlated models.
 \author{
 Chris Wallace
 }
-

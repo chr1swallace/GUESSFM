@@ -28,4 +28,3 @@ to allow R2GUESS functions to work.
 \author{
 Chris Wallace
 }
-

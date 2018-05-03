@@ -32,4 +32,3 @@ be appropriately merged, using \code{groups.merge}.
 \author{
 Chris Wallace
 }
-

@@ -17,4 +17,3 @@ snpmod object with tags expanded
 \description{
 We can use tagging to reduce the number of models.  This function expands each tagged model to every possible model that could be created from its component (tag) SNPs.
 }
-

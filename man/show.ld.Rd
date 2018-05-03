@@ -29,4 +29,3 @@ Side effect: displays plot on current graphics device
 \author{
 Chris Wallace
 }
-

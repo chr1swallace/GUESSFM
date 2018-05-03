@@ -3,10 +3,10 @@
 \docType{methods}
 \name{snps}
 \alias{snps}
-\alias{snps,groups-method}
-\alias{snps,tags-method}
 \alias{tags}
+\alias{snps,groups-method}
 \alias{tags,groups-method}
+\alias{snps,tags-method}
 \alias{tags,tags-method}
 \title{Accessors for groups objects}
 \usage{
@@ -41,4 +41,3 @@ returns a character vector of tag SNPs
 \author{
 Chris Wallace
 }
-
