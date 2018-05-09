@@ -1,18 +1,17 @@
-##' (Beta) Binomial prior for number of SNPs in a model
+##' (Beta) Binomial prior for number of SNPs in a model ' ' A binomial
+##prior for the number of SNPs in a model may be ' considered too
+##peaked if there is relatively little prior ' information about the
+##number of causal SNPs, and, particularly if ' the posterior model
+##choice is sensitive to this prior, it can be ' useful to consider a
+##prior with greater spread.  One such choice ' is the beta binomial
+##model, implemented here, under which the ' number of SNPs follows a
+##binomial distribution with parameters n, ' p while p follows a beta
+##distribution with parameters chosen so ' that the mean and the
+##overdispersion (relative to a binomial ' distribution) of the number
+##of SNPs is as specified by ' \code{expected} and
+##\code{overdispersion}, respectively.  An ' overdispersion of 1
+##corresponds to a binomial prior.
 ##'
-##' A binomial prior for the number of SNPs in a model may be
-##' considered too peaked if there is relatively little prior
-##' information about the number of causal SNPs, and, particularly if
-##' the posterior model choice is sensitive to this prior, it can be
-##' useful to consider a prior with greater spread.  One such choice
-##' is the beta binomial model, implemented here, under which the
-##' number of SNPs follows a binomial distribution with parameters n,
-##' p while p follows a beta distribution with parameters chosen so
-##' that the mean and the overdispersion (relative to a binomial
-##' distribution) of the number of SNPs is as specified by
-##' \code{expected} and \code{overdispersion}, respectively.  An
-##' overdispersion of 1 corresponds to a binomial prior.
-##' 
 ##' @title snpprior
 ##' @param x number of SNPs in a model (defaults to 1:length(groups), ie returns a vector)
 ##' @param n total number of SNPs or SNP groups available
@@ -24,8 +23,6 @@
 ##' @param pi0 prior probability that no SNP is associated
 ##' @param truncate optional, if supplied priors will be adjusted so models with x>truncate have prior 0
 ##' @param overdispersion.warning by default, prior distributions should be binomial or beta-binomial (overdispersed).  If you give an overdispersion <1, snpprior will stop with an error.  Set overdispersion.warning=FALSE to override this.
-##' @param ## 
-##' @param value 
 ##' @return prior probabilities as a numeric vector
 ##' @export
 ##' @author Chris Wallace
