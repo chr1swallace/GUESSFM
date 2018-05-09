@@ -207,7 +207,7 @@ best.models <- function(d,pp.thr=0.01,cpp.thr=NA) {
     wh <- c(wh,max(wh)+1) # include the model which first exceeds the threshold
   } else {
     wh <- which(d@models$PP>pp.thr)
-+    wh <- wh[ order(d@models$PP[wh],decreasing=TRUE) ]
+    wh <- wh[ order(d@models$PP[wh],decreasing=TRUE) ]
   }
   return(cbind(d@models[wh,], snps=unlist(lapply(d@model.snps[wh],makestr))))
 }
