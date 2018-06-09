@@ -218,8 +218,10 @@ run.bvs <- function(X,Y,gdir="test",sub=NA,
   cs <- col.summary(gX)
   use.cols <- which(!is.na(cs[,"z.HWE"]) & cs[,"MAF"]>0)
   m <- length(use.cols)
-  if(m < ncol(gX))
-    gX <- gX[,use.cols]
+  if(m < ncol(gX)) {
+      gX <- gX[,use.cols]
+      X <- X[,use.cols]
+  }
 
   if(!is.null(covars)) {
     if(!is.data.frame(covars) & !is.matrix(covars)) # deal with vectors, without messing up data.frames
@@ -241,7 +243,7 @@ run.bvs <- function(X,Y,gdir="test",sub=NA,
   ## IF GUESS: what are the best regressors? (95,220?)
   best <- NULL
   cs <- col.summary(X)
-  wh <- use.cols[which(cs[,"MAF"]>0.05 & cs[,"Certain.calls"]>0.9)]
+  wh <- which(cs[,"MAF"]>0.05 & cs[,"Certain.calls"]>0.9)
   while(length(newbest <- cond.best(X[use,wh], gY, best, family=family, ...))) {
     best <- c(best,newbest)
   }
