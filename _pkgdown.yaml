@@ -1,0 +1,27 @@
+title: GUESSFM
+url: http://chr1swallace.github.io/GUESSFM
+template:
+  params:
+    bootswatch: simplex
+# reference:
+#   - title: Expected statistics
+#     desc: ~
+#     contents:
+#       - '`expected_z_score`'
+#       - '`expected_vbeta`'
+#   - title: Simulate statistics
+#     desc: Simulated GWAS results vary about the expected statistics
+#     contents:
+#       - '`simulated_vbeta`'
+#       - '`simulated_z_score`'
+#   - title: Others
+#     desc: Other functions and helpers
+#     contents:
+#       - '`compute_gamma0`'
+#       - '`compute_gamma0_PW`'
+#       - '`est_statistic`'
+#       - '`est_zscore`'
+#       - '`make_GenoProbList`'
+#       - '`make_dataset`'
+#       - '`make_dataset_pheno`'
+#       - '`which_genotypes`'
