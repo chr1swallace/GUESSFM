@@ -18,6 +18,7 @@ Imports:
     VGAM,
     reshape,
     ggplot2,
+    cowplot,
     grid,
     snpStats,
     parallel,
