@@ -239,11 +239,11 @@ group.multi <- function(SM2,snp.data,min.mppi=0.01,r2.minmerge=0.5) {
     stopifnot(is.list(SM2))
     bs <- best.snps(SM2,pp.thr=0)
     bs <- do.call("rbind",bs)
-    snps <- unique(bs[bs$Marg_Prob_Incl>0.001,]$var) %>% setdiff(., "1")
+    snps <- setdiff(unique(bs[bs$Marg_Prob_Incl>0.001,]$var), "1")
     snp.data <- snp.data[,snps]
     r2 <- ld(snp.data,snp.data,stat="R.squared",symmetric = TRUE)
     X <- lapply(SM2,makex)
-    MPPI <- lapply(X,makemppi) %>% do.call("cbind",.)
+    MPPI <- do.call("cbind", lapply(X,makemppi) )
     R <- lapply(X, function(x) maker(x)[snps,snps])
     rmax <- rmin <- R[[1]]
     if(length(R)>1)
@@ -312,7 +312,7 @@ group.multi <- function(SM2,snp.data,min.mppi=0.01,r2.minmerge=0.5) {
     if(!is.list(ret))
         ret <- list(ret)
     ret <- LinearizeNestedList(ret)
-    ret.mppi <- sapply(ret, mem.sum) %>% t()
+    ret.mppi <- t( sapply(ret, mem.sum) )
     use <- apply(ret.mppi,1,max) > 0.001
     df <- sapply(ret,mem.summ)
     df <- t(df)

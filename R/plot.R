@@ -130,7 +130,9 @@ all.snps <- names(snps.num)
   LD <- melt(as(ld(data[,all.snps], stats="R.squared", depth=length(all.snps)-1, symmetric=TRUE),"matrix"))
   LD$X1 <- snps.num[as.character(LD$X1)] - 1
   LD$X2 <- snps.num[as.character(LD$X2)] - 1
-  n <- length(all.snps)
+n <- length(all.snps)
+if(n<2)
+    return(NULL)
   offset <- n/sqrt(2)
   LD$A <- with(LD, -(n-X1-X2)/sqrt(2))
   LD$B <- with(LD, -(n-X1-X2)/sqrt(2) - X1*sqrt(2))
@@ -429,6 +431,7 @@ mod2group <- function(str,groups) {
       ret[match] <- apply(g[match,,drop=FALSE],1,which)
     return(paste(sort(ret),collapse="-"))
   })
+  G[str=="1"] <- "-" # distinguish null model from ungrouped snps
   return(G)
 }
 numorneg <- function(x) {
@@ -500,6 +503,8 @@ pattern.plot <- function(SM,groups,r2=NULL) {
   LD$A <- with(LD, -(n-X1-X2)/sqrt(2))
   LD$B <- with(LD, -(n-X1-X2)/sqrt(2) - X1*sqrt(2))
   LD <- LD[ LD$X1>LD$X2, ]
+  if(!nrow(LD))
+      return(p)
   ## align A to 1:n
   LD$A <- xscale(LD$A, torange=c(0.5,n-0.5))
   tlength <- (max(LD$B) - min(LD$B))/50

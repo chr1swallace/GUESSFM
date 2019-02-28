@@ -1,29 +1,41 @@
 ##' guess.summ
 ##'
-##' @title Summarise a snpmod object 
-##' @param results an object of class snpmod, or a named list of such objects
-##' @param groups object of class groups.  If supplied, all SNPs here will be summarised, and grouped according to this structure
+##' @title Summarise a snpmod object
+##' @param results an object of class snpmod, or a named list of such
+##'     objects
+##' @param groups object of class groups.  If supplied, all SNPs here
+##'     will be summarised, and grouped according to this structure
 ##' @param snps data.frame giving details of the SNPs
-##' @param snp.data if groups is missing, tag groups are determined from this object of class SnpMatrix
-##' @param position name of column in snps data.frame giving SNP position. default="position"
+##' @param snp.data if groups is missing, tag groups are determined
+##'     from this object of class SnpMatrix
+##' @param position name of column in snps data.frame giving SNP
+##'     position. default="position"
 ##' @param tag.thr if groups is missing, threshold at which to tag
-##' @param pp.thr if groups is missing, threshold above which SNPs are selected for summary.  
-##' @param method if groups is missing, method to determine tag groups using heirarchical clustering, default is "complete"
+##' @param pp.thr if groups is missing, threshold above which SNPs are
+##'     selected for summary.
+##' @param method if groups is missing, method to determine tag groups
+##'     using heirarchical clustering, default is "complete"
+##' @param MPI Name of column representing Marg_Prob_Incl
+##' @param SNP Name of column giving SNP id
 ##' @export
 ##' @return data.frame
 ##' @author Chris Wallace
-guess.summ <- function(results, groups=NULL, snps=NULL, snp.data=NULL, position="position", tag.thr=0.8, pp.thr=0.01, method="complete") {
+guess.summ <- function(results, groups=NULL, snps=NULL, snp.data=NULL, position="position", tag.thr=0.8, pp.thr=0.01, method="complete", MPI="Marg_Prob_Incl",SNP="var") {
   if(is.null(groups) && is.null(snp.data))
     stop("must supply either SNP groups or snp.data for fixed LD threshold groups")
   if(!is.null(snps) & !(position %in% colnames(snps)))
     stop("position column '",position,"' not found in snps data.frame")
   if(!is.list(results))
-    results <- list(trait=results)
+      results <- list(trait=results)
+  if("snpmod" %in% class(results[[1]])) {
+      for(i in seq_along(results))
+          results[[i]] <- results[[i]]@snps
+  }
   if(!is.null(groups)) {
     all.snps <- make.names(unlist(snps(groups)))
-    guess.snps <- lapply(results, function(x) subset(x@snps, var %in% all.snps))
+    guess.snps <- lapply(results, function(x) subset(x, x[[SNP]] %in% all.snps))
   } else {
-    guess.snps <- lapply(results, function(x) subset(x@snps,x@snps$Marg_Prob_Incl>pp.thr))
+    guess.snps <- lapply(results, function(x) subset(x,x[[MPI]]>pp.thr))
     all.snps <- make.names(unique(unlist(lapply(guess.snps, "[[", "var"))))
   }
   if(!is.null(groups)) {
@@ -46,11 +58,20 @@ guess.summ <- function(results, groups=NULL, snps=NULL, snp.data=NULL, position=
   }
   
   ## first order tags
-  cl <- unique(tags(tags))
-  cl <- cl[ order(snps[cl, position]) ]
-  ## then order snps within tag groups
-  tsplit <- split(snps(tags), tags(tags))[ cl ]
+  ## print(head(snps))
+  ## cl <- unique(tags(tags))
+  ## print(cl)
+  ## minpos <- tapply(snps$position, cl, min)
+  ## print(cl)
+  ## cl <- cl[ order(minpos) ]
+  ## cl <- cl[ order(snps[cl, position]) ]
+  ## order snps within tag groups
+  tsplit <- split(snps(tags), tags(tags)) #[ cl ]
   tsplit <- lapply(tsplit, function(x) x[ order(snps[x, position]) ])
+  ## order tag groups by leftmost snp
+  use.snps <- make.names(unique(unlist(lapply(guess.snps, "[[", "var"))))
+  first <- sapply(tsplit,function(x) intersect(x,use.snps)[1])
+  tsplit <- tsplit[ order(snps[first, position]) ]
   ## put it back together
   all.snps <- unlist(tsplit)
   df.snps <- data.frame(snp=all.snps,tag=rep(names(tsplit),sapply(tsplit,length)),
@@ -70,7 +91,7 @@ guess.summ <- function(results, groups=NULL, snps=NULL, snp.data=NULL, position=
   ## add pp results
   df.list <- vector("list",length(results))
   for(i in 1:length(results)) {
-    df <- data.frame(x=1:length(all.snps), pp=results[[i]]@snps[all.snps,"Marg_Prob_Incl"], snp=df.snps$snp, tag=df.snps$tag,
+    df <- data.frame(x=1:length(all.snps), pp=results[[i]][all.snps,MPI], snp=df.snps$snp, tag=df.snps$tag,
                      row.names=df.snps$snp)
     ppsum <- tapply(df$pp,df$tag,sum, na.rm=TRUE)
     df[,"ppsum"] <- ppsum[df$tag]
@@ -85,6 +106,7 @@ guess.summ <- function(results, groups=NULL, snps=NULL, snp.data=NULL, position=
   df.snps$snp <- make.names(df.snps$snp)
   return(df.snps)
 }
+
 ##' set xmin, xmax on a guess.summ object for easy plotting
 ##'
 ##' resets snpnum to be a continuous series of integers from 1
