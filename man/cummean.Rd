@@ -18,4 +18,3 @@ internal function: cumulative mean
 \examples{
 GUESSFM:::cummean(1:10)
 }
-

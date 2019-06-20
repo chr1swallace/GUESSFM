@@ -21,4 +21,3 @@ resets snpnum to be a continuous series of integers from 1
 \author{
 Chris Wallace
 }
-

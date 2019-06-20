@@ -32,4 +32,3 @@ are overlaid, with colours indicating labels.
 \author{
 Chris Wallace
 }
-

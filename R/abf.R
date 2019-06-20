@@ -19,12 +19,14 @@
 ##' @param verbose print lots of progress messages if TRUE.  Default is FALSE.
 ##' @param parallel.dir optional directory name to enable manual parallelisation. 
 ##' @return a data.frame containing model name, ABF, and an indicator of whether the ABF was calculating directly or via a tag SNP
+##' @param approx.lm default FALSE. If TRUE and family=="binomial", fit lm on the residuals from a binomial logistic regression of y on covars.  This is the same approximation used by GUESS, but its use here is experimental and should not be used unless you are prepared to sanity check results yourself (eg by running binomial for a selection of models and comparing ABF from the two approaches)
 ##' @export
 ##' @author Chris Wallace
 abf.calc <- function(y,x,models,family="binomial",
                      q=NULL,method=c("speedglm","glm.fit","glm"),
                      R2=NULL,snp.data=NULL,return.R2=FALSE,verbose=FALSE,
-                     parallel.dir=NULL) { # raftery, wen
+                     parallel.dir=NULL,
+                     approx.lm=FALSE) { # raftery, wen
   
   method <- match.arg(method)
     message("Calculating BICs using ",method)
@@ -75,8 +77,15 @@ abf.calc <- function(y,x,models,family="binomial",
   }
   
   models <- c(one="1",models)
-  snps <- strsplit(models,"%")
-  
+  snps <- c(one="1",snps) #strsplit(models,"%")
+
+    if(approx.lm && family=="binomial") {
+        m <- glm(y ~ ., data=as.data.frame(q))
+        y <- residuals(m)
+        family <- "gaussian"
+        q <- NULL
+    }
+    
   ## load prepared results?
   parallel.results <- presults(parallel.dir)
   if(!is.null(parallel.dir) && file.exists(parallel.results)) {
@@ -325,21 +334,21 @@ abf.speedglm.fit <- function(x,y,q,family,snps,parallel.dir=NULL,verbose=FALSE) 
       family <- switch(family,
                        "gaussian"=gaussian(link="identity"),
                        "binomial"=binomial(link="logit"))
+    model0 <- speedglm.wfit(y2, qm, family=family)
+    k0=ncol(qm)
+    A0 <- AIC(model0) - 2*k0 + k0*log(length(y2))
+    aadj <- log(length(y2)) - 2
     results <- mclapply(seq_along(snps), function(i) {
-      if(verbose && i %% 100 == 0)
-        cat(i,"\t")
-      k0=ncol(qm)
+      ## if(verbose && i %% 100 == 0)
+      ##   cat(i,"\t")
       k=length(snps[[i]]) + k0
       model <- speedglm.wfit(y2, cbind(x2[, snps[[i]], drop=FALSE ],qm), family=family)
-      model0 <- speedglm.wfit(y2, qm, family=family)
-#      class(model) <- class(model0) <- c(class(model),"glm")
-      A1 <- AIC(model) - 2*k + k*log(length(y2))
-      A0 <- AIC(model0) - 2*k0 + k0*log(length(y2))
+      A1 <- AIC(model) + k * aadj # - 2*k + k*log(length(y2))
       list(BIC=A1-A0,
            coeff=cbind(beta=model$coefficients,
-             se=sqrt(diag(vcov(model)))))
+                       se=sqrt(diag(vcov(model)))))
     })    
-  i=278} else {
+  } else {
       abf.fit.parallel.setup(parallel.dir, snps, x2, y2, q, family)
       return(length(snps))      
   }
@@ -381,6 +390,137 @@ abf.fit.postprocess <- function(results) {
     coeff  <- lapply(results, "[[", "coeff")
     return(list(bics=bics,coeff=coeff))
 }
+
+fasterglm.fit <- function (y, X, intercept = TRUE, row.chunk = NULL, 
+    family = gaussian(), start = NULL, etastart = NULL, mustart = NULL, 
+    offset = NULL, acc = 1e-08, maxit = 25, k = 2, sparselim = 0.9, 
+    camp = 0.01, eigendec = TRUE, tol.values = 1e-07, tol.vectors = 1e-07, 
+    tol.solve = .Machine$double.eps, sparse = NULL, method = c("eigen", 
+        "Cholesky", "qr"), trace = FALSE, ...) 
+{
+    nobs <- NROW(y)
+    nvar <- ncol(X)
+    offset <- rep.int(0, nobs)
+    weights <- rep(1, nobs)
+    col.names <- dimnames(X)[[2]]
+    method <- match.arg(method)
+    fam <- family$family
+    link <- family$link
+    variance <- family$variance
+    dev.resids <- family$dev.resids
+    aic <- family$aic
+    linkinv <- family$linkinv
+    mu.eta <- family$mu.eta
+    if (is.null(sparse)) 
+        sparse <- is.sparse(X = X, sparselim, camp)
+    if (is.null(start)) {
+        if (is.null(mustart)) 
+            eval(family$initialize)
+        eta <- if (is.null(etastart)) 
+            family$linkfun(mustart)
+        else etastart
+        mu <- mustart
+        start <- rep(0, nvar)
+    }
+    else {
+        eta <- offset + as.vector(if (nvar == 1) 
+            X * start
+        else {
+            if (sparse) 
+                X %*% start
+            else tcrossprod(X, t(start))
+        })
+        mu <- linkinv(eta)
+    }
+    iter <- 0
+    dev <- sum(dev.resids(y, mu, weights))
+    tol <- 1
+    if ((fam == "gaussian") & (link == "identity")) 
+        maxit <- 1
+    C_Cdqrls <- getNativeSymbolInfo("Cdqrls", PACKAGE = getLoadedDLLs()$stats)
+    while ((tol > acc) & (iter < maxit)) {
+        iter <- iter + 1
+        beta <- start
+        dev0 <- dev
+        varmu <- variance(mu)
+        mu.eta.val <- mu.eta(eta)
+        z <- (eta - offset) + (y - mu)/mu.eta.val
+        W <- (mu.eta.val * mu.eta.val)/varmu
+        XTX <- cp(X, W, row.chunk, sparse)
+        XTz <- if (sparse) 
+            t(X) %*% (W * z)
+        else t(crossprod((W * z), X))
+        if (iter == 1 & method != "qr") {
+            variable <- colnames(X)
+            ris <- if (eigendec) 
+                control(XTX, , tol.values, tol.vectors, , method)
+            else list(rank = nvar, pivot = 1:nvar)
+            ok <- ris$pivot[1:ris$rank]
+            if (eigendec) {
+                XTX <- ris$XTX
+                X <- X[, ok]
+                XTz <- XTz[ok]
+                start <- start[ok]
+            }
+            beta <- start
+        }
+        if (method == "qr") {
+            ris <- .Call(C_Cdqrls, XTX, XTz, tol.values, FALSE)
+            start <- if (ris$rank < nvar) 
+                ris$coefficients[ris$pivot]
+            else ris$coefficients
+        }
+        else {
+            start <- solve(XTX, XTz, tol = tol.solve)
+        }
+        eta <- if (sparse) 
+            drop(X %*% start)
+        else drop(tcrossprod(X, t(start)))
+        mu <- linkinv(eta <- eta + offset)
+        dev <- sum(dev.resids(y, mu, weights))
+        tol <- max(abs(dev0 - dev)/(abs(dev) + 0.1))
+        if (trace) 
+            cat("iter", iter, "tol", tol, "\n")
+    }
+    wtdmu <- if (intercept) 
+        sum(y)/nobs
+    else linkinv(offset)
+    nulldev <- sum(dev.resids(y, wtdmu, weights))
+    n.ok <- nobs
+    nulldf <- n.ok - as.integer(intercept)
+    rank <- ris$rank
+    dfr <- nobs - rank
+    aic.model <- aic(y, nobs, mu, weights, dev) + k * rank
+    ll.nuovo <- ll.speedglm(fam, aic.model, rank)
+    res <- (y - mu)/mu.eta(eta)
+    resdf <- n.ok - rank
+    RSS <- sum(W * res * res)
+    var_res <- RSS/dfr
+    dispersion <- if (fam %in% c("poisson", "binomial")) 
+        1
+    else var_res
+    if (method == "qr") {
+        coefficients <- start
+        coefficients[coefficients == 0] = NA
+        ok <- ris$pivot[1:rank]
+    }
+    else {
+        coefficients <- rep(NA, nvar)
+        start <- as(start, "numeric")
+        coefficients[ok] <- start
+    }
+    names(coefficients) <- col.names
+    rval <- list(coefficients = coefficients, logLik = ll.nuovo, 
+        iter = iter, tol = tol, family = family, link = link, 
+        df = dfr, XTX = XTX, dispersion = dispersion, ok = ok, 
+        rank = rank, RSS = RSS, method = method, aic = aic.model, 
+        sparse = sparse, deviance = dev, nulldf = nulldf, nulldev = nulldev, 
+        ngoodobs = n.ok, n = nobs, intercept = intercept, convergence = (!(tol > 
+            acc)))
+    class(rval) <- "speedglm"
+    rval
+}
+
 
 ## abf.glm.fit <- function(x,y,q,family,snps,parallel.file=NULL,verbose=FALSE) {
   

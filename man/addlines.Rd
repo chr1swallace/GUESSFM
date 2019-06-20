@@ -21,13 +21,12 @@ object that can be added to a ggplot
 \description{
 Add lines to a ggplot, indicating position of snps
 }
-\author{
-Chris Wallace
-}
 \seealso{
-Other plotting.GUESSFM.results: \code{\link{ggbed}},
+Other plotting GUESSFM results: \code{\link{ggbed}},
   \code{\link{ggchr}}, \code{\link{ggld}},
   \code{\link{pp.nsnp}}, \code{\link{scalepos}},
   \code{\link{signal.plot}}
 }
-
+\author{
+Chris Wallace
+}

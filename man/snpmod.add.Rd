@@ -25,4 +25,3 @@ Add Bayes factors across datasets for models evaluated in each
 \author{
 Chris Wallace
 }
-

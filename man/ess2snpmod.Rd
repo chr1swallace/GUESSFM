@@ -28,4 +28,3 @@ instead use the read.ess() function.
 \author{
 Chris Wallace
 }
-

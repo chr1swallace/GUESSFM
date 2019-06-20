@@ -1,7 +1,13 @@
-<!--
-%\VignetteEngine{knitr}
-%\VignetteIndexEntry{GUESSFM Plotting}
--->
+---
+title: "Plotting functions in GUESSFM"
+author: "Chris Wallace"
+date: "`�r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{GUESSFM Plotting}
+  %\VignetteEngine{knitr::rmarkdown}
+  \usepackage[utf8]{inputenc}
+---
 <h1>GUESSFM Plotting</h1>
 <font color="grey">
 *Chris Wallace // [web](http://www-gene.cimr.cam.ac.uk/staff/wallace) // [email](mailto:chris.wallace at cimr.cam.ac.uk)*  
@@ -117,5 +123,5 @@ might be helpful using `check.merge()` and use `groups.merge()` to do
 the merge.
 
 ```{r }
-pattern.plot(as.snpmod(sp))
+pattern.plot(SM=sm,groups=groups)
 ```

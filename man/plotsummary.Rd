@@ -15,4 +15,3 @@ a list of two ggplot2 objects, which may be print()ed to the current graphics de
 \description{
 Plot two summaries of the models, a diffusion plot and a summary of the prior and posterior number of SNPs in the models
 }
-

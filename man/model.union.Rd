@@ -24,4 +24,3 @@ Describe and extract the union of models contained in two snpmod objects
 \author{
 Chris Wallace
 }
-

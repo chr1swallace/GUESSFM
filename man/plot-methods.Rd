@@ -2,8 +2,8 @@
 % Please edit documentation in R/AllMethods.R
 \docType{methods}
 \name{plot,snppicker,missing-method}
-\alias{plot,ppnsnp,missing-method}
 \alias{plot,snppicker,missing-method}
+\alias{plot,ppnsnp,missing-method}
 \title{Plots}
 \usage{
 \S4method{plot}{snppicker,missing}(x, do.plot = TRUE)
@@ -21,4 +21,3 @@ Descriptive plots showing how the sets in snppicker objects were
 generated.  Uses \code{ggplot2}, so you can customize using
 \code{theme} etc.
 }
-

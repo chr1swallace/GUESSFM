@@ -27,7 +27,7 @@ ggsnp <- function(summx,snp.name="snp") {
   summx <- unique(summx[,c(snp.name,"tag","x.scale")])
   ggplot(summx,aes_string(x="x.scale",y=1,label=snp.name,xintercept="x.scale")) +
     geom_vline(aes(xintercept=x.scale,col=tag),size=0.2,alpha=0.5) +
-      geom_text(angle=90,vjust=0.5,hjust=0,size=2,fontface="bold") +
+      geom_text(angle=90,vjust=0.5,hjust=0,size=4,fontface="bold") +
         theme(legend.position="none",axis.text=element_blank(),
               axis.ticks=element_blank(),axis.title=element_blank()) + ylim(1,1.4)
 }
@@ -125,12 +125,14 @@ plot_diffuse <- function(results, maxrank=1000, thin=500) {
 ##' @family plotting GUESSFM results
 ggld <- function(data, summ) {
 use <- !duplicated(summ$snpnum)
-snps.num <- structure(summ$snpnum[use],names=summ$snp[use])
+snps.num <- structure(summ$snpnum[use],names=rownames(summ)[use])
 all.snps <- names(snps.num)
   LD <- melt(as(ld(data[,all.snps], stats="R.squared", depth=length(all.snps)-1, symmetric=TRUE),"matrix"))
   LD$X1 <- snps.num[as.character(LD$X1)] - 1
   LD$X2 <- snps.num[as.character(LD$X2)] - 1
-  n <- length(all.snps)
+n <- length(all.snps)
+if(n<2)
+    return(NULL)
   offset <- n/sqrt(2)
   LD$A <- with(LD, -(n-X1-X2)/sqrt(2))
   LD$B <- with(LD, -(n-X1-X2)/sqrt(2) - X1*sqrt(2))
@@ -139,7 +141,9 @@ all.snps <- names(snps.num)
   ## align A to 1:n
   LD$A <- xscale(LD$A, torange=c(1.5, n-0.5))
   ## scale by pos
-  LD$A <- xscale(LD$A, xrange=c(min(summ$snpnum),max(summ$snpnum)), torange=c(min(summ$position.plot),max(summ$position.plot)))
+LD$A <- xscale(LD$A,
+               xrange=c(min(summ$snpnum),max(summ$snpnum)),
+               torange=c(min(summ$x.scale),max(summ$x.scale)))
   
   ## length of ticks
   tlength <- (max(LD$B) - min(LD$B))/50
@@ -250,11 +254,15 @@ ggbed <- function(bed,summ) {
 ##' @return summ data.frame with additional columns, x.scale, xmin.scale, xmax.scale
 ##' @export
 ##' @family plotting GUESSFM results
-scalepos <- function(summ,position="position") {
+scalepos <- function(summ,position="position",prange=NULL) {
     if(!(position %in% colnames(summ)))
         stop("Position column not found: ",position)       
     summ$position.plot <- summ[,position]
-    pr <- c(min(summ$position.plot),max(summ$position.plot))
+    pr <- if(is.null(prange)) {
+              c(min(summ$position.plot),max(summ$position.plot))
+          } else {
+              prange
+          }
     xr <- c(min(summ$snpnum),max(summ$snpnum))
     summ$x.scale <- xscale(summ$snpnum,torange=pr,xrange=xr)
     summ$xmin.scale <- xscale(summ$x.min,torange=pr,xrange=xr)
@@ -423,6 +431,7 @@ mod2group <- function(str,groups) {
       ret[match] <- apply(g[match,,drop=FALSE],1,which)
     return(paste(sort(ret),collapse="-"))
   })
+  G[str=="1"] <- "-" # distinguish null model from ungrouped snps
   return(G)
 }
 numorneg <- function(x) {
@@ -444,6 +453,11 @@ gsumm <- function(x,groups) {
   df2$xmax <- df2$xmin+1
   return(df2)
 }
+
+##' @importFrom data.table as.data.table melt setnames
+##' @importFrom cowplot plot_grid
+NULL
+
 ##' Plot pattern of SNP group inclusion
 ##'
 ##' @title pattern.plot
@@ -452,28 +466,67 @@ gsumm <- function(x,groups) {
 ##' @return a ggplot object, by default printed to current graphics device
 ##' @author Chris Wallace
 ##' @export
-pattern.plot <- function(SM,groups) {
+pattern.plot <- function(SM,groups,r2=NULL) {
   if(!is.list(SM))
     SM <- list(trait=SM)
   BM <- lapply(SM,function(x) best.models(x,cpp.thr=0.99)[,c("str","PP")])
   for(i in seq_along(BM)) 
     BM[[i]]$group <- mod2group(BM[[i]]$str,groups)
   G <- lapply(BM,gsumm)
+  if(is.null(names(G)))
+      names(G) <- paste0("trait",seq_along(G))
   for(i in names(G)) 
     G[[i]]$trait <- i
   G <- do.call("rbind",G)
   G$xmin <- G$xmin - 1
   G$xmax <- G$xmax - 1
   
-  ggplot(G,aes(xmin=xmin,xmax=xmax,ymin=ymin,ymax=ymax)) +
+  p <- ggplot(G,aes(xmin=xmin,xmax=xmax,ymin=ymin,ymax=ymax)) +
     geom_rect() +
       geom_vline(aes(xintercept=xmin),col="gray60", size=0.2) +
         geom_hline(aes(yintercept=ymax),col="gray60",size=0.2) +
           scale_x_continuous(breaks=sort(unique(G$xmin))+0.5,labels=sort(unique(G$xmin))+1,limits=c(min(G$xmin),max(G$xmin)+1),expand=c(0,0)) +
             scale_y_continuous(breaks=c(0,1), expand=c(0,0), limits=c(0,1)) +
               theme_bw() +
-                theme(panel.grid=element_blank(),axis.text.x=element_text(angle=45,vjust=1,hjust=1), legend.position="none", panel.margin = unit(1, "lines")) +
+                theme(panel.grid=element_blank(),axis.text.x=element_text(angle=45,vjust=1,hjust=1), legend.position="none", panel.spacing = unit(1, "lines")) +
                   facet_grid(trait~.) + xlab("SNP group index") + ylab("Cumulative Model Posterior Probility") + 
-                    scale_fill_manual(values=c("FALSE"="grey","TRUE"="grey20")) 
+      scale_fill_manual(values=c("FALSE"="grey","TRUE"="grey20"))
+  if(is.null(r2))
+      return(p)
+
+  maxr2 <- calc.maxmin(r2,groups,fun=max)
+  
+  LD <- as.data.table(melt(maxr2))
+  n <- ncol(maxr2)
+  offset <- n/sqrt(2)
+  setnames(LD,c("X1","X2","R2"))
+  LD$A <- with(LD, -(n-X1-X2)/sqrt(2))
+  LD$B <- with(LD, -(n-X1-X2)/sqrt(2) - X1*sqrt(2))
+  LD <- LD[ LD$X1>LD$X2, ]
+  if(!nrow(LD))
+      return(p)
+  ## align A to 1:n
+  LD$A <- xscale(LD$A, torange=c(0.5,n-0.5))
+  tlength <- (max(LD$B) - min(LD$B))/50
+  hmap <- ggplot(LD, aes(x=A,y=B)) +
+    geom_point(aes(fill=R2,col=R2), pch=23,  size=4) +
+    scale_colour_gradient(low="grey90",high="lightblue",breaks=seq(0,1,by=0.1)) +
+    scale_fill_gradient(## colours = rev(grey.colors(10)),
+        low="grey90",high="lightblue",breaks=seq(0,1,by=0.1)) +
+    labs(x = NULL, y = NULL) +
+                                        #scale_x_continuous(expand=c(0,0),breaks=NULL) +
+    geom_text(aes(label=sub("0.",".",signif(R2,1))),col="black",data=LD[R2>0.2,]) +
+    scale_y_continuous(expand=c(0,0),breaks = NULL) +
+    theme(plot.margin = unit(rep(0, 4), "lines"),
+                                        #            legend.position="none",
+          panel.grid=element_blank()) +
+    geom_segment(data     = data.frame(x=1:n-0.5,
+                                       y=max(LD$B) + tlength, yend=max(LD$B) + 2*tlength), 
+                 aes(x    = x, 
+                     y    = y,
+                     xend = x, 
+                     yend = yend  )) +
+    scale_x_continuous(breaks=NULL,limits=c(-1,n),expand=c(0,0))
+plot_grid(p,hmap,ncol=1,align="v",axis="blr",rel_heights=c(2,1))
 
 }

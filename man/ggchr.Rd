@@ -15,13 +15,12 @@ ggplot2 object
 \description{
 Plot lines connecting each SNP's physical position to their representative position in the summ object
 }
-\author{
-chris
-}
 \seealso{
-Other plotting.GUESSFM.results: \code{\link{addlines}},
+Other plotting GUESSFM results: \code{\link{addlines}},
   \code{\link{ggbed}}, \code{\link{ggld}},
   \code{\link{pp.nsnp}}, \code{\link{scalepos}},
   \code{\link{signal.plot}}
 }
-
+\author{
+chris
+}

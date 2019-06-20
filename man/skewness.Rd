@@ -18,4 +18,3 @@ Summarise skewness of a posterior distribution on the number of SNPs in a model
 \author{
 Chris Wallace
 }
-

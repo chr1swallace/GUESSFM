@@ -25,4 +25,3 @@ as.ESS.object from the R2GUESS package directly.
 \author{
 Chris Wallace
 }
-

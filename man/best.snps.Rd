@@ -22,4 +22,3 @@ Display the SNPs with greatest marginal posterior probability of inclusion (MPPI
 \author{
 chris
 }
-

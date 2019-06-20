@@ -1,3 +1,13 @@
+---
+title: "Grouping and tagging SNPs"
+author: "Chris Wallace"
+date: "`�r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Groups, tags, and snp.picker}
+  %\VignetteEngine{knitr::rmarkdown}
+  \usepackage[utf8]{inputenc}
+---
 <div id="table-of-contents">
 <h2>Table of Contents</h2>
 <div id="text-table-of-contents">
@@ -10,10 +20,6 @@
 </div>
 </div>
 
-<!--
-%\VignetteEngine{knitr}
-%\VignetteIndexEntry{Groups, tags, and snp.picker}
--->
 <font color="grey">
 *Chris Wallace // [web](http://chr1swallace.github.io) // [email](mailto:cew54 at cam.ac.uk)*  
 </font>

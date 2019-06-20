@@ -2,11 +2,11 @@
 % Please edit documentation in R/AllMethods.R
 \docType{methods}
 \name{show,snpmod-method}
-\alias{show,groups-method}
-\alias{show,ppnsnp-method}
 \alias{show,snpmod-method}
 \alias{show,snppicker-method}
+\alias{show,ppnsnp-method}
 \alias{show,tags-method}
+\alias{show,groups-method}
 \title{Show}
 \usage{
 \S4method{show}{snpmod}(object)
@@ -27,4 +27,3 @@ Methods to briefly summarise objects to screen. \code{show} is
 called implicitly when you type an object's name at the command
 line.  Use \code{summary}, where available, to get more details.
 }
-
