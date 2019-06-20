@@ -103,7 +103,8 @@ reader <- function(f,decode,offset) {
   }
 
   message("reading from ",files[[2]])
-  models <- try(read.table(files[[2]], as.is=TRUE, header=FALSE, skip=1, comment.char="", fill=TRUE)) # sometimes file is empty
+  ncol <- max(count.fields(files[[2]], sep = "\t"))
+  models<-read.table(files[[2]], header=F, sep='\t',comment.char="", skip=1, fill=T, col.names=paste0('V', seq_len(ncol))) # sometimes file is empty
   if(inherits(models, "try-error"))
       return(NULL)
 
