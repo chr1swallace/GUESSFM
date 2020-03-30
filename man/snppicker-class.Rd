@@ -15,7 +15,9 @@ and outputs objects of class snppicker.
 
 \item{\code{plotsdata}}{list of additional data relating to the snp.picker
 process that allows a summary of that process to be plotted via
-\code{plot}.
-new("snppicker")}
+\code{plot}.}
 }}
 
+\examples{
+new("snppicker")
+}

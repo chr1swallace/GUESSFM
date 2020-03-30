@@ -241,7 +241,7 @@ group.multi <- function(SM2,snp.data,min.mppi=0.01,r2.minmerge=0.5) {
     bs <- do.call("rbind",bs)
     snps <- setdiff(unique(bs[bs$Marg_Prob_Incl>0.001,]$var), "1")
     snp.data <- snp.data[,snps]
-    r2 <- ld(snp.data,snp.data,stat="R.squared",symmetric = TRUE)
+    r2 <- ld(snp.data,snp.data,stats="R.squared",symmetric = TRUE)
     X <- lapply(SM2,makex)
     MPPI <- do.call("cbind", lapply(X,makemppi) )
     R <- lapply(X, function(x) maker(x)[snps,snps])

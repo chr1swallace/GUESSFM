@@ -7,10 +7,21 @@ which is available (open access) at http://journals.plos.org/plosgenetics/articl
 
 
 
-## Installation
+## Installatiou
 
 ### Short version
 
+GUESSFM is purely an R package and so is platform independent.  It depends on the software GUESS, which is available at http://www.bgx.org.uk/software/guess.html.
+GUESS is described in the paper http://journals.plos.org/plosgenetics/article?id=10.1371/journal.pgen.1003657
+
+This is most easily installed via the R package R2GUESS, which has been removed from CRAN, but can still be installed via
+
+```{sh}
+wget https://cran.r-project.org/src/contrib/Archive/R2GUESS/R2GUESS_2.0.tar.gz
+R CMD install R2GUESS_2.0.tar.gz 
+```
+
+Then GUESSFM can be installed from R by
 
 ```R
 install.packages("devtools") # if you don't already have the package
@@ -20,22 +31,19 @@ install_github("chr1swallace/GUESSFM")
 
 ### Longer version (if this fails)
 
-GUESSFM is purely an R package and so is platform independent.  It depends on the software GUESS, which is available at http://www.bgx.org.uk/software/guess.html, but can be more easily installed via the R package R2GUESS, which is a dependency of GUESSFM.
- <!-- and should be installed according to the instructions there.   -->
-GUESS is described in the paper http://journals.plos.org/plosgenetics/article?id=10.1371/journal.pgen.1003657
+<!-- GUESSFM is purely an R package and so is platform independent.  It depends on the software GUESS, which is available at http://www.bgx.org.uk/software/guess.html. -->
 
-To install, you may first need some R package dependencies, the packages VGAM, reshape, ggplot2, grid, ggbio, snpStats, parallel, R2GUESS.  E.g., if you don't have ggpplot, from inside R, do
+<!-- This can be more easily installed via the R package R2GUESS, but this has been removed from CRAN, and so this branch requires GUESS to be installed as described at the link above.  -->
+ <!-- and should be installed according to the instructions there.   -->
+
+
+To install GUESSFM you may first need some R package dependencies, the packages VGAM, reshape, ggplot2, grid, ggbio, snpStats, parallel.  E.g., if you don't have ggpplot, from inside R, do
 
 ```R
-install.packages("ggplot") 
+install.packages("ggplot2") 
 ```
 
-and repeat for each package you don't have.  NB, `R2GUESS` contains some library dependencies that required me to do (on Ubuntu):
-
-```sh
-sudo apt-get install libgsl0-dev
-sudo apt-get install libglu1-mesa-dev
-```
+and repeat for each package you don't have.
 
 Some packages (e.g. ggbio, snpStats) are from Bioconductor.  For these, you need to do
 

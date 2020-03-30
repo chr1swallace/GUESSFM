@@ -1,3 +1,5 @@
+utils:::globalVariables(c("is.sparse","cp","control","ll.speedglm"))
+
 ##' Uses the BIC approximation to calculate approximate Bayes factors for specified models
 ##'
 ##' The central idea of GUESSFM is to use GUESS to rapidly survery the model space for a tagged version of the data, and select a set of plausible models.  From their, the models tagged by the top model from GUESS should be evaluated using abf.calc.

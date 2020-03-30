@@ -26,3 +26,4 @@ Other plotting GUESSFM results: \code{\link{addlines}},
 \author{
 chris
 }
+\concept{plotting GUESSFM results}

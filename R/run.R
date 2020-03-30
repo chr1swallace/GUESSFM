@@ -164,7 +164,7 @@ run.bvs <- function(X,Y,gdir="test",sub=NA,
                     covars=NULL,family="gaussian", nsweep=55000,nchains=3,
                     nexp=3,tag.r2=0.99, nsave=1000, 
                     guess.command=NULL,
-                    wait=FALSE,
+                    wait=TRUE,
                     run=TRUE,
                     ...) { 
 

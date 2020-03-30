@@ -150,7 +150,7 @@ summ.setminmax <- function(df.snps) {
 guess.bootsum <- function(summ) {
   ## reshape wide
   marg <- do.call("rbind",with(summ, tapply(pp, snp, cummean)))
-  mmarg <- melt(marg)
+  mmarg <- melt.matrix(marg)
   ss <- unique(summ[,c("snp","tag","snpnum","position","position.scale","x.min","x.max")])
   ss$pp <- marg[rownames(ss),ncol(marg)]
   ppsum <- tapply(ss$pp,ss$tag,sum, na.rm=TRUE)

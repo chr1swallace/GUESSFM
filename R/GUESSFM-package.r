@@ -5,14 +5,14 @@
 #' @import methods
 #' @import Matrix
 #' @importFrom VGAM dbetabinom
-#' @importFrom reshape melt melt.data.frame melt.matrix melt.array melt.default
+#' @importFrom reshape melt.data.frame melt.matrix melt.array
 #' @import ggplot2
 #' @importFrom speedglm speedglm.wfit
 #' @importFrom grid unit
 #' @importFrom snpStats snp.rhs.tests ld col.summary p.value snp.imputation impute.snps g2post write.SnpMatrix single.snp.tests row.summary
 #' @importFrom parallel mclapply
-#' @importFrom R2GUESS as.ESS.object
 #' @importFrom grDevices grey.colors
 #' @importFrom stats AIC BIC as.dist as.formula binomial complete.cases cor cutree dbinom end family gaussian glm hclust model.matrix quantile residuals start var vcov
 #' @importFrom utils data read.table str write.table
+#' @importFrom stats as.dendrogram is.leaf
 NULL

@@ -56,9 +56,5 @@ data.frame of tags and their tagged SNPs
 subsetted groups or tags object
 }
 \description{
-\code{tagsof} shows tags for a named character vector of SNPs
-
-\code{taggedby} shows SNPs tagged by a named character vector of tag SNPs
-
 '[' will extract another object of the same class.  '[[' will extract a single element.
 }

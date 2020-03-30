@@ -6,24 +6,34 @@
 \usage{
 guess.summ(results, groups = NULL, snps = NULL, snp.data = NULL,
   position = "position", tag.thr = 0.8, pp.thr = 0.01,
-  method = "complete")
+  method = "complete", MPI = "Marg_Prob_Incl", SNP = "var")
 }
 \arguments{
-\item{results}{an object of class snpmod, or a named list of such objects}
+\item{results}{an object of class snpmod, or a named list of such
+objects}
 
-\item{groups}{object of class groups.  If supplied, all SNPs here will be summarised, and grouped according to this structure}
+\item{groups}{object of class groups.  If supplied, all SNPs here
+will be summarised, and grouped according to this structure}
 
 \item{snps}{data.frame giving details of the SNPs}
 
-\item{snp.data}{if groups is missing, tag groups are determined from this object of class SnpMatrix}
+\item{snp.data}{if groups is missing, tag groups are determined
+from this object of class SnpMatrix}
 
-\item{position}{name of column in snps data.frame giving SNP position. default="position"}
+\item{position}{name of column in snps data.frame giving SNP
+position. default="position"}
 
 \item{tag.thr}{if groups is missing, threshold at which to tag}
 
-\item{pp.thr}{if groups is missing, threshold above which SNPs are selected for summary.}
+\item{pp.thr}{if groups is missing, threshold above which SNPs are
+selected for summary.}
 
-\item{method}{if groups is missing, method to determine tag groups using heirarchical clustering, default is "complete"}
+\item{method}{if groups is missing, method to determine tag groups
+using heirarchical clustering, default is "complete"}
+
+\item{MPI}{Name of column representing Marg_Prob_Incl}
+
+\item{SNP}{Name of column giving SNP id}
 }
 \value{
 data.frame

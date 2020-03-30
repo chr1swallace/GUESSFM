@@ -1,62 +1,3 @@
-##' Create an object of class ESS given a base file name
-##'
-##' A sensible base file name is the file ending in
-##' _sweeps_features.txt.  If you used run.bvs() to run GUESS, then
-##' this function should find all the correct files.  If you didn't,
-##' then this function probably won't work, and you should use
-##' as.ESS.object from the R2GUESS package directly and use ess2snpmod
-##' to allow R2GUESS functions to work.
-##' @title ess.read
-##' @param f base file name, a character string
-##' @param ... optional arguments passed to as.ESS.object
-##' @return object of class ESS
-##' @export
-##' @author Chris Wallace
-read.ess <- function(f,...) {
-    f.decode <- basefile(f,patt="decode_[0-9]")
-    f.Y <- basefile(f,patt="Y_[0-9]")
-    f.X <- basefile(f,patt="X_[0-9]")
-    if(file.exists(f) && !file.info(f)$isdir) {
-        f <- dirname(f)
-    }
-    DIR <- paste0(f,#dirname(f),
-                  "/")
-    ## n <- gsub(".*/out_|_features.txt|_sweeps_features.txt","",f)
-    ## suff <- function(str) {
-    ##     paste(str,n,sep="_")
-    ## }
-    decode <- read.decode(f.decode)
-#    decode <- read.decode(paste0(DIR,"/",suff("decode")))
-    as.ESS.object(dataY=f.Y,dataX=f.X,file.par="par.xml",command=FALSE,
-                  path.input=DIR,path.output=DIR,path.par=DIR,
-                  root.file.output=basename(basefile(f)), #sprintf("out_%s_sweeps",n),
-                  label.X=decode,...)
-}
-##' Convert an ESS object to a snpmod object
-##'
-##' R2GUESS and GUESSFM are aimed at slightly different things.  That
-##' means different aspects of the output are important.  R2GUESS's
-##' major object class is ESS.  For GUESSFM it is snpmod.  This
-##' function takes an object of class ESS and creates the
-##' corresponding snpmod object.  The two contain slightly different
-##' information, so this is not a one to one transformation.  You
-##' cannot do the reverse, and create an ESS object from a snpmod one,
-##' instead use the read.ess() function.
-##' @title ess2snpmod
-##' @param ess an object of class ESS
-##' @return an object of class snpmod
-##' @export
-##' @author Chris Wallace
-ess2snpmod <- function(ess## ,decode=NULL
-                       ) {
-    ## ESS is just a list.  Extract the paths we need
-#    if(is.null(decode)) {
-        read.snpmod(ess$path.input)
-#    } else {
-#        reader(f,decode)
-#    }   
-}
-
 ##' Read a decode file, internal function
 ##'
 ##' NB decode file is written 0-based, but ESS input is read 1-based, so do that switch here.
@@ -90,6 +31,7 @@ reader <- function(f,decode,offset) {
   files <- paste0(f,c("_output_marg_prob_incl.txt","_output_best_visited_models.txt"))
   if(any(!file.exists(files))) {
     message("not both marg_prob_incl.txt and _best_visited_models.txt exist")
+    print(files)
     return(NULL)
   }
 
@@ -168,7 +110,7 @@ reader <- function(f,decode,offset) {
 read.snpmod <- function(f,offset=0) {
     f.decode <- basefile(f,patt="decode_[0-9]")
     decode <- read.decode(f.decode)
-    reader(f=basefile(f),decode=decode,offset=offset)
+    GUESSFM::reader(f=basefile(f),decode=decode,offset=offset)
 }
 
 ##' guess.read, for backwards compatability

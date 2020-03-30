@@ -13,18 +13,17 @@ names(y) <- rownames(z)
 
 tmp <- tempdir()
 run.bvs(X=z,Y=y,
-          gdir=tmp,family="gaussian",tag.r2=NA,
-          guess.command=NULL)
-  files <- list.files(tmp)
+          gdir=tmp,family="gaussian",tag.r2=NA)
+files <- list.files(tmp)
 
 ## specific files
-fX <- file.path(tmp,grep("^X_",files,value=TRUE))
-  fY <- file.path(tmp,grep("^Y_",files,value=TRUE))
-fdecode <- file.path(tmp,grep("^decode_[0-9]",files,value=TRUE))
+fX <- file.path(tmp,grep("^X_",files,value=TRUE))[1]
+fY <- file.path(tmp,grep("^Y_",files,value=TRUE))[1]
+fdecode <- file.path(tmp,grep("^decode_[0-9]",files,value=TRUE))[1]
 fsdecode <- file.path(tmp,grep("^decode_samples_[0-9]",files,value=TRUE))
 
-  hX <- scan(fX,n=2)
-  hY <- scan(fY,n=2)
+hX <- scan(fX,n=2)
+hY <- scan(fY,n=2)
 dX <- read.table(fX,skip=2)
 dY <- read.table(fY,skip=2)
 ddecode <- read.table(fdecode)

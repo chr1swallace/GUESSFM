@@ -30,3 +30,4 @@ Other plotting GUESSFM results: \code{\link{addlines}},
   \code{\link{ggld}}, \code{\link{pp.nsnp}},
   \code{\link{scalepos}}
 }
+\concept{plotting GUESSFM results}

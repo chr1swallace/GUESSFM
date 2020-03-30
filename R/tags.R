@@ -1,3 +1,5 @@
+index <- index.str <- PP <- NULL
+
 ##' We can use tagging to reduce the number of models.  This function expands each tagged model to every possible model that could be created from its component (tag) SNPs.
 ##'
 ##' @title Expand tags for a snpmod object

@@ -33,3 +33,4 @@ Other plotting GUESSFM results: \code{\link{addlines}},
   \code{\link{ggld}}, \code{\link{scalepos}},
   \code{\link{signal.plot}}
 }
+\concept{plotting GUESSFM results}

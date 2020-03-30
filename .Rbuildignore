@@ -1,3 +1,6 @@
 R/junkyard.R
 vignettes/.*.org
-
+_pkgdown.yaml
+^docs$
+^doc$
+^Meta$

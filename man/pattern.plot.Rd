@@ -10,9 +10,14 @@ pattern.plot(SM, groups, r2 = NULL)
 \item{SM}{snpmod or list of snpmods}
 
 \item{groups}{groups object}
+
+\item{r2}{optional matrix of r2 between SNPs. If provided, will be
+used to calculate maximum r2 between groups, which will be
+displayed in the plot}
 }
 \value{
-a ggplot object, by default printed to current graphics device
+a ggplot object, by default printed to current graphics
+  device
 }
 \description{
 Plot pattern of SNP group inclusion

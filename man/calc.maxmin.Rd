@@ -18,6 +18,9 @@ calc.maxmin(r2, L1, L2 = L1, fun = max)
 \value{
 smaller matrix indexed by elements of L1 (rows) and L2 (columns)
 }
+\description{
+calculate max or min of subset of a matrix
+}
 \author{
 Chris Wallace
 }

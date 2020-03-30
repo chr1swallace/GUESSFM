@@ -30,3 +30,4 @@ Other plotting GUESSFM results: \code{\link{ggbed}},
 \author{
 Chris Wallace
 }
+\concept{plotting GUESSFM results}

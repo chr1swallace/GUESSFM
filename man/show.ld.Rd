@@ -4,7 +4,8 @@
 \alias{show.ld}
 \title{show.ld}
 \usage{
-show.ld(X, snps = colnames(X), samples = rownames(X), lines.limit = 20)
+show.ld(X, snps = colnames(X), samples = rownames(X),
+  lines.limit = 20)
 }
 \arguments{
 \item{X}{a SnpMatrix object}

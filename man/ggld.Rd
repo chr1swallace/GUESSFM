@@ -33,3 +33,4 @@ Other plotting GUESSFM results: \code{\link{addlines}},
 \author{
 Chris Wallace
 }
+\concept{plotting GUESSFM results}
