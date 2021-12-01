@@ -32,5 +32,6 @@ Suggests:
     knitr
 License: GPL
 LazyData: true
+Remotes: ImperialCollegeLondon/R2GUESS
 VignetteBuilder: knitr
 RoxygenNote: 6.0.1
