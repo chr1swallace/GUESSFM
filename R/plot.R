@@ -451,7 +451,7 @@ gsumm <- function(x,groups) {
   return(df2)
 }
 
-##' @importFrom data.table as.data.table melt setnames
+##' @importFrom data.table as.data.table setnames
 ##' @importFrom cowplot plot_grid
 NULL
 

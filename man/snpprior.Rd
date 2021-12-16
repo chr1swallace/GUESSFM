@@ -4,8 +4,15 @@
 \alias{snpprior}
 \title{snpprior}
 \usage{
-snpprior(x = 0:10, n, expected, overdispersion = 1, pi0 = NA,
-  truncate = NA, overdispersion.warning = TRUE)
+snpprior(
+  x = 0:10,
+  n,
+  expected,
+  overdispersion = 1,
+  pi0 = NA,
+  truncate = NA,
+  overdispersion.warning = TRUE
+)
 }
 \arguments{
 \item{x}{number of SNPs in a model (defaults to 1:length(groups), ie returns a vector)}

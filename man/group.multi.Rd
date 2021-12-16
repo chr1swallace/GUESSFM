@@ -27,6 +27,9 @@ Second is a groups object, each elements ordered according to the rows of the su
 
 Third is the r2 matrix calculated.
 }
+\description{
+Group SNPs
+}
 \author{
 Chris Wallace
 }

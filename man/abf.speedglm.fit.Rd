@@ -4,8 +4,7 @@
 \alias{abf.speedglm.fit}
 \title{abf.speedglm.fit}
 \usage{
-abf.speedglm.fit(x, y, q, family, snps, parallel.dir = NULL,
-  verbose = FALSE)
+abf.speedglm.fit(x, y, q, family, snps, parallel.dir = NULL, verbose = FALSE)
 }
 \arguments{
 \item{x}{design matrix}

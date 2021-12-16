@@ -18,11 +18,15 @@ ggplot object
 Plot a bed file, overlaying lines showing the positions of SNPs in a summ object
 }
 \seealso{
-Other plotting GUESSFM results: \code{\link{addlines}},
-  \code{\link{ggchr}}, \code{\link{ggld}},
-  \code{\link{pp.nsnp}}, \code{\link{scalepos}},
-  \code{\link{signal.plot}}
+Other plotting GUESSFM results: 
+\code{\link{addlines}()},
+\code{\link{ggchr}()},
+\code{\link{ggld}()},
+\code{\link{pp.nsnp}()},
+\code{\link{scalepos}()},
+\code{\link{signal.plot}()}
 }
 \author{
 chris
 }
+\concept{plotting GUESSFM results}

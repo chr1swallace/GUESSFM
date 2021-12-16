@@ -25,11 +25,15 @@ The positions in the summ object are used to align the snps to
 the correct coordinates.
 }
 \seealso{
-Other plotting GUESSFM results: \code{\link{addlines}},
-  \code{\link{ggbed}}, \code{\link{ggchr}},
-  \code{\link{pp.nsnp}}, \code{\link{scalepos}},
-  \code{\link{signal.plot}}
+Other plotting GUESSFM results: 
+\code{\link{addlines}()},
+\code{\link{ggbed}()},
+\code{\link{ggchr}()},
+\code{\link{pp.nsnp}()},
+\code{\link{scalepos}()},
+\code{\link{signal.plot}()}
 }
 \author{
 Chris Wallace
 }
+\concept{plotting GUESSFM results}

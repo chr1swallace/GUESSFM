@@ -22,11 +22,15 @@ object that can be added to a ggplot
 Add lines to a ggplot, indicating position of snps
 }
 \seealso{
-Other plotting GUESSFM results: \code{\link{ggbed}},
-  \code{\link{ggchr}}, \code{\link{ggld}},
-  \code{\link{pp.nsnp}}, \code{\link{scalepos}},
-  \code{\link{signal.plot}}
+Other plotting GUESSFM results: 
+\code{\link{ggbed}()},
+\code{\link{ggchr}()},
+\code{\link{ggld}()},
+\code{\link{pp.nsnp}()},
+\code{\link{scalepos}()},
+\code{\link{signal.plot}()}
 }
 \author{
 Chris Wallace
 }
+\concept{plotting GUESSFM results}

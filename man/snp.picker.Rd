@@ -4,9 +4,16 @@
 \alias{snp.picker}
 \title{snp.picker}
 \usage{
-snp.picker(d, data, start.thr = 0.01, nochange.thr = 0.001,
-  nochange.run = 3, r2.gap = 0.1, shared.models = 0.03,
-  skip.shared.models = FALSE)
+snp.picker(
+  d,
+  data,
+  start.thr = 0.01,
+  nochange.thr = 0.001,
+  nochange.run = 3,
+  r2.gap = 0.1,
+  shared.models = 0.03,
+  skip.shared.models = FALSE
+)
 }
 \arguments{
 \item{d}{object of class \code{snpmod} containing SNPs to be grouped}

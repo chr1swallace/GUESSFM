@@ -4,8 +4,16 @@
 \alias{tag}
 \title{tag}
 \usage{
-tag(X, tag.threshold = 0.99, snps = NULL, samples = NULL, strata = NULL,
-  quiet = FALSE, method = "single", split.at = 500)
+tag(
+  X,
+  tag.threshold = 0.99,
+  snps = NULL,
+  samples = NULL,
+  strata = NULL,
+  quiet = FALSE,
+  method = "single",
+  split.at = 500
+)
 }
 \arguments{
 \item{X}{SnpMatrix object}

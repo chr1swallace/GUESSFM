@@ -4,8 +4,14 @@
 \alias{cond.best}
 \title{cond.best}
 \usage{
-cond.best(X, Y, best = NULL, stepwise.p.thr = 0.001,
-  stepwise.max.predictors = NA, ...)
+cond.best(
+  X,
+  Y,
+  best = NULL,
+  stepwise.p.thr = 0.001,
+  stepwise.max.predictors = NA,
+  ...
+)
 }
 \arguments{
 \item{X}{snpMatrix object}

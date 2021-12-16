@@ -28,8 +28,12 @@ Summarize the posterior model support by the number of SNPs contained in a model
 \seealso{
 \link{snpprior}
 
-Other plotting GUESSFM results: \code{\link{addlines}},
-  \code{\link{ggbed}}, \code{\link{ggchr}},
-  \code{\link{ggld}}, \code{\link{scalepos}},
-  \code{\link{signal.plot}}
+Other plotting GUESSFM results: 
+\code{\link{addlines}()},
+\code{\link{ggbed}()},
+\code{\link{ggchr}()},
+\code{\link{ggld}()},
+\code{\link{scalepos}()},
+\code{\link{signal.plot}()}
 }
+\concept{plotting GUESSFM results}
