@@ -55,8 +55,8 @@ plot.fdr <- function(summ,causal) {
     return(df)
   })
   called <- do.call(rbind,called)
-  true <- melt(with(called, tapply(true,list(trait,ppthr),sum)), varnames=c("trait","ppthr"))
-  false <- melt(with(called, tapply(!true,list(trait,ppthr),sum)), varnames=c("trait","ppthr"))
+  true <- reshape::melt(with(called, tapply(true,list(trait,ppthr),sum)), varnames=c("trait","ppthr"))
+  false <- reshape::melt(with(called, tapply(!true,list(trait,ppthr),sum)), varnames=c("trait","ppthr"))
   colnames(true) <- sub("value","true",colnames(true))
   colnames(false) <- sub("value","false",colnames(false))
   result <- merge(true,false)
@@ -65,7 +65,7 @@ plot.fdr <- function(summ,causal) {
   result$prop.called.true <- with(result, true/(true + false))
   result$prop.true.called <- result$true/length(causal)
 
-  mresult <- melt(result[,c("trait","ppthr","prop.called.true","prop.true.called")],id.vars=c("trait","ppthr"))
+  mresult <- reshape::melt(result[,c("trait","ppthr","prop.called.true","prop.true.called")],id.vars=c("trait","ppthr"))
   p <- ggplot(mresult, aes(x=ppthr,y=value,col=variable)) + geom_point() + geom_path() + facet_wrap(~trait) 
   
   return(list(data=mresult, plot=p))
@@ -127,7 +127,7 @@ ggld <- function(data, summ) {
 use <- !duplicated(summ$snpnum)
 snps.num <- structure(summ$snpnum[use],names=rownames(summ)[use])
 all.snps <- names(snps.num)
-  LD <- melt(as(ld(data[,all.snps], stats="R.squared", depth=length(all.snps)-1, symmetric=TRUE),"matrix"))
+  LD <- reshape::melt(as(ld(data[,all.snps], stats="R.squared", depth=length(all.snps)-1, symmetric=TRUE),"matrix"))
   LD$X1 <- snps.num[as.character(LD$X1)] - 1
   LD$X2 <- snps.num[as.character(LD$X2)] - 1
   n <- length(all.snps)
@@ -371,7 +371,7 @@ show.ld <- function(X, snps=colnames(X), samples=rownames(X),
  if(!is.null(groups))
    colnames(ld) <- rownames(ld) <- paste(groups,colnames(ld),sep="/")
  
-  df <- melt(as.matrix(ld))
+  df <- reshape::melt(as.matrix(ld))
   df$X1 <- factor(df$X1, levels=colnames(ld))
   df$X2 <- factor(df$X2, levels=colnames(ld))
  n <- max(as.numeric(df$X1))
@@ -493,7 +493,7 @@ pattern.plot <- function(SM,groups,r2=NULL) {
 
   maxr2 <- calc.maxmin(r2,groups,fun=max)
   
-  LD <- as.data.table(melt(maxr2))
+  LD <- as.data.table(reshape::melt(maxr2))
   n <- ncol(maxr2)
   offset <- n/sqrt(2)
   setnames(LD,c("X1","X2","R2"))
