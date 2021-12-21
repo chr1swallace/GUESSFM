@@ -4,9 +4,16 @@
 \alias{guess.summ}
 \title{Summarise a snpmod object}
 \usage{
-guess.summ(results, groups = NULL, snps = NULL, snp.data = NULL,
-  position = "position", tag.thr = 0.8, pp.thr = 0.01,
-  method = "complete")
+guess.summ(
+  results,
+  groups = NULL,
+  snps = NULL,
+  snp.data = NULL,
+  position = "position",
+  tag.thr = 0.8,
+  pp.thr = 0.01,
+  method = "complete"
+)
 }
 \arguments{
 \item{results}{an object of class snpmod, or a named list of such objects}

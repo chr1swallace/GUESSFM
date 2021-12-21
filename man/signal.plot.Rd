@@ -20,13 +20,20 @@ ggplot2 object, which by default is print()ed to the current graphics device
 Generate main results plot: the sets of SNPs, their groups and marginal posterior probabilities of inclusion
 }
 \seealso{
-Other plotting GUESSFM results: \code{\link{addlines}},
-  \code{\link{ggbed}}, \code{\link{ggchr}},
-  \code{\link{ggld}}, \code{\link{pp.nsnp}},
-  \code{\link{scalepos}}
+Other plotting GUESSFM results: 
+\code{\link{addlines}()},
+\code{\link{ggbed}()},
+\code{\link{ggchr}()},
+\code{\link{ggld}()},
+\code{\link{pp.nsnp}()},
+\code{\link{scalepos}()}
 
-Other plotting GUESSFM results: \code{\link{addlines}},
-  \code{\link{ggbed}}, \code{\link{ggchr}},
-  \code{\link{ggld}}, \code{\link{pp.nsnp}},
-  \code{\link{scalepos}}
+Other plotting GUESSFM results: 
+\code{\link{addlines}()},
+\code{\link{ggbed}()},
+\code{\link{ggchr}()},
+\code{\link{ggld}()},
+\code{\link{pp.nsnp}()},
+\code{\link{scalepos}()}
 }
+\concept{plotting GUESSFM results}

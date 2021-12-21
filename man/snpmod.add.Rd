@@ -4,8 +4,12 @@
 \alias{snpmod.add}
 \title{snpmod.add}
 \usage{
-snpmod.add(..., priors = snpprior(0:20, n = 932, expected = 3),
-  BFcolumn = "logABF", .marginals = TRUE)
+snpmod.add(
+  ...,
+  priors = snpprior(0:20, n = 932, expected = 3),
+  BFcolumn = "logABF",
+  .marginals = TRUE
+)
 }
 \arguments{
 \item{...}{two or more objects of class snpmod containing the same models.  Bayes factors will be summed for each model across the datasets.}

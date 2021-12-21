@@ -4,8 +4,8 @@
 #' @docType package
 #' @import methods
 #' @import Matrix
+#' @import data.table
 #' @importFrom VGAM dbetabinom
-#' @importFrom reshape melt melt.data.frame melt.matrix melt.array melt.default
 #' @import ggplot2
 #' @importFrom speedglm speedglm.wfit
 #' @importFrom grid unit

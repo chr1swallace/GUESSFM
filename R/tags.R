@@ -216,8 +216,9 @@ tag <- function(X,tag.threshold=0.99, snps=NULL, samples=NULL, strata=NULL,quiet
   diag(r2) <- 0
 ##   if(max(r2)==1) 
 ##     stop("max r2 still 1!")
-  if(!quiet)
-    message("max r2 is now",max(r2),"\n")
+  if(!quiet) {
+    message("max r2 is now ", max(r2), "\n")
+  }
   return(as(groups,"tags"))
 }
   

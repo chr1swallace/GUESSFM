@@ -4,10 +4,23 @@
 \alias{run.bvs}
 \title{Bayesian variable selection}
 \usage{
-run.bvs(X, Y, gdir = "test", sub = NA, covars = NULL,
-  family = "gaussian", nsweep = 55000, nchains = 3, nexp = 3,
-  tag.r2 = 0.99, nsave = 1000, guess.command = NULL, wait = FALSE,
-  run = TRUE, ...)
+run.bvs(
+  X,
+  Y,
+  gdir = "test",
+  sub = NA,
+  covars = NULL,
+  family = "gaussian",
+  nsweep = 55000,
+  nchains = 3,
+  nexp = 3,
+  tag.r2 = 0.99,
+  nsave = 1000,
+  guess.command = NULL,
+  wait = FALSE,
+  run = TRUE,
+  ...
+)
 }
 \arguments{
 \item{X}{snpMatrix object, holding genotypes}

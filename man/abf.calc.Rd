@@ -4,9 +4,20 @@
 \alias{abf.calc}
 \title{Calculate Approximate Bayes Factors}
 \usage{
-abf.calc(y, x, models, family = "binomial", q = NULL,
-  method = c("speedglm", "glm.fit", "glm"), R2 = NULL, snp.data = NULL,
-  return.R2 = FALSE, verbose = FALSE, parallel.dir = NULL)
+abf.calc(
+  y,
+  x,
+  models,
+  family = "binomial",
+  q = NULL,
+  method = c("speedglm", "glm.fit", "glm"),
+  R2 = NULL,
+  snp.data = NULL,
+  return.R2 = FALSE,
+  verbose = FALSE,
+  parallel.dir = NULL,
+  approx.lm = FALSE
+)
 }
 \arguments{
 \item{y}{response vector}
@@ -30,6 +41,8 @@ abf.calc(y, x, models, family = "binomial", q = NULL,
 \item{verbose}{print lots of progress messages if TRUE.  Default is FALSE.}
 
 \item{parallel.dir}{optional directory name to enable manual parallelisation.}
+
+\item{approx.lm}{default FALSE. If TRUE and family=="binomial", fit lm on the residuals from a binomial logistic regression of y on covars.  This is the same approximation used by GUESS, but its use here is experimental and should not be used unless you are prepared to sanity check results yourself (eg by running binomial for a selection of models and comparing ABF from the two approaches)}
 }
 \value{
 a data.frame containing model name, ABF, and an indicator of whether the ABF was calculating directly or via a tag SNP
