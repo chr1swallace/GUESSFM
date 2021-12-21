@@ -212,7 +212,7 @@ tag <- function(X,tag.threshold=0.99, snps=NULL, samples=NULL, strata=NULL,quiet
   groups <- new("groups",groups,tags=names(groups))
   
   ## check
-  r2 <- r2[tags(groups),tags(groups)]
+  r2 <- r2[tags(groups),tags(groups), drop=FALSE]
   diag(r2) <- 0
 ##   if(max(r2)==1) 
 ##     stop("max r2 still 1!")
