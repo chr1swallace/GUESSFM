@@ -30,6 +30,7 @@ Imports:
 Suggests:
     testthat,
     knitr
+Remotes: ImperialCollegeLondon/R2GUESS
 License: GPL
 LazyData: true
 VignetteBuilder: knitr
