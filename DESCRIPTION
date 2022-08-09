@@ -32,7 +32,9 @@ Suggests:
     knitr
 License: GPL
 LazyData: true
-Remotes: Alanocallaghan/R2GUESS
+Remotes:
+    Alanocallaghan/R2GUESS,
+    bioc::snpStats
 VignetteBuilder: knitr
 RoxygenNote: 7.1.2
 URL: https://github.com/chr1swallace/GUESSFM
